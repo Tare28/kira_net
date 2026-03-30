@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, FlatList, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -9,6 +10,27 @@ export default function FiltersModalScreen() {
   const [privateElectricity, setPrivateElectricity] = useState(true);
   const [verifiedActive, setVerifiedActive] = useState(false);
   const [activeNeighborhood, setActiveNeighborhood] = useState('Bole');
+  const [amenities, setAmenities] = useState<string[]>(['Water']);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  const NEIGHBORHOODS = ['Bole', 'Arada', 'Yeka', 'Kazanchis', 'CMC', 'Megenagna'];
+
+  const toggleAmenity = (name: string) => {
+    if (amenities.includes(name)) {
+      setAmenities(amenities.filter(a => a !== name));
+    } else {
+      setAmenities([...amenities, name]);
+    }
+  };
+
+  const handleReset = () => {
+    setActiveDeposit('3 Months');
+    setPrivateElectricity(true);
+    setVerifiedActive(false);
+    setActiveNeighborhood('Bole');
+    setAmenities(['Water']);
+    Alert.alert('Filters Reset', 'All search filters have been cleared.');
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -20,7 +42,7 @@ export default function FiltersModalScreen() {
             <Feather name="x" size={24} color="#005C3A" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Filters</Text>
-          <TouchableOpacity hitSlop={{top:10,bottom:10,left:10,right:10}}>
+          <TouchableOpacity hitSlop={{top:10,bottom:10,left:10,right:10}} onPress={handleReset}>
             <Text style={styles.resetText}>Reset</Text>
           </TouchableOpacity>
         </View>
@@ -75,13 +97,16 @@ export default function FiltersModalScreen() {
           {/* Preferred Neighbourhood */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Preferred Neighborhood</Text>
-            <View style={styles.dropdownInput}>
+            <TouchableOpacity 
+              style={styles.dropdownInput}
+              onPress={() => setShowLocationModal(true)}
+            >
               <Ionicons name="location-sharp" size={20} color="#005C3A" />
-              <Text style={styles.dropdownText}>Bole, Addis Ababa</Text>
+              <Text style={styles.dropdownText}>{activeNeighborhood}, Addis Ababa</Text>
               <Feather name="chevron-down" size={20} color="#1A1A1A" style={{ marginLeft: 'auto' }} />
-            </View>
+            </TouchableOpacity>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-              {['Bole', 'Arada', 'Yeka', 'Kazanchis'].map(hood => (
+              {NEIGHBORHOODS.slice(0, 4).map(hood => (
                 <TouchableOpacity
                   key={hood}
                   style={[styles.chip, activeNeighborhood === hood && styles.chipActive]}
@@ -100,17 +125,23 @@ export default function FiltersModalScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Essential Amenities</Text>
             <View style={styles.amenitiesGrid}>
-              <TouchableOpacity style={styles.amenityCard}>
+              <TouchableOpacity 
+                style={[styles.amenityCard, amenities.includes('Water') && styles.amenityCardActive]}
+                onPress={() => toggleAmenity('Water')}
+              >
                 <View style={styles.amenityIconWrap}>
-                  <Ionicons name="water" size={20} color="#005C3A" />
+                  <Ionicons name="water" size={20} color={amenities.includes('Water') ? '#FFF' : '#005C3A'} />
                 </View>
-                <Text style={styles.amenityCardText}>Constant Water{'\n'}Supply</Text>
+                <Text style={[styles.amenityCardText, amenities.includes('Water') && styles.amenityTextActive]}>Constant Water Supply</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.amenityCard}>
+              <TouchableOpacity 
+                style={[styles.amenityCard, amenities.includes('Internet') && styles.amenityCardActive]}
+                onPress={() => toggleAmenity('Internet')}
+              >
                 <View style={styles.amenityIconWrap}>
-                  <Feather name="wifi" size={20} color="#005C3A" />
+                  <Feather name="wifi" size={20} color={amenities.includes('Internet') ? '#FFF' : '#005C3A'} />
                 </View>
-                <Text style={styles.amenityCardText}>Fiber Optic Internet</Text>
+                <Text style={[styles.amenityCardText, amenities.includes('Internet') && styles.amenityTextActive]}>Fiber Optic Internet</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -161,7 +192,7 @@ export default function FiltersModalScreen() {
               style={styles.mapImage}
             />
             <View style={styles.mapOverlay}>
-              <TouchableOpacity style={styles.mapBtn}>
+              <TouchableOpacity style={styles.mapBtn} onPress={() => Alert.alert('Interactive Map', 'This will open the fullscreen map view.')}>
                 <Feather name="map" size={14} color="#005C3A" />
                 <Text style={styles.mapBtnText}>PREVIEW IN MAP</Text>
               </TouchableOpacity>
@@ -176,6 +207,36 @@ export default function FiltersModalScreen() {
             <Text style={styles.applyButtonText}>Show 142 Properties</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Location Selector Modal */}
+        <Modal visible={showLocationModal} animationType="fade" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Neighborhood</Text>
+                <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+                  <Feather name="x" size={24} color="#1A1A1A" />
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={NEIGHBORHOODS}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    style={styles.locationItem}
+                    onPress={() => {
+                      setActiveNeighborhood(item);
+                      setShowLocationModal(false);
+                    }}
+                  >
+                    <Text style={styles.locationItemText}>{item}</Text>
+                    {activeNeighborhood === item && <Feather name="check" size={20} color="#005C3A" />}
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
 
       </View>
     </SafeAreaView>
@@ -263,11 +324,27 @@ const styles = StyleSheet.create({
   chipTextActive: { color: '#005C3A', fontWeight: '700' },
   amenitiesGrid: { flexDirection: 'row', justifyContent: 'space-between' },
   amenityCard: {
-    flex: 1, backgroundColor: '#F8F9FA', borderRadius: 16,
-    padding: 16, marginHorizontal: 6,
+    flex: 1, backgroundColor: '#FFF', borderRadius: 16,
+    padding: 16, marginHorizontal: 6, borderWidth: 1, borderColor: '#F3F4F6',
   },
-  amenityIconWrap: { marginBottom: 24 },
+  amenityCardActive: { backgroundColor: '#005C3A', borderColor: '#005C3A' },
+  amenityIconWrap: { marginBottom: 12 },
   amenityCardText: { fontSize: 13, fontWeight: '700', color: '#1A1A1A', lineHeight: 18 },
+  amenityTextActive: { color: '#FFF' },
+  locationItem: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
+  },
+  locationItemText: { fontSize: 15, color: '#1A1A1A', fontWeight: '500' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: {
+    backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 24, paddingBottom: 40, maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '800', color: '#1A1A1A' },
   electricityCard: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#F8F9FA', borderRadius: 20, padding: 16,

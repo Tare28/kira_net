@@ -1,14 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  SafeAreaView, Dimensions, Share, Alert
+  Dimensions, Share, Alert, Animated,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
-import { Feather, Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Feather, Ionicons, MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useVisitPlan } from '@/context/VisitPlanContext';
 
 const { width } = Dimensions.get('window');
 
+// Market data by location
+const MARKET_DATA: Record<string, { avg: number; cheaper: number; trend: 'up' | 'down' | 'stable'; trendPct: number }> = {
+  'Bole, Addis Ababa':        { avg: 28000, cheaper: 72, trend: 'up',     trendPct: 4 },
+  'Old Airport, Addis Ababa': { avg: 38000, cheaper: 58, trend: 'stable', trendPct: 0 },
+  'Kazanchis, Addis Ababa':   { avg: 22000, cheaper: 60, trend: 'down',   trendPct: 3 },
+  'CMC, Addis Ababa':         { avg: 24000, cheaper: 65, trend: 'up',     trendPct: 2 },
+};
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
 const PROPERTIES: Record<string, any> = {
   '1': {
     title: 'The Summit Residency',
@@ -20,27 +31,37 @@ const PROPERTIES: Record<string, any> = {
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=800&auto=format&fit=crop',
     ],
-    bedrooms: 2,
-    bathrooms: 1,
-    sqm: 85,
+    bedrooms: 2, bathrooms: 1, sqm: 85,
     description:
-      'Welcome to The Summit Residency — a beautifully designed modern apartment nestled in the heart of Bole. This fully-furnished unit offers stunning city views, high-speed fiber internet, and 24/7 security. Ideal for professionals and small families looking for a secure and comfortable home in Addis Ababa\'s most sought-after neighborhood.',
+      'Welcome to The Summit Residency — a beautifully designed modern apartment nestled in the heart of Bole. This fully-furnished unit offers stunning city views, high-speed fiber internet, and 24/7 security. Ideal for professionals and small families looking for a secure and comfortable home.',
     utilities: [
       { label: 'Constant Water', icon: 'water', available: true },
       { label: 'Private Meter', icon: 'flash', available: true },
       { label: 'Fiber Internet', icon: 'wifi', available: true },
     ],
-    deposit: '3 Months',
-    floor: '4th Floor',
-    parking: true,
+    deposit: '3 Months', floor: '4th Floor', parking: true,
     owner: {
-      name: 'Abebe Tadesse',
-      role: 'Property Manager',
-      verified: true,
+      name: 'Abebe Tadesse', role: 'Property Manager', verified: true,
       since: 'Member since 2021',
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
-      rating: 4.8,
-      reviews: 34,
+      rating: 4.8, reviews: 34,
+    },
+    // ── Trust Layer ──
+    trust: {
+      score: 91,
+      verifiedPhotos: true,
+      phoneVerified: true,
+      recentlyVerified: 'Verified 2 days ago',
+      reviewCount: 34,
+      reportCount: 0,
+    },
+    // ── Neighborhood ──
+    hood: {
+      safety: 4,       // /5
+      noise: 2,        // 1=quiet, 5=very busy
+      roadAccess: 'Asphalt',
+      floodRisk: 'Low',
+      tags: ['Business Hub', 'Great Nightlife', 'Near Airport'],
     },
   },
   '2': {
@@ -53,27 +74,35 @@ const PROPERTIES: Record<string, any> = {
       'https://images.unsplash.com/photo-1416331108676-a22ccb276e35?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1502005097973-6a7082348e28?q=80&w=800&auto=format&fit=crop',
     ],
-    bedrooms: 3,
-    bathrooms: 2,
-    sqm: 160,
+    bedrooms: 3, bathrooms: 2, sqm: 160,
     description:
-      'A spacious and elegant villa situated in the prestigious Old Airport neighborhood. Features a private garden, ample parking, and a modern open-plan kitchen. This is a rare find — reduced in price for a limited time only. Perfect for families who value privacy, space, and premium living standards.',
+      'A spacious and elegant villa situated in the prestigious Old Airport neighborhood. Features a private garden, ample parking, and a modern open-plan kitchen. This is a rare find — reduced in price for a limited time only. Perfect for families who value privacy, space, and premium living.',
     utilities: [
       { label: 'Tanker Water', icon: 'water', available: true },
       { label: 'Shared Meter', icon: 'flash', available: false },
       { label: 'Fiber Internet', icon: 'wifi', available: true },
     ],
-    deposit: '2 Months',
-    floor: 'Ground + 1',
-    parking: true,
+    deposit: '2 Months', floor: 'Ground + 1', parking: true,
     owner: {
-      name: 'Meron Girma',
-      role: 'Landlord',
-      verified: false,
+      name: 'Meron Girma', role: 'Landlord', verified: false,
       since: 'Member since 2023',
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
-      rating: 4.5,
-      reviews: 12,
+      rating: 4.5, reviews: 12,
+    },
+    trust: {
+      score: 64,
+      verifiedPhotos: true,
+      phoneVerified: false,
+      recentlyVerified: 'Verified 3 weeks ago',
+      reviewCount: 12,
+      reportCount: 1,
+    },
+    hood: {
+      safety: 3,
+      noise: 3,
+      roadAccess: 'Asphalt',
+      floodRisk: 'Moderate',
+      tags: ['Family-Friendly', 'Near Schools', 'Quieter Area'],
     },
   },
   '3': {
@@ -86,9 +115,7 @@ const PROPERTIES: Record<string, any> = {
       'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1493663284031-b7e3aefcae8e?q=80&w=800&auto=format&fit=crop',
     ],
-    bedrooms: 1,
-    bathrooms: 1,
-    sqm: 45,
+    bedrooms: 1, bathrooms: 1, sqm: 45,
     description:
       'A cozy, compact studio in the vibrant Kazanchis area — at the center of everything Addis has to offer. Walking distance to major offices, restaurants, and transport hubs. Fully self-contained with high-speed internet and constant city water. Perfect for a single professional or student.',
     utilities: [
@@ -96,39 +123,99 @@ const PROPERTIES: Record<string, any> = {
       { label: 'Prepaid', icon: 'flash', available: true },
       { label: 'High Speed', icon: 'wifi', available: true },
     ],
-    deposit: '1 Month',
-    floor: '2nd Floor',
-    parking: false,
+    deposit: '1 Month', floor: '2nd Floor', parking: false,
     owner: {
-      name: 'Yonas Bekele',
-      role: 'Property Owner',
-      verified: true,
+      name: 'Yonas Bekele', role: 'Property Owner', verified: true,
       since: 'Member since 2020',
-      avatar: 'https://images.unsplash.com/photo-1560250097-0dc605a9-9d41?q=80&w=200&auto=format&fit=crop',
-      rating: 4.9,
-      reviews: 57,
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200&auto=format&fit=crop',
+      rating: 4.9, reviews: 57,
+    },
+    trust: {
+      score: 97,
+      verifiedPhotos: true,
+      phoneVerified: true,
+      recentlyVerified: 'Verified today',
+      reviewCount: 57,
+      reportCount: 0,
+    },
+    hood: {
+      safety: 3,
+      noise: 5,
+      roadAccess: 'Asphalt',
+      floodRisk: 'Low',
+      tags: ['Popular for Students', 'Very Central', 'High Foot Traffic'],
     },
   },
 };
 
+// ─── Trust Score helpers ───────────────────────────────────────────────────────
+function getTrustColor(score: number) {
+  if (score >= 85) return '#16A34A';
+  if (score >= 60) return '#F59E0B';
+  return '#DC2626';
+}
+function getTrustLabel(score: number) {
+  if (score >= 85) return 'Highly Trusted';
+  if (score >= 60) return 'Moderately Trusted';
+  return 'Low Trust';
+}
+
+// ─── Noise label ──────────────────────────────────────────────────────────────
+function noiseLabel(level: number) {
+  const map = ['', 'Very Quiet', 'Quiet', 'Moderate', 'Busy', 'Very Busy'];
+  return map[level] ?? 'Unknown';
+}
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function PropertyDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const property = PROPERTIES[id ?? '1'] ?? PROPERTIES['1'];
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
+  const [offlineMapSaved, setOfflineMapSaved] = useState(false);
+  const [showAllTags, setShowAllTags] = useState(false);
+  const [missedCallSent, setMissedCallSent] = useState(false);
+
+  const { addVisit, removeVisit, isInPlan } = useVisitPlan();
+  const inPlan = isInPlan(id ?? '1');
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handleShare = async () => {
-    await Share.share({ message: `Check out ${property.title} on Kira-Net — ${property.price} ETB/month in ${property.location}` });
+    await Share.share({
+      message: `Check out ${property.title} on Kira-Net — ${property.price} ETB/month in ${property.location}`,
+    });
   };
+
+  const handleVisitToggle = () => {
+    Animated.sequence([
+      Animated.spring(scaleAnim, { toValue: 0.93, useNativeDriver: true }),
+      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }),
+    ]).start();
+
+    if (inPlan) {
+      removeVisit(id ?? '1');
+    } else {
+      addVisit({
+        id: id ?? '1',
+        title: property.title,
+        location: property.location,
+        price: property.price,
+        image: property.images[0],
+      });
+    }
+  };
+
+  const trust = property.trust;
+  const hood = property.hood;
+  const trustColor = getTrustColor(trust.score);
 
   return (
     <View style={styles.root}>
-      {/* Image Carousel */}
+      {/* ── Image Carousel ─────────────────────────────────────────────────── */}
       <View style={styles.imageWrapper}>
         <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
+          horizontal pagingEnabled showsHorizontalScrollIndicator={false}
           onMomentumScrollEnd={e => {
             const index = Math.round(e.nativeEvent.contentOffset.x / width);
             setActiveImage(index);
@@ -158,6 +245,21 @@ export default function PropertyDetailsScreen() {
             <TouchableOpacity style={styles.overlayBtn} onPress={() => setSaved(s => !s)}>
               <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? '#DC2626' : '#1A1A1A'} />
             </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.overlayBtn, offlineMapSaved && styles.overlayBtnActive]} 
+              onPress={() => {
+                setOfflineMapSaved(!offlineMapSaved);
+                if (!offlineMapSaved) {
+                  Alert.alert('📍 Saved for Offline Map', 'You can now view this property location on the map even without internet.');
+                }
+              }}
+            >
+              <MaterialCommunityIcons 
+                name={offlineMapSaved ? 'map-marker-check' : 'map-marker-plus-outline'} 
+                size={20} 
+                color={offlineMapSaved ? '#005C3A' : '#1A1A1A'} 
+              />
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
 
@@ -173,8 +275,15 @@ export default function PropertyDetailsScreen() {
             <Text style={styles.hotDealText}>HOT DEAL</Text>
           </View>
         )}
+
+        {/* Trust Score Chip on image */}
+        <View style={[styles.trustChipOnImage, { backgroundColor: trustColor }]}>
+          <MaterialIcons name="shield" size={11} color="#FFF" />
+          <Text style={styles.trustChipText}>{trust.score}% Trust</Text>
+        </View>
       </View>
 
+      {/* ── Scroll Content ─────────────────────────────────────────────────── */}
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
         {/* Title & Price */}
@@ -191,6 +300,12 @@ export default function PropertyDetailsScreen() {
             <Text style={styles.priceDesc}> / month</Text>
           </View>
         </View>
+
+        {/* ── RENT PRICE INSIGHTS ─────────────────────────────────── */}
+        <RentInsightsCard location={property.location} price={property.price} />
+
+        {/* ── 1. TRUST SCORE CARD ─────────────────────────────────────────── */}
+        <TrustScoreCard trust={trust} trustColor={trustColor} />
 
         {/* Quick Stats */}
         <View style={styles.statsRow}>
@@ -219,6 +334,26 @@ export default function PropertyDetailsScreen() {
           </View>
         </View>
 
+        {/* ── 2. NEIGHBORHOOD INTELLIGENCE ───────────────────────────────── */}
+        <NeighborhoodCard hood={hood} />
+
+        {/* Offline Map Link */}
+        {offlineMapSaved && (
+          <TouchableOpacity 
+            style={styles.offlineMapBanner}
+            onPress={() => router.push('/offline-maps')}
+          >
+            <View style={styles.offlineMapIcon}>
+              <Ionicons name="map" size={18} color="#005C3A" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.offlineMapTitle}>View in Offline Map</Text>
+              <Text style={styles.offlineMapSub}>Available without internet</Text>
+            </View>
+            <Feather name="chevron-right" size={16} color="#005C3A" />
+          </TouchableOpacity>
+        )}
+
         {/* Description */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Description</Text>
@@ -232,17 +367,21 @@ export default function PropertyDetailsScreen() {
             {property.utilities.map((u: any, i: number) => (
               <View key={i} style={[styles.utilityChip, !u.available && styles.utilityChipOff]}>
                 <Ionicons name={u.icon} size={16} color={u.available ? '#005C3A' : '#9CA3AF'} />
-                <Text style={[styles.utilityChipText, !u.available && styles.utilityChipTextOff]}>{u.label}</Text>
+                <Text style={[styles.utilityChipText, !u.available && styles.utilityChipTextOff]}>
+                  {u.label}
+                </Text>
               </View>
             ))}
             <View style={[styles.utilityChip, !property.parking && styles.utilityChipOff]}>
               <MaterialIcons name="local-parking" size={16} color={property.parking ? '#005C3A' : '#9CA3AF'} />
-              <Text style={[styles.utilityChipText, !property.parking && styles.utilityChipTextOff]}>Parking</Text>
+              <Text style={[styles.utilityChipText, !property.parking && styles.utilityChipTextOff]}>
+                Parking
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* More Details */}
+        {/* Rental Terms */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Rental Terms</Text>
           <View style={styles.termsRow}>
@@ -279,7 +418,7 @@ export default function PropertyDetailsScreen() {
           </View>
         </View>
 
-        {/* Similar Homes — AI Recommendations */}
+        {/* AI Similar Homes */}
         <View style={styles.section}>
           <View style={styles.aiLabelRow}>
             <MaterialIcons name="auto-awesome" size={16} color="#005C3A" />
@@ -293,17 +432,12 @@ export default function PropertyDetailsScreen() {
               { id: '1', title: 'The Summit Residency', location: 'Bole', price: '25,000', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=400&auto=format&fit=crop', badge: 'verified' },
             ].filter(s => s.id !== id).map(sim => (
               <TouchableOpacity
-                key={sim.id}
-                style={styles.simCard}
-                activeOpacity={0.88}
+                key={sim.id} style={styles.simCard} activeOpacity={0.88}
                 onPress={() => router.replace({ pathname: '/property-details', params: { id: sim.id } })}
               >
                 <View style={styles.simImageWrap}>
                   <Image source={sim.image} style={styles.simImage} />
-                  <View style={[
-                    styles.simBadge,
-                    sim.badge === 'hot_deal' ? styles.simBadgeHot : styles.simBadgeVerified
-                  ]}>
+                  <View style={[styles.simBadge, sim.badge === 'hot_deal' ? styles.simBadgeHot : styles.simBadgeVerified]}>
                     {sim.badge === 'verified'
                       ? <MaterialIcons name="verified" size={10} color="#3B82F6" />
                       : <Text style={styles.simBadgeHotText}>HOT</Text>
@@ -331,39 +465,315 @@ export default function PropertyDetailsScreen() {
           </TouchableOpacity>
         </View>
 
-        <View style={{ height: 120 }} />
+        {/* Post-Move Actions */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>After You Decide</Text>
+          <View style={styles.postMoveRow}>
+            <TouchableOpacity
+              style={styles.postMoveBtn}
+              onPress={() => router.push('/rental-agreement')}
+              activeOpacity={0.88}
+            >
+              <View style={[styles.postMoveIcon, { backgroundColor: '#E8F5E9' }]}>
+                <MaterialCommunityIcons name="file-sign" size={20} color="#005C3A" />
+              </View>
+              <Text style={styles.postMoveBtnTitle}>Digital Agreement</Text>
+              <Text style={styles.postMoveBtnSub}>Sign your lease digitally</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.postMoveBtn}
+              onPress={() => router.push('/moving-services')}
+              activeOpacity={0.88}
+            >
+              <View style={[styles.postMoveIcon, { backgroundColor: '#FEF3C7' }]}>
+                <MaterialCommunityIcons name="truck-fast" size={20} color="#92400E" />
+              </View>
+              <Text style={styles.postMoveBtnTitle}>Book a Mover</Text>
+              <Text style={styles.postMoveBtnSub}>Trucks & movers in Addis</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={{ height: 140 }} />
       </ScrollView>
 
-      {/* CTA Footer */}
+      {/* ── CTA Footer ─────────────────────────────────────────────────────── */}
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.chatBtn}
-          onPress={() => router.push('/chat')}
-        >
-          <Feather name="message-circle" size={20} color="#005C3A" />
-          <Text style={styles.chatBtnText}>Chat</Text>
+        {/* Visit Plan Toggle */}
+        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <TouchableOpacity
+            style={[styles.visitPlanBtn, inPlan && styles.visitPlanBtnActive]}
+            onPress={handleVisitToggle}
+          >
+            <MaterialCommunityIcons
+              name={inPlan ? 'calendar-check' : 'calendar-plus'}
+              size={18}
+              color={inPlan ? '#005C3A' : '#6B7280'}
+            />
+            <Text style={[styles.visitPlanBtnText, inPlan && styles.visitPlanBtnTextActive]}>
+              {inPlan ? 'In Plan' : 'Plan Visit'}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+
+        {/* Chat */}
+        <TouchableOpacity style={styles.chatBtn} onPress={() => router.push('/chat')}>
+          <Feather name="message-circle" size={18} color="#005C3A" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.contactBtn} onPress={() => Alert.alert('Call Owner', `Calling ${property.owner.name}...`)}>
-          <Ionicons name="call" size={18} color="#FFF" />
-          <Text style={styles.contactBtnText}>Contact Owner</Text>
-        </TouchableOpacity>
+
+        {/* Contact */}
+        <View style={styles.contactWrapper}>
+          <TouchableOpacity
+            style={[styles.missedCallBtn, missedCallSent && styles.missedCallBtnSent]}
+            onPress={() => {
+              setMissedCallSent(true);
+              Alert.alert('📞 Missed Call Request', `We've sent a missed call request to ${property.owner.name}. They will call you back shortly.`);
+            }}
+            disabled={missedCallSent}
+          >
+            <MaterialCommunityIcons name="phone-missed" size={18} color={missedCallSent ? '#16A34A' : '#DC2626'} />
+            <Text style={[styles.missedCallText, missedCallSent && styles.missedCallTextSent]}>
+              {missedCallSent ? 'Request Sent' : 'Missed Call'}
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.contactBtn}
+            onPress={() => Alert.alert('Call Owner', `Calling ${property.owner.name}...`)}
+          >
+            <Ionicons name="call" size={18} color="#FFF" />
+            <Text style={styles.contactBtnText}>Call Owner</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
 }
 
+// ─── Rent Price Insights Card ─────────────────────────────────────────────────
+function RentInsightsCard({ location, price }: { location: string; price: string }) {
+  const market = MARKET_DATA[location];
+  if (!market) return null;
+
+  const numericPrice = parseInt(price.replace(/,/g, ''), 10);
+  const diff = market.avg - numericPrice;
+  const isCheaper = diff > 0;
+  const diffPct = Math.round(Math.abs(diff) / market.avg * 100);
+
+  const trendIcon = market.trend === 'up' ? 'trending-up' : market.trend === 'down' ? 'trending-down' : 'minus';
+  const trendColor = market.trend === 'up' ? '#DC2626' : market.trend === 'down' ? '#16A34A' : '#6B7280';
+  const trendLabel = market.trend === 'up' ? `Rents rising +${market.trendPct}% this month`
+    : market.trend === 'down' ? `Rents falling −${market.trendPct}% this month`
+    : 'Rents stable this month';
+
+  return (
+    <View style={insightStyles.card}>
+      <View style={insightStyles.headerRow}>
+        <View style={insightStyles.iconWrap}>
+          <MaterialIcons name="bar-chart" size={16} color="#3B82F6" />
+        </View>
+        <Text style={insightStyles.title}>Rent Price Insights</Text>
+        <View style={[insightStyles.trendChip, { backgroundColor: trendColor + '18' }]}>
+          <Feather name={trendIcon} size={11} color={trendColor} />
+          <Text style={[insightStyles.trendText, { color: trendColor }]}>
+            {market.trend === 'stable' ? 'Stable' : `${market.trendPct}%`}
+          </Text>
+        </View>
+      </View>
+
+      {/* Stats Row */}
+      <View style={insightStyles.statsRow}>
+        <View style={insightStyles.statBox}>
+          <Text style={insightStyles.statLabel}>Avg. in {location.split(',')[0]}</Text>
+          <Text style={insightStyles.statValue}>{market.avg.toLocaleString()} ETB</Text>
+        </View>
+        <View style={insightStyles.statDivider} />
+        <View style={insightStyles.statBox}>
+          <Text style={insightStyles.statLabel}>This listing</Text>
+          <Text style={[insightStyles.statValue, { color: isCheaper ? '#16A34A' : '#DC2626' }]}>
+            {price} ETB
+          </Text>
+        </View>
+        <View style={insightStyles.statDivider} />
+        <View style={insightStyles.statBox}>
+          <Text style={insightStyles.statLabel}>vs. Market</Text>
+          <Text style={[insightStyles.statValue, { color: isCheaper ? '#16A34A' : '#DC2626' }]}>
+            {isCheaper ? `−${diffPct}%` : `+${diffPct}%`}
+          </Text>
+        </View>
+      </View>
+
+      {/* Percentile Bar */}
+      <View style={insightStyles.percentileSection}>
+        <Text style={insightStyles.percentileLabel}>
+          {isCheaper
+            ? `✅ Cheaper than ${market.cheaper}% of listings in this area`
+            : `⚠️ Pricier than ${100 - market.cheaper}% of similar listings`}
+        </Text>
+        <View style={insightStyles.barTrack}>
+          <View style={[insightStyles.barFill, { width: `${market.cheaper}%` as any, backgroundColor: isCheaper ? '#16A34A' : '#F59E0B' }]} />
+          <View style={[insightStyles.barMarker, { left: `${market.cheaper}%` as any }]} />
+        </View>
+        <View style={insightStyles.barLabels}>
+          <Text style={insightStyles.barLabelLeft}>Cheapest</Text>
+          <Text style={insightStyles.barLabelRight}>Most Expensive</Text>
+        </View>
+      </View>
+
+      {/* Trend line */}
+      <View style={insightStyles.trendRow}>
+        <Feather name={trendIcon} size={13} color={trendColor} />
+        <Text style={[insightStyles.trendFullText, { color: trendColor }]}>{trendLabel}</Text>
+      </View>
+    </View>
+  );
+}
+
+// ─── Trust Score Card ─────────────────────────────────────────────────────────
+function TrustScoreCard({ trust, trustColor }: { trust: any; trustColor: string }) {
+
+  const barWidth = `${trust.score}%` as any;
+  return (
+    <View style={trustStyles.card}>
+      {/* Header row */}
+      <View style={trustStyles.headerRow}>
+        <View style={trustStyles.shieldWrap}>
+          <MaterialIcons name="shield" size={18} color={trustColor} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={trustStyles.title}>Listing Trust Score</Text>
+          <Text style={[trustStyles.label, { color: trustColor }]}>{getTrustLabel(trust.score)}</Text>
+        </View>
+        <View style={[trustStyles.scoreBubble, { borderColor: trustColor }]}>
+          <Text style={[trustStyles.scoreNum, { color: trustColor }]}>{trust.score}</Text>
+          <Text style={trustStyles.scoreMax}>/100</Text>
+        </View>
+      </View>
+
+      {/* Progress bar */}
+      <View style={trustStyles.barTrack}>
+        <View style={[trustStyles.barFill, { width: barWidth, backgroundColor: trustColor }]} />
+      </View>
+
+      {/* Check items */}
+      <View style={trustStyles.checksRow}>
+        <TrustCheck ok={trust.verifiedPhotos} label="Verified Photos" />
+        <TrustCheck ok={trust.phoneVerified} label="Phone Verified" />
+        <TrustCheck ok={trust.reviewCount >= 10} label={`${trust.reviewCount} Reviews`} />
+      </View>
+
+      {/* Footer info */}
+      <View style={trustStyles.footerRow}>
+        <View style={trustStyles.footerItem}>
+          <Feather name="clock" size={11} color="#6B7280" />
+          <Text style={trustStyles.footerText}>{trust.recentlyVerified}</Text>
+        </View>
+        {trust.reportCount > 0 && (
+          <View style={trustStyles.warnChip}>
+            <Feather name="alert-triangle" size={11} color="#DC2626" />
+            <Text style={trustStyles.warnText}>{trust.reportCount} report{trust.reportCount > 1 ? 's' : ''} filed</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+function TrustCheck({ ok, label }: { ok: boolean; label: string }) {
+  return (
+    <View style={trustStyles.checkItem}>
+      <View style={[trustStyles.checkIcon, ok ? trustStyles.checkOk : trustStyles.checkFail]}>
+        <Feather name={ok ? 'check' : 'x'} size={10} color="#FFF" />
+      </View>
+      <Text style={trustStyles.checkLabel}>{label}</Text>
+    </View>
+  );
+}
+
+// ─── Neighborhood Card ────────────────────────────────────────────────────────
+function NeighborhoodCard({ hood }: { hood: any }) {
+  const safetyColor = hood.safety >= 4 ? '#16A34A' : hood.safety >= 3 ? '#F59E0B' : '#DC2626';
+  const noiseColor = hood.noise <= 2 ? '#16A34A' : hood.noise <= 3 ? '#F59E0B' : '#DC2626';
+  const floodColor = hood.floodRisk === 'Low' ? '#16A34A' : hood.floodRisk === 'Moderate' ? '#F59E0B' : '#DC2626';
+
+  return (
+    <View style={hoodStyles.card}>
+      <View style={hoodStyles.headerRow}>
+        <View style={hoodStyles.iconWrap}>
+          <Ionicons name="map" size={16} color="#005C3A" />
+        </View>
+        <Text style={hoodStyles.title}>Neighborhood Intelligence</Text>
+      </View>
+      <Text style={hoodStyles.subtitle}>Know the area before you move in</Text>
+
+      {/* Metrics Grid */}
+      <View style={hoodStyles.metricsGrid}>
+        <HoodMetric
+          icon="shield-checkmark-outline"
+          label="Safety"
+          value={`${hood.safety}/5`}
+          color={safetyColor}
+          fill={hood.safety / 5}
+        />
+        <HoodMetric
+          icon="volume-medium-outline"
+          label="Noise Level"
+          value={noiseLabel(hood.noise)}
+          color={noiseColor}
+          fill={hood.noise / 5}
+        />
+        <HoodMetric
+          icon="car-outline"
+          label="Road Access"
+          value={hood.roadAccess}
+          color="#3B82F6"
+          fill={hood.roadAccess === 'Asphalt' ? 1 : 0.5}
+        />
+        <HoodMetric
+          icon="water-outline"
+          label="Flood Risk"
+          value={hood.floodRisk}
+          color={floodColor}
+          fill={hood.floodRisk === 'Low' ? 0.2 : hood.floodRisk === 'Moderate' ? 0.55 : 0.9}
+        />
+      </View>
+
+      {/* Tags */}
+      <View style={hoodStyles.tagsRow}>
+        {hood.tags.map((tag: string, i: number) => (
+          <View key={i} style={hoodStyles.tag}>
+            <Text style={hoodStyles.tagText}>{tag}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function HoodMetric({ icon, label, value, color, fill }: any) {
+  return (
+    <View style={hoodStyles.metric}>
+      <Ionicons name={icon} size={20} color={color} />
+      <Text style={hoodStyles.metricLabel}>{label}</Text>
+      <Text style={[hoodStyles.metricValue, { color }]}>{value}</Text>
+      {/* mini bar */}
+      <View style={hoodStyles.miniBarTrack}>
+        <View style={[hoodStyles.miniBarFill, { width: `${Math.round(fill * 100)}%` as any, backgroundColor: color }]} />
+      </View>
+    </View>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#FFF' },
-  imageWrapper: { width, height: 320, position: 'relative' },
-  carouselImage: { width, height: 320 },
+  imageWrapper: { width, height: 300, position: 'relative' },
+  carouselImage: { width, height: 300 },
   dotsRow: {
     position: 'absolute', bottom: 16,
     flexDirection: 'row', alignSelf: 'center',
   },
-  dot: {
-    width: 6, height: 6, borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3,
-  },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
   dotActive: { backgroundColor: '#FFF', width: 18 },
   overlayButtons: {
     position: 'absolute', top: 0, left: 0, right: 0,
@@ -374,16 +784,13 @@ const styles = StyleSheet.create({
   overlayBtn: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: 'rgba(255,255,255,0.92)',
-    justifyContent: 'center', alignItems: 'center',
-    marginLeft: 8,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
+    justifyContent: 'center', alignItems: 'center', marginLeft: 8,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 3,
   },
   verifiedBadge: {
     position: 'absolute', bottom: 40, left: 16,
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 5,
-    borderRadius: 10,
+    backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
   },
   verifiedText: { fontSize: 9, fontWeight: '800', color: '#1A1A1A', marginLeft: 4 },
   hotDealBadge: {
@@ -391,6 +798,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#DC2626', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
   },
   hotDealText: { fontSize: 9, fontWeight: '800', color: '#FFF' },
+
+  trustChipOnImage: {
+    position: 'absolute', bottom: 40, right: 16,
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
+  },
+  trustChipText: { fontSize: 9, fontWeight: '800', color: '#FFF', marginLeft: 4 },
+
   scrollContent: { paddingHorizontal: 20 },
   titleSection: { paddingTop: 24, marginBottom: 20 },
   titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
@@ -401,6 +816,7 @@ const styles = StyleSheet.create({
   price: { fontSize: 26, fontWeight: '900', color: '#005C3A' },
   priceUnit: { fontSize: 14, fontWeight: '700' },
   priceDesc: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
+
   statsRow: {
     flexDirection: 'row', backgroundColor: '#F7F8F9',
     borderRadius: 20, paddingVertical: 18, paddingHorizontal: 12,
@@ -410,13 +826,10 @@ const styles = StyleSheet.create({
   statDivider: { width: 1, height: 40, backgroundColor: '#E5E7EB' },
   statValue: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginTop: 6 },
   statLabel: { fontSize: 10, color: '#6B7280', marginTop: 2 },
+
   section: { marginBottom: 28 },
-  sectionLabel: {
-    fontSize: 16, fontWeight: '800', color: '#1A1A1A', marginBottom: 14,
-  },
-  descriptionText: {
-    fontSize: 14, color: '#4A5568', lineHeight: 22,
-  },
+  sectionLabel: { fontSize: 16, fontWeight: '800', color: '#1A1A1A', marginBottom: 14 },
+  descriptionText: { fontSize: 14, color: '#4A5568', lineHeight: 22 },
   utilitiesGrid: { flexDirection: 'row', flexWrap: 'wrap' },
   utilityChip: {
     flexDirection: 'row', alignItems: 'center',
@@ -427,10 +840,7 @@ const styles = StyleSheet.create({
   utilityChipText: { fontSize: 12, fontWeight: '700', color: '#005C3A', marginLeft: 6 },
   utilityChipTextOff: { color: '#9CA3AF' },
   termsRow: { flexDirection: 'row' },
-  termBox: {
-    flex: 1, backgroundColor: '#F7F8F9', borderRadius: 16,
-    padding: 16, marginRight: 10,
-  },
+  termBox: { flex: 1, backgroundColor: '#F7F8F9', borderRadius: 16, padding: 16, marginRight: 10 },
   termLabel: { fontSize: 10, color: '#6B7280', marginBottom: 6 },
   termValue: { fontSize: 14, fontWeight: '800', color: '#1A1A1A' },
   ownerCard: {
@@ -445,52 +855,13 @@ const styles = StyleSheet.create({
   ownerSince: { fontSize: 11, color: '#6B7280', marginBottom: 6 },
   ownerRatingRow: { flexDirection: 'row', alignItems: 'center' },
   ownerRating: { fontSize: 11, color: '#4A5568', marginLeft: 4, fontWeight: '600' },
-  footer: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFF', paddingHorizontal: 20, paddingVertical: 16,
-    borderTopWidth: 1, borderTopColor: '#F3F4F6',
-    paddingBottom: 28,
-  },
-  chatBtn: {
-    flexDirection: 'row', alignItems: 'center',
-    borderWidth: 2, borderColor: '#005C3A',
-    borderRadius: 16, paddingVertical: 14, paddingHorizontal: 20,
-    marginRight: 12,
-  },
-  chatBtnText: { fontSize: 14, fontWeight: '700', color: '#005C3A', marginLeft: 6 },
-  contactBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#005C3A', borderRadius: 16, paddingVertical: 14,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
-  },
-  contactBtnText: { fontSize: 14, fontWeight: '800', color: '#FFF', marginLeft: 8 },
-  reportBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#FCA5A5',
-    borderRadius: 12,
-    backgroundColor: '#FEF2F2',
-  },
-  reportBtnText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#DC2626',
-    marginLeft: 8,
-  },
-  // AI Similar Homes
   aiLabelRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   aiSub: { fontSize: 12, color: '#6B7280', marginBottom: 14 },
   similarRow: { paddingBottom: 4 },
   simCard: {
     width: 160, backgroundColor: '#FFF', borderRadius: 16, marginRight: 14,
     overflow: 'hidden',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 8, elevation: 3,
   },
   simImageWrap: { width: '100%', height: 100, position: 'relative' },
   simImage: { width: '100%', height: '100%' },
@@ -508,4 +879,224 @@ const styles = StyleSheet.create({
   simLocation: { fontSize: 10, color: '#4A5568', marginLeft: 2 },
   simPrice: { fontSize: 12, fontWeight: '900', color: '#005C3A' },
   simPriceUnit: { fontSize: 9, fontWeight: '500', color: '#6B7280' },
+  reportBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 12, borderWidth: 1, borderColor: '#FCA5A5',
+    borderRadius: 12, backgroundColor: '#FEF2F2',
+  },
+  reportBtnText: { fontSize: 13, fontWeight: '700', color: '#DC2626', marginLeft: 8 },
+
+  // Post-Move Actions
+  postMoveRow: { flexDirection: 'row', gap: 12 },
+  postMoveBtn: {
+    flex: 1, backgroundColor: '#FFF', borderRadius: 18, padding: 16, alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
+  },
+  postMoveIcon: {
+    width: 48, height: 48, borderRadius: 24,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 10,
+  },
+  postMoveBtnTitle: { fontSize: 13, fontWeight: '800', color: '#1A1A1A', marginBottom: 3, textAlign: 'center' },
+  postMoveBtnSub: { fontSize: 11, color: '#6B7280', textAlign: 'center' },
+
+  overlayBtnActive: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#005C3A',
+  },
+  offlineMapBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F5E9',
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 24,
+    gap: 12,
+  },
+  offlineMapIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  offlineMapTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#005C3A',
+  },
+  offlineMapSub: {
+    fontSize: 11,
+    color: '#4A5568',
+  },
+  contactWrapper: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 10,
+  },
+  missedCallBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFF',
+    borderWidth: 1.5,
+    borderColor: '#FCA5A5',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    gap: 6,
+  },
+  missedCallBtnSent: {
+    borderColor: '#86EFAC',
+    backgroundColor: '#F0FDF4',
+  },
+  missedCallText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#DC2626',
+  },
+  missedCallTextSent: {
+    color: '#16A34A',
+  },
+
+  // Footer
+  footer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#FFF', paddingHorizontal: 20, paddingVertical: 14,
+    borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingBottom: 28,
+  },
+  visitPlanBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    borderWidth: 1.5, borderColor: '#E5E7EB',
+    borderRadius: 14, paddingVertical: 12, paddingHorizontal: 14,
+    backgroundColor: '#F7F8F9',
+  },
+  visitPlanBtnActive: {
+    borderColor: '#005C3A', backgroundColor: '#E8F5E9',
+  },
+  visitPlanBtnText: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
+  visitPlanBtnTextActive: { color: '#005C3A' },
+  chatBtn: {
+    width: 46, height: 46, borderRadius: 23,
+    borderWidth: 1.5, borderColor: '#005C3A',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  contactBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    backgroundColor: '#005C3A', borderRadius: 14, paddingVertical: 14,
+    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
+  },
+  contactBtnText: { fontSize: 14, fontWeight: '800', color: '#FFF' },
+});
+
+// ─── Trust Card Styles ────────────────────────────────────────────────────────
+const trustStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFF', borderRadius: 20, padding: 18, marginBottom: 24,
+    borderWidth: 1, borderColor: '#E5E7EB',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
+  },
+  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  shieldWrap: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: '#F7F8F9', justifyContent: 'center', alignItems: 'center', marginRight: 12,
+  },
+  title: { fontSize: 14, fontWeight: '800', color: '#1A1A1A' },
+  label: { fontSize: 12, fontWeight: '700', marginTop: 1 },
+  scoreBubble: {
+    borderWidth: 2, borderRadius: 14,
+    paddingHorizontal: 10, paddingVertical: 4,
+    flexDirection: 'row', alignItems: 'baseline',
+  },
+  scoreNum: { fontSize: 20, fontWeight: '900' },
+  scoreMax: { fontSize: 10, color: '#6B7280', marginLeft: 1 },
+  barTrack: { height: 8, backgroundColor: '#F3F4F6', borderRadius: 4, marginBottom: 16 },
+  barFill: { height: 8, borderRadius: 4 },
+  checksRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
+  checkItem: { alignItems: 'center', flex: 1 },
+  checkIcon: { width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 5 },
+  checkOk: { backgroundColor: '#16A34A' },
+  checkFail: { backgroundColor: '#DC2626' },
+  checkLabel: { fontSize: 10, color: '#4A5568', fontWeight: '600', textAlign: 'center' },
+  footerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  footerItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  footerText: { fontSize: 11, color: '#6B7280' },
+  warnChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: '#FEF2F2', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
+  },
+  warnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
+});
+
+// ─── Neighborhood Styles ──────────────────────────────────────────────────────
+const hoodStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#F0FDF4', borderRadius: 20, padding: 18, marginBottom: 28,
+    borderWidth: 1, borderColor: '#D1FAE5',
+  },
+  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  iconWrap: {
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: '#D1FAE5', justifyContent: 'center', alignItems: 'center', marginRight: 10,
+  },
+  title: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
+  subtitle: { fontSize: 12, color: '#4A5568', marginBottom: 18, marginLeft: 40 },
+  metricsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 16 },
+  metric: {
+    width: (width - 80) / 2,
+    backgroundColor: '#FFF', borderRadius: 14, padding: 14,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 1,
+  },
+  metricLabel: { fontSize: 11, color: '#6B7280', marginTop: 6, marginBottom: 3 },
+  metricValue: { fontSize: 13, fontWeight: '800' },
+  miniBarTrack: { height: 4, backgroundColor: '#F3F4F6', borderRadius: 2, marginTop: 8 },
+  miniBarFill: { height: 4, borderRadius: 2 },
+  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tag: {
+    backgroundColor: '#FFF', borderWidth: 1, borderColor: '#D1FAE5',
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+  },
+  tagText: { fontSize: 11, fontWeight: '700', color: '#005C3A' },
+});
+
+// ─── Rent Insights Styles ─────────────────────────────────────────────────────
+const insightStyles = StyleSheet.create({
+  card: {
+    backgroundColor: '#EFF6FF', borderRadius: 20, padding: 18, marginBottom: 24,
+    borderWidth: 1, borderColor: '#BFDBFE',
+  },
+  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  iconWrap: {
+    width: 30, height: 30, borderRadius: 15,
+    backgroundColor: '#DBEAFE', justifyContent: 'center', alignItems: 'center', marginRight: 10,
+  },
+  title: { fontSize: 15, fontWeight: '800', color: '#1A1A1A', flex: 1 },
+  trendChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
+  },
+  trendText: { fontSize: 11, fontWeight: '800' },
+  statsRow: {
+    flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 14,
+    paddingVertical: 14, paddingHorizontal: 12, marginBottom: 16,
+    alignItems: 'center',
+  },
+  statBox: { flex: 1, alignItems: 'center' },
+  statLabel: { fontSize: 9, color: '#6B7280', fontWeight: '600', marginBottom: 4, textAlign: 'center' },
+  statValue: { fontSize: 14, fontWeight: '900', color: '#1A1A1A', textAlign: 'center' },
+  statDivider: { width: 1, height: 32, backgroundColor: '#E5E7EB' },
+  percentileSection: { marginBottom: 12 },
+  percentileLabel: { fontSize: 12, fontWeight: '700', color: '#1E40AF', marginBottom: 10 },
+  barTrack: { height: 8, backgroundColor: '#DBEAFE', borderRadius: 4, position: 'relative', marginBottom: 6 },
+  barFill: { height: 8, borderRadius: 4 },
+  barMarker: {
+    position: 'absolute', top: -3, width: 14, height: 14, borderRadius: 7,
+    backgroundColor: '#1D4ED8', borderWidth: 2, borderColor: '#FFF', marginLeft: -7,
+  },
+  barLabels: { flexDirection: 'row', justifyContent: 'space-between' },
+  barLabelLeft: { fontSize: 10, color: '#6B7280' },
+  barLabelRight: { fontSize: 10, color: '#6B7280' },
+  trendRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  trendFullText: { fontSize: 12, fontWeight: '700' },
 });

@@ -1,16 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
-import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { useVisitPlan } from '@/context/VisitPlanContext';
 
 export default function SavedScreen() {
+  const { visits } = useVisitPlan();
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <TouchableOpacity hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-          <Feather name="menu" size={24} color="#1A1A1A" />
-        </TouchableOpacity>
+        <View style={{ width: 24 }} />
         <Text style={styles.headerTitle}>Saved</Text>
         <TouchableOpacity hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
           <Feather name="more-vertical" size={24} color="#1A1A1A" />
@@ -24,6 +25,54 @@ export default function SavedScreen() {
             Keep track of the properties you love. You have 4 saved rentals in Addis Ababa.
           </Text>
         </View>
+
+        {/* Visit Planner Banner */}
+        <TouchableOpacity
+          style={styles.plannerBanner}
+          activeOpacity={0.88}
+          onPress={() => router.push('/visit-planner')}
+        >
+          <View style={styles.plannerLeft}>
+            <View style={styles.plannerIconWrap}>
+              <MaterialCommunityIcons name="calendar-check" size={20} color="#FFF" />
+            </View>
+            <View>
+              <Text style={styles.plannerTitle}>Visit Planner</Text>
+              <Text style={styles.plannerSub}>
+                {visits.length === 0
+                  ? 'Plan your property visits for the day'
+                  : `${visits.length} propert${visits.length === 1 ? 'y' : 'ies'} in your plan`
+                }
+              </Text>
+            </View>
+          </View>
+          <View style={styles.plannerRight}>
+            {visits.length > 0 && (
+              <View style={styles.plannerBadge}>
+                <Text style={styles.plannerBadgeText}>{visits.length}</Text>
+              </View>
+            )}
+            <Feather name="chevron-right" size={18} color="#005C3A" />
+          </View>
+        </TouchableOpacity>
+
+        {/* Offline Map Banner */}
+        <TouchableOpacity
+          style={styles.offlineMapEntrance}
+          activeOpacity={0.88}
+          onPress={() => router.push('/offline-maps')}
+        >
+          <View style={styles.offlineLeft}>
+            <View style={styles.offlineIconBox}>
+              <Ionicons name="map" size={18} color="#FFF" />
+            </View>
+            <View>
+              <Text style={styles.offlineTitle}>Offline Map Pins</Text>
+              <Text style={styles.offlineSub}>View saved house locations without data</Text>
+            </View>
+          </View>
+          <Feather name="chevron-right" size={18} color="#005C3A" />
+        </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.92} onPress={() => router.push({ pathname: '/property-details', params: { id: '1' } })}>
           <SavedCard 
@@ -273,5 +322,100 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     color: '#1A1A1A',
+  },
+  // Visit Planner Banner
+  plannerBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#FFF',
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: '#D1FAE5',
+    shadowColor: '#005C3A',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 2,
+  },
+  plannerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  plannerIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#005C3A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  plannerTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1A1A1A',
+    marginBottom: 2,
+  },
+  plannerSub: {
+    fontSize: 11,
+    color: '#4A5568',
+    fontWeight: '500',
+  },
+  plannerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  plannerBadge: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: '#005C3A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  plannerBadgeText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#FFF',
+  },
+  // Offline Map Entrance
+  offlineMapEntrance: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#E8F5E9',
+    borderRadius: 18,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1.5,
+    borderColor: '#005C3A',
+  },
+  offlineLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  offlineIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: '#005C3A',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  offlineTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1A1A1A',
+  },
+  offlineSub: {
+    fontSize: 11,
+    color: '#4A5568',
+    fontWeight: '500',
   },
 });

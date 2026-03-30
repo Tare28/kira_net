@@ -1,12 +1,41 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Switch, Modal, FlatList, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+
+const LOCATIONS = ['Bole', 'Kazanchis', 'Piazza', 'CMC', 'Megenagna', 'Sarbet', 'Ayat'];
 
 export default function ListPropertyScreen() {
   const [waterStatus, setWaterStatus] = useState('Yes');
   const [electricType, setElectricType] = useState('Private');
   const [internetType, setInternetType] = useState('Available');
+
+  const [images, setImages] = useState<string[]>([]);
+  const [location, setLocation] = useState('Select Location');
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setImages([...images, result.assets[0].uri]);
+    }
+  };
+
+  const submitListing = () => {
+    Alert.alert('Success', 'Property listing submitted successfully!', [
+      { text: 'OK', onPress: () => router.back() }
+    ]);
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -24,7 +53,7 @@ export default function ListPropertyScreen() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           {/* Property Media */}
           <Text style={styles.sectionTitle}>Property Media</Text>
-          <TouchableOpacity style={styles.uploadArea}>
+          <TouchableOpacity style={styles.uploadArea} onPress={pickImage}>
             <View style={styles.uploadIconWrap}>
               <MaterialIcons name="camera-alt" size={24} color="#005C3A" />
               <View style={styles.plusOverlay}>
@@ -35,16 +64,18 @@ export default function ListPropertyScreen() {
             <Text style={styles.uploadSubtitle}>Add up to 10 high-quality images</Text>
           </TouchableOpacity>
 
-          <View style={styles.mediaThumbnailsRow}>
-            {[1, 2, 3].map((item) => (
-              <View key={item} style={styles.mediaThumbnail}>
-                <Feather name="image" size={16} color="#6B7280" />
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row', marginBottom: 12 }}>
+            {images.map((uri, idx) => (
+              <View key={idx} style={[styles.mediaThumbnail, { width: 80, height: 80, marginRight: 12 }]}>
+                <Image source={uri} style={{ width: '100%', height: '100%', borderRadius: 8 }} contentFit="cover" />
               </View>
             ))}
-            <TouchableOpacity style={styles.mediaAddThumbnail}>
-              <Feather name="plus" size={18} color="#6B7280" />
-            </TouchableOpacity>
-          </View>
+            {images.length < 10 && (
+              <TouchableOpacity style={[styles.mediaAddThumbnail, { width: 80, height: 80 }]} onPress={pickImage}>
+                <Feather name="plus" size={24} color="#6B7280" />
+              </TouchableOpacity>
+            )}
+          </ScrollView>
 
           {/* Basic Information */}
           <Text style={[styles.sectionTitle, { marginTop: 32 }]}>Basic Information</Text>
@@ -61,8 +92,11 @@ export default function ListPropertyScreen() {
           </View>
 
           <Text style={styles.inputLabel}>District / Sub-city</Text>
-          <TouchableOpacity style={[styles.inputContainer, { justifyContent: 'space-between' }]}>
-            <Text style={{ color: '#6B7280', fontSize: 13, fontWeight: '500' }}>Select Location</Text>
+          <TouchableOpacity 
+            style={[styles.inputContainer, { justifyContent: 'space-between' }]}
+            onPress={() => setShowLocationModal(true)}
+          >
+            <Text style={{ color: location === 'Select Location' ? '#6B7280' : '#1A1A1A', fontSize: 13, fontWeight: '500' }}>{location}</Text>
             <Feather name="chevron-down" size={18} color="#6B7280" />
           </TouchableOpacity>
 
@@ -163,12 +197,17 @@ export default function ListPropertyScreen() {
               Our team will visit to inspect and add the Verified badge to your listing. This increases tenant trust by up to 80%.
             </Text>
             <View style={styles.verifySwitchPosition}>
-              <View style={styles.verifySwitchBg} />
+              <Switch 
+                value={isVerified} 
+                onValueChange={setIsVerified}
+                trackColor={{ false: '#E2E8F0', true: '#005C3A' }}
+                thumbColor="#FFF"
+              />
             </View>
           </View>
 
           {/* Submit Button */}
-          <TouchableOpacity style={styles.submitButton}>
+          <TouchableOpacity style={styles.submitButton} onPress={submitListing}>
             <Text style={styles.submitButtonText}>Submit Listing</Text>
             <Ionicons name="send" size={14} color="#FFF" style={{ marginLeft: 6 }} />
           </TouchableOpacity>
@@ -183,11 +222,41 @@ export default function ListPropertyScreen() {
             <Feather name="x" size={18} color="#4A5568" />
             <Text style={styles.cancelText}>Cancel</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.saveDraftBtn}>
+          <TouchableOpacity style={styles.saveDraftBtn} onPress={() => Alert.alert('Saved', 'Draft saved successfully!')}>
             <Ionicons name="save-outline" size={16} color="#1A1A1A" />
             <Text style={styles.saveDraftText}>Save Draft</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Location Modal */}
+        <Modal visible={showLocationModal} animationType="fade" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Select District</Text>
+                <TouchableOpacity onPress={() => setShowLocationModal(false)} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+                  <Feather name="x" size={24} color="#1A1A1A" />
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={LOCATIONS}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity 
+                    style={styles.locationItem}
+                    onPress={() => {
+                      setLocation(item);
+                      setShowLocationModal(false);
+                    }}
+                  >
+                    <Text style={styles.locationItemText}>{item}</Text>
+                    {location === item && <Feather name="check" size={20} color="#005C3A" />}
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -486,5 +555,42 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1A1A1A',
     marginLeft: 8,
+  },
+  locationItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  locationItemText: {
+    fontSize: 15,
+    color: '#1A1A1A',
+    fontWeight: '500',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 24,
+    paddingBottom: 40,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#1A1A1A',
   },
 });

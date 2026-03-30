@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
+  View, Text, StyleSheet, TouchableOpacity,
   Dimensions, ScrollView, Animated
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 

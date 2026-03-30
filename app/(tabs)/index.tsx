@@ -1,19 +1,73 @@
-import React, { useState } from 'react';
-import { StyleSheet, Platform, Dimensions, ScrollView, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+  StyleSheet, Dimensions, ScrollView, View, Text,
+  TextInput, TouchableOpacity, Animated,
+} from 'react-native';
 import { Image } from 'expo-image';
-import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useVisitPlan } from '@/context/VisitPlanContext';
+
+const { width } = Dimensions.get('window');
+
+// Trust score colors (same logic as property-details)
+function trustColor(score: number) {
+  if (score >= 85) return '#16A34A';
+  if (score >= 60) return '#F59E0B';
+  return '#DC2626';
+}
 
 const PROPERTIES = [
-  { id: '1', category: 'apartments', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=600&auto=format&fit=crop', badge: 'verified', title: 'The Summit Residency', location: 'Bole, Addis Ababa', price: '25,000', utils: ['Included', 'Prepaid', 'Fiber Optic'] },
-  { id: '2', category: 'villas', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=600&auto=format&fit=crop', badge: 'hot_deal', title: 'Modern Garden Villa', location: 'Old Airport, Addis Ababa', price: '45,000', utils: ['Included', 'Included', 'Available'] },
-  { id: '3', category: 'studios', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop', badge: 'verified', title: 'Kazanchis Studio', location: 'Kazanchis, Addis Ababa', price: '18,500', utils: ['Tanker', 'Prepaid', 'High Speed'] },
+  {
+    id: '1',
+    category: 'apartments',
+    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=700&auto=format&fit=crop',
+    badge: 'verified',
+    title: 'The Summit Residency',
+    location: 'Bole, Addis Ababa',
+    price: '25,000',
+    utils: ['Constant Water', 'Private Meter', 'Fiber Optic'],
+    trust: 91,
+    hood: { safety: 4, noise: 2, tags: ['Business Hub', 'Near Airport'] },
+  },
+  {
+    id: '2',
+    category: 'villas',
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=700&auto=format&fit=crop',
+    badge: 'hot_deal',
+    title: 'Modern Garden Villa',
+    location: 'Old Airport, Addis Ababa',
+    price: '45,000',
+    utils: ['Tanker Water', 'Shared Meter', 'Available'],
+    trust: 64,
+    hood: { safety: 3, noise: 3, tags: ['Family-Friendly', 'Near Schools'] },
+  },
+  {
+    id: '3',
+    category: 'studios',
+    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=700&auto=format&fit=crop',
+    badge: 'verified',
+    title: 'Kazanchis Studio',
+    location: 'Kazanchis, Addis Ababa',
+    price: '18,500',
+    utils: ['Constant Water', 'Prepaid', 'High Speed'],
+    trust: 97,
+    hood: { safety: 3, noise: 5, tags: ['Popular for Students', 'Very Central'] },
+  },
+];
+
+const CATEGORIES = [
+  { key: 'all', label: 'All Homes' },
+  { key: 'studios', label: 'Studio' },
+  { key: 'apartments', label: '1 Bedroom' },
+  { key: 'villas', label: '2 Bedrooms' },
 ];
 
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState('all');
+  const { visits } = useVisitPlan();
 
   const filtered = activeCategory === 'all'
     ? PROPERTIES
@@ -21,40 +75,60 @@ export default function ExploreScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) }]}>
-      {/* Header */}
+
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <View style={styles.header}>
-        <TouchableOpacity hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} onPress={() => router.push('/menu')}>
-          <Feather name="menu" size={24} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.logoText}>Kira-Net</Text>
         <TouchableOpacity
-          hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-          onPress={() => router.push('/(tabs)/alerts')}
-          style={styles.bellWrap}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          onPress={() => router.push('/boost-listing')}
         >
-          <Feather name="bell" size={24} color="#005C3A" />
-          <View style={styles.notifBadge}>
-            <Text style={styles.notifBadgeText}>3</Text>
-          </View>
+          <Feather name="zap" size={24} color="#F59E0B" />
         </TouchableOpacity>
+
+        <Text style={styles.logoText}>Kira-Net</Text>
+
+        <View style={styles.headerRight}>
+          {/* Visit Planner shortcut */}
+          <TouchableOpacity
+            style={styles.plannerHeaderBtn}
+            onPress={() => router.push('/visit-planner')}
+          >
+            <MaterialCommunityIcons name="calendar-check" size={20} color="#005C3A" />
+            {visits.length > 0 && (
+              <View style={styles.plannerBadge}>
+                <Text style={styles.plannerBadgeText}>{visits.length}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* Bell */}
+          <TouchableOpacity
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            onPress={() => router.push('/(tabs)/alerts')}
+            style={styles.bellWrap}
+          >
+            <Feather name="bell" size={24} color="#005C3A" />
+            <View style={styles.notifBadge}>
+              <Text style={styles.notifBadgeText}>3</Text>
+            </View>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {/* Title */}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+
+        {/* ── Hero ─────────────────────────────────────────────────────────── */}
         <View style={styles.titleSection}>
           <Text style={styles.headline}>Find your</Text>
           <Text style={styles.headline}>sanctuary</Text>
           <Text style={styles.headlineGreen}>in Addis.</Text>
         </View>
 
-        {/* Search & Filter */}
+        {/* ── Search & Filter ──────────────────────────────────────────────── */}
         <View style={styles.searchSection}>
           <View style={styles.searchInputContainer}>
             <Feather name="search" size={18} color="#6B7280" style={styles.searchIcon} />
-            <TextInput 
+            <TextInput
               placeholder="Search by location or price"
               placeholderTextColor="#6B7280"
               style={styles.searchInput}
@@ -66,25 +140,43 @@ export default function ExploreScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Categories */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesRow}>
-          {[{key:'all',label:'All Homes'},{key:'studios',label:'Studio'},{key:'apartments',label:'1 Bedroom'},{key:'villas',label:'2 Bedrooms'}].map(cat => (
+        {/* ── Visit Planner CTA Banner (shows when plan has items) ─────────── */}
+        {visits.length > 0 && (
+          <TouchableOpacity
+            style={styles.plannerStrip}
+            activeOpacity={0.88}
+            onPress={() => router.push('/visit-planner')}
+          >
+            <MaterialCommunityIcons name="map-marker-path" size={18} color="#FFF" />
+            <Text style={styles.plannerStripText}>
+              {visits.length} propert{visits.length === 1 ? 'y' : 'ies'} in your Visit Plan — tap to view route
+            </Text>
+            <Feather name="chevron-right" size={16} color="rgba(255,255,255,0.7)" />
+          </TouchableOpacity>
+        )}
+
+        {/* ── Categories ───────────────────────────────────────────────────── */}
+        <ScrollView
+          horizontal showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.categoriesRow}
+        >
+          {CATEGORIES.map(cat => (
             <TouchableOpacity
               key={cat.key}
               style={[styles.categoryPill, activeCategory === cat.key && styles.categoryPillActive]}
               onPress={() => setActiveCategory(cat.key)}
             >
-              <Text style={activeCategory === cat.key ? styles.categoryPillTextActive : styles.categoryPillText}>{cat.label}</Text>
+              <Text style={activeCategory === cat.key ? styles.categoryPillTextActive : styles.categoryPillText}>
+                {cat.label}
+              </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        {/* Property Listings */}
+        {/* ── Listings ─────────────────────────────────────────────────────── */}
         <View style={styles.listingsContainer}>
           {filtered.map(p => (
-            <TouchableOpacity key={p.id} activeOpacity={0.95} onPress={() => router.push({ pathname: '/property-details', params: { id: p.id } })}>
-              <PropertyCard image={p.image} badge={p.badge} title={p.title} location={p.location} price={p.price} utils={p.utils} />
-            </TouchableOpacity>
+            <PropertyCard key={p.id} property={p} />
           ))}
           {filtered.length === 0 && (
             <View style={styles.emptyState}>
@@ -95,7 +187,7 @@ export default function ExploreScreen() {
         </View>
       </ScrollView>
 
-      {/* Floating Action Button */}
+      {/* ── FAB ─────────────────────────────────────────────────────────────── */}
       <TouchableOpacity style={styles.fab} onPress={() => router.push('/list-property')}>
         <Feather name="plus" size={24} color="#FFF" />
       </TouchableOpacity>
@@ -103,329 +195,326 @@ export default function ExploreScreen() {
   );
 }
 
-function PropertyCard({ image, badge, title, location, price, utils }: any) {
+// ─── Property Card ─────────────────────────────────────────────────────────────
+function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
+  const { addVisit, removeVisit, isInPlan } = useVisitPlan();
+  const inPlan = isInPlan(property.id);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const color = trustColor(property.trust);
+
+  const handleVisit = () => {
+    Animated.sequence([
+      Animated.spring(scaleAnim, { toValue: 0.9, useNativeDriver: true }),
+      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }),
+    ]).start();
+    if (inPlan) {
+      removeVisit(property.id);
+    } else {
+      addVisit({
+        id: property.id,
+        title: property.title,
+        location: property.location,
+        price: property.price,
+        image: property.image,
+      });
+    }
+  };
+
   return (
     <View style={styles.card}>
-      <View style={styles.imageContainer}>
-        <Image source={image} style={styles.cardImage} />
-        
-        {/* Badges */}
-        {badge === 'verified' && (
-          <View style={styles.verifiedBadge}>
-            <MaterialIcons name="verified" size={12} color="#3B82F6" />
-            <Text style={styles.verifiedText}>VERIFIED</Text>
-          </View>
-        )}
-        {badge === 'hot_deal' && (
-          <View style={styles.hotDealBadge}>
-            <Text style={styles.hotDealText}>HOT DEAL</Text>
-          </View>
-        )}
-        
-        {/* Heart */}
-        <TouchableOpacity style={styles.heartBtn}>
-          <Ionicons name="heart" size={20} color="#FFF" />
-        </TouchableOpacity>
-      </View>
+      {/* Image Block */}
+      <TouchableOpacity
+        activeOpacity={0.95}
+        onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
+      >
+        <View style={styles.imageContainer}>
+          <Image source={property.image} style={styles.cardImage} />
 
+          {/* Badge */}
+          {property.badge === 'verified' && (
+            <View style={styles.verifiedBadge}>
+              <MaterialIcons name="verified" size={12} color="#3B82F6" />
+              <Text style={styles.verifiedText}>VERIFIED</Text>
+            </View>
+          )}
+          {property.badge === 'hot_deal' && (
+            <View style={styles.hotDealBadge}>
+              <Text style={styles.hotDealText}>HOT DEAL</Text>
+            </View>
+          )}
+
+          {/* Trust Score Chip */}
+          <View style={[styles.trustChip, { backgroundColor: color }]}>
+            <MaterialIcons name="shield" size={11} color="#FFF" />
+            <Text style={styles.trustChipText}>{property.trust}%</Text>
+          </View>
+
+          {/* Heart / Saved */}
+          <TouchableOpacity style={styles.heartBtn}>
+            <Ionicons name="heart-outline" size={20} color="#FFF" />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+
+      {/* Card Info */}
       <View style={styles.cardInfo}>
-        <View style={styles.titleRow}>
-          <View style={styles.titleLeft}>
-            <Text style={styles.cardTitle}>{title}</Text>
-            <View style={styles.locationRow}>
-              <Ionicons name="location-sharp" size={12} color="#000" />
-              <Text style={styles.locationText}>{location}</Text>
+        {/* Title row */}
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
+        >
+          <View style={styles.titleRow}>
+            <View style={styles.titleLeft}>
+              <Text style={styles.cardTitle}>{property.title}</Text>
+              <View style={styles.locationRow}>
+                <Ionicons name="location-sharp" size={12} color="#4A5568" />
+                <Text style={styles.locationText}>{property.location}</Text>
+              </View>
+            </View>
+            <View style={styles.priceContainer}>
+              <Text style={styles.cardPrice}>
+                {property.price} <Text style={styles.cardPriceUnit}>ETB</Text>
+              </Text>
+              <Text style={styles.cardPriceDesc}>PER MONTH</Text>
             </View>
           </View>
-          <View style={styles.priceContainer}>
-            <Text style={styles.cardPrice}>{price} <Text style={styles.cardPriceUnit}>ETB</Text></Text>
-            <Text style={styles.cardPriceDesc}>PER MONTH</Text>
+        </TouchableOpacity>
+
+        {/* Utilities */}
+        <View style={styles.utilsRow}>
+          <View style={styles.utilItem}>
+            <Ionicons name="water" size={12} color="#4A5568" />
+            <Text style={styles.utilText}>{property.utils[0]}</Text>
+          </View>
+          <View style={styles.utilItem}>
+            <Ionicons name="flash" size={12} color="#4A5568" />
+            <Text style={styles.utilText}>{property.utils[1]}</Text>
+          </View>
+          <View style={styles.utilItem}>
+            <Ionicons name="wifi" size={12} color="#4A5568" />
+            <Text style={styles.utilText}>{property.utils[2]}</Text>
           </View>
         </View>
 
-        <View style={styles.utilsRow}>
-          <View style={styles.utilItem}>
-            <Ionicons name="water" size={12} color="#1A1A1A" />
-            <Text style={styles.utilText}>{utils[0]}</Text>
+        {/* Neighborhood Tags */}
+        <View style={styles.hoodTags}>
+          {property.hood.tags.slice(0, 2).map((t, i) => (
+            <View key={i} style={styles.hoodTag}>
+              <Text style={styles.hoodTagText}>{t}</Text>
+            </View>
+          ))}
+          {/* Noise indicator */}
+          <View style={[styles.hoodTag, styles.noiseTag]}>
+            <Ionicons
+              name="volume-medium-outline"
+              size={10}
+              color={property.hood.noise <= 2 ? '#16A34A' : property.hood.noise <= 3 ? '#F59E0B' : '#DC2626'}
+            />
+            <Text style={[
+              styles.hoodTagText,
+              { color: property.hood.noise <= 2 ? '#16A34A' : property.hood.noise <= 3 ? '#F59E0B' : '#DC2626' }
+            ]}>
+              {property.hood.noise <= 2 ? 'Quiet' : property.hood.noise <= 3 ? 'Moderate' : 'Busy'}
+            </Text>
           </View>
-          <View style={styles.utilItem}>
-            <Ionicons name="flash" size={12} color="#1A1A1A" />
-            <Text style={styles.utilText}>{utils[1]}</Text>
-          </View>
-          <View style={styles.utilItem}>
-            <Ionicons name="wifi" size={12} color="#1A1A1A" />
-            <Text style={styles.utilText}>{utils[2]}</Text>
-          </View>
+        </View>
+
+        {/* Action Row */}
+        <View style={styles.cardActions}>
+          <TouchableOpacity
+            style={styles.detailBtn}
+            onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
+          >
+            <Text style={styles.detailBtnText}>View Details</Text>
+            <Feather name="arrow-right" size={14} color="#005C3A" />
+          </TouchableOpacity>
+
+          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+            <TouchableOpacity
+              style={[styles.planBtn, inPlan && styles.planBtnActive]}
+              onPress={handleVisit}
+            >
+              <MaterialCommunityIcons
+                name={inPlan ? 'calendar-check' : 'calendar-plus'}
+                size={16}
+                color={inPlan ? '#FFF' : '#005C3A'}
+              />
+              <Text style={[styles.planBtnText, inPlan && styles.planBtnTextActive]}>
+                {inPlan ? 'In Plan' : 'Plan Visit'}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
         </View>
       </View>
     </View>
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7F8F9',
-  },
+  container: { flex: 1, backgroundColor: '#F7F8F9' },
+
+  // Header
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, marginBottom: 20,
   },
-  logoText: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#005C3A',
-    letterSpacing: -0.5,
+  logoText: { fontSize: 18, fontWeight: '900', color: '#005C3A', letterSpacing: -0.5 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  plannerHeaderBtn: { position: 'relative', padding: 4 },
+  plannerBadge: {
+    position: 'absolute', top: -2, right: -2,
+    width: 16, height: 16, borderRadius: 8,
+    backgroundColor: '#DC2626', justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1.5, borderColor: '#F7F8F9',
   },
+  plannerBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
   bellWrap: { position: 'relative' },
   notifBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -6,
-    backgroundColor: '#DC2626',
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: '#F7F8F9',
+    position: 'absolute', top: -4, right: -6,
+    backgroundColor: '#DC2626', width: 16, height: 16, borderRadius: 8,
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1.5, borderColor: '#F7F8F9',
   },
   notifBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
-  scrollContent: {
-    paddingBottom: 100, // Extra space for FAB and modern footer
-  },
-  titleSection: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
-  headline: {
-    fontSize: 42,
-    fontWeight: '900',
-    color: '#1A1A1A',
-    lineHeight: 46,
-    letterSpacing: -1.5,
-  },
-  headlineGreen: {
-    fontSize: 42,
-    fontWeight: '900',
-    color: '#005C3A',
-    lineHeight: 46,
-    letterSpacing: -1.5,
-  },
-  searchSection: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
+
+  scrollContent: { paddingBottom: 120 },
+
+  // Hero
+  titleSection: { paddingHorizontal: 20, marginBottom: 24 },
+  headline: { fontSize: 42, fontWeight: '900', color: '#1A1A1A', lineHeight: 46, letterSpacing: -1.5 },
+  headlineGreen: { fontSize: 42, fontWeight: '900', color: '#005C3A', lineHeight: 46, letterSpacing: -1.5 },
+
+  // Search
+  searchSection: { paddingHorizontal: 20, marginBottom: 20 },
   searchInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#E5E7EB',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 12,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#E5E7EB', borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 14, marginBottom: 12,
   },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: '#1A1A1A',
-    fontWeight: '500',
-    padding: 0,
-  },
+  searchIcon: { marginRight: 10 },
+  searchInput: { flex: 1, fontSize: 14, color: '#1A1A1A', fontWeight: '500', padding: 0 },
   filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#F3F4F6',
-    borderRadius: 12,
-    paddingVertical: 14,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#F3F4F6', borderRadius: 12, paddingVertical: 14,
   },
-  filterText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginLeft: 8,
+  filterText: { fontSize: 14, fontWeight: '600', color: '#1A1A1A', marginLeft: 8 },
+
+  // Visit Planner Strip
+  plannerStrip: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: '#005C3A', marginHorizontal: 20, borderRadius: 14,
+    paddingVertical: 12, paddingHorizontal: 16, marginBottom: 20,
   },
-  categoriesRow: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
-  },
+  plannerStripText: { flex: 1, fontSize: 13, fontWeight: '700', color: '#FFF' },
+
+  // Categories
+  categoriesRow: { paddingHorizontal: 20, marginBottom: 24 },
   categoryPill: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 24,
-    marginRight: 12,
+    backgroundColor: '#F3F4F6', paddingHorizontal: 20, paddingVertical: 10,
+    borderRadius: 24, marginRight: 12,
   },
-  categoryPillActive: {
-    backgroundColor: '#005C3A',
-  },
-  categoryPillText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#4A5568',
-  },
-  categoryPillTextActive: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFF',
-  },
-  listingsContainer: {
-    paddingHorizontal: 20,
-  },
+  categoryPillActive: { backgroundColor: '#005C3A' },
+  categoryPillText: { fontSize: 13, fontWeight: '600', color: '#4A5568' },
+  categoryPillTextActive: { fontSize: 13, fontWeight: '600', color: '#FFF' },
+
+  // Listings
+  listingsContainer: { paddingHorizontal: 20 },
   card: {
-    marginBottom: 32,
-  },
-  imageContainer: {
-    width: '100%',
-    height: 320,
-    borderRadius: 24,
+    marginBottom: 32, backgroundColor: '#FFF', borderRadius: 24,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06, shadowRadius: 16, elevation: 3,
     overflow: 'hidden',
-    position: 'relative',
-    marginBottom: 16,
   },
-  cardImage: {
-    width: '100%',
-    height: '100%',
-  },
+
+  // Image
+  imageContainer: { width: '100%', height: 240, position: 'relative' },
+  cardImage: { width: '100%', height: '100%' },
+
   verifiedBadge: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFF',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    position: 'absolute', top: 16, left: 16,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
-  verifiedText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    marginLeft: 4,
-    letterSpacing: 0.5,
-  },
+  verifiedText: { fontSize: 9, fontWeight: '800', color: '#1A1A1A', marginLeft: 4, letterSpacing: 0.5 },
   hotDealBadge: {
-    position: 'absolute',
-    top: 16,
-    left: 16,
-    backgroundColor: '#DC2626',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+    position: 'absolute', top: 16, left: 16,
+    backgroundColor: '#DC2626', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
-  hotDealText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#FFF',
-    letterSpacing: 0.5,
+  hotDealText: { fontSize: 9, fontWeight: '800', color: '#FFF', letterSpacing: 0.5 },
+  trustChip: {
+    position: 'absolute', top: 16, right: 56,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
+  trustChipText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
   heartBtn: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    position: 'absolute', top: 16, right: 16,
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center',
   },
-  cardInfo: {
-    paddingHorizontal: 4,
-  },
+
+  // Card Info
+  cardInfo: { padding: 16 },
   titleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'flex-start', marginBottom: 12,
   },
-  titleLeft: {
-    flex: 1,
-    paddingRight: 12,
+  titleLeft: { flex: 1, paddingRight: 12 },
+  cardTitle: { fontSize: 17, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
+  locationRow: { flexDirection: 'row', alignItems: 'center' },
+  locationText: { fontSize: 12, color: '#4A5568', marginLeft: 4 },
+  priceContainer: { alignItems: 'flex-end' },
+  cardPrice: { fontSize: 17, fontWeight: '900', color: '#005C3A' },
+  cardPriceUnit: { fontSize: 11, fontWeight: '800' },
+  cardPriceDesc: { fontSize: 8, fontWeight: '700', color: '#6B7280', marginTop: 2, letterSpacing: 0.5 },
+
+  // Utils
+  utilsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  utilItem: { flexDirection: 'row', alignItems: 'center', marginRight: 14 },
+  utilText: { fontSize: 11, color: '#4A5568', fontWeight: '500', marginLeft: 4 },
+
+  // Neighborhood Tags
+  hoodTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 14 },
+  hoodTag: {
+    backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 20, borderWidth: 1, borderColor: '#D1FAE5',
+    flexDirection: 'row', alignItems: 'center', gap: 4,
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1A1A1A',
-    marginBottom: 4,
+  noiseTag: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
+  hoodTagText: { fontSize: 10, fontWeight: '700', color: '#005C3A' },
+
+  // Action Row
+  cardActions: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingTop: 4, borderTopWidth: 1, borderTopColor: '#F3F4F6',
   },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  detailBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 12, borderRadius: 14,
+    borderWidth: 1.5, borderColor: '#005C3A',
   },
-  locationText: {
-    fontSize: 12,
-    color: '#4A5568',
-    marginLeft: 4,
+  detailBtnText: { fontSize: 13, fontWeight: '700', color: '#005C3A' },
+  planBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14,
+    borderWidth: 1.5, borderColor: '#D1FAE5', backgroundColor: '#F0FDF4',
   },
-  priceContainer: {
-    alignItems: 'flex-end',
-  },
-  cardPrice: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#005C3A',
-  },
-  cardPriceUnit: {
-    fontSize: 12,
-    fontWeight: '800',
-  },
-  cardPriceDesc: {
-    fontSize: 8,
-    fontWeight: '700',
-    color: '#6B7280',
-    marginTop: 2,
-    letterSpacing: 0.5,
-  },
-  utilsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  utilItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  utilText: {
-    fontSize: 10,
-    color: '#1A1A1A',
-    fontWeight: '500',
-    marginLeft: 4,
-  },
+  planBtnActive: { backgroundColor: '#005C3A', borderColor: '#005C3A' },
+  planBtnText: { fontSize: 13, fontWeight: '700', color: '#005C3A' },
+  planBtnTextActive: { color: '#FFF' },
+
+  // FAB
   fab: {
-    position: 'absolute',
-    bottom: 100,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#005C3A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    position: 'absolute', bottom: 100, right: 20,
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: '#005C3A', justifyContent: 'center', alignItems: 'center',
+    elevation: 5, shadowColor: '#005C3A',
+    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
   },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
-  },
-  emptyStateText: {
-    fontSize: 14,
-    color: '#9CA3AF',
-    marginTop: 12,
-    fontWeight: '500',
-  },
+
+  // Empty
+  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
+  emptyStateText: { fontSize: 14, color: '#9CA3AF', marginTop: 12, fontWeight: '500' },
 });

@@ -1,372 +1,400 @@
-import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Feather, Ionicons, MaterialIcons, FontAwesome5, Octicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import React, { useState } from 'react';
+import {
+  View, Text, StyleSheet, ScrollView, TouchableOpacity,
+  Switch, Alert, Animated,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  Feather, Ionicons, MaterialIcons, FontAwesome5,
+  Octicons, MaterialCommunityIcons,
+} from '@expo/vector-icons';
 import { router } from 'expo-router';
 
+// ─── Mock notification data ────────────────────────────────────────────────────
+const NOTIFICATIONS = [
+  {
+    id: '1', type: 'hot_listing', unread: true,
+    title: '🔥 Hot Listing Alert',
+    desc: 'A Studio in Bole just listed for 18,500 ETB — matches your saved search.',
+    time: '2m ago', action: 'View Listing', propertyId: '3',
+  },
+  {
+    id: '2', type: 'price_match', unread: true,
+    title: '✅ Price Match Found',
+    desc: 'New 2BR in Kazanchis at 22,000 ETB — within your 25,000 ETB budget.',
+    time: '14m ago', action: 'View Listing', propertyId: '1',
+  },
+  {
+    id: '3', type: 'price_drop', unread: false,
+    title: '📉 Price Drop Alert',
+    desc: 'The Summit Residency dropped from 28,000 → 25,000 ETB. That\'s 11% off!',
+    time: '2h ago', action: 'See Deal', propertyId: '1',
+    dropAmount: '3,000 ETB',
+  },
+  {
+    id: '4', type: 'location_match', unread: false,
+    title: '📍 New Listing in Bole',
+    desc: '3 new properties added in your saved location: Bole, Addis Ababa.',
+    time: '4h ago', action: 'Browse Area',
+  },
+  {
+    id: '5', type: 'price_drop', unread: false,
+    title: '📉 Price Drop Alert',
+    desc: 'Modern Garden Villa dropped from 55,000 → 45,000 ETB. Act fast!',
+    time: 'Yesterday', action: 'See Deal', propertyId: '2',
+    dropAmount: '10,000 ETB',
+  },
+  {
+    id: '6', type: 'system', unread: false,
+    title: '🛡️ Verification Complete',
+    desc: 'Your Kira-Net profile has been successfully verified. You now show the ✓ badge.',
+    time: '2 days ago',
+  },
+  {
+    id: '7', type: 'roommate', unread: false,
+    title: '🤝 Roommate Request',
+    desc: 'Tigist B. wants to connect — budget 12,000 ETB, Bole area, student.',
+    time: '3 days ago', action: 'View Profile',
+  },
+];
+
+// ─── Alert preferences ─────────────────────────────────────────────────────────
+const DEFAULT_PREFS = {
+  hotListings: true,
+  priceMatch: true,
+  priceDrop: true,
+  locationMatch: true,
+  smsAlerts: false,
+  pushAlerts: true,
+};
+
+type NotifType = typeof NOTIFICATIONS[number];
+
 export default function AlertsScreen() {
+  const [prefs, setPrefs] = useState(DEFAULT_PREFS);
+  const [notifications, setNotifications] = useState(NOTIFICATIONS);
+  const [showPrefs, setShowPrefs] = useState(false);
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+
+  const markAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
+  };
+
+  const toggle = (key: keyof typeof DEFAULT_PREFS) => {
+    setPrefs(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity hitSlop={{top: 10, bottom: 10, left: 10, right: 10}} onPress={() => router.push('/menu')}>
-            <Feather name="menu" size={24} color="#005C3A" />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <Text style={styles.headerTitle}>Notifications</Text>
-            <Text style={styles.logoText}>Kira-Net</Text>
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => router.push('/(tabs)')}
+        >
+          <Feather name="arrow-left" size={20} color="#1A1A1A" />
+        </TouchableOpacity>
+        <View>
+          <Text style={styles.headerTitle}>Smart Alerts</Text>
+          {unreadCount > 0 && (
+            <Text style={styles.headerSub}>{unreadCount} unread</Text>
+          )}
+        </View>
+        <TouchableOpacity
+          style={[styles.prefBtn, showPrefs && styles.prefBtnActive]}
+          onPress={() => setShowPrefs(p => !p)}
+        >
+          <Feather name="settings" size={18} color={showPrefs ? '#FFF' : '#1A1A1A'} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+
+        {/* ── SMS + Push Premium Card ─────────────────────────────────────── */}
+        <View style={styles.premiumCard}>
+          <View style={styles.premiumRow}>
+            <MaterialIcons name="auto-awesome" size={20} color="#FBC02D" />
+            <Text style={styles.premiumTitle}>SMS & Push Alerts</Text>
+            <View style={styles.liveChip}>
+              <View style={styles.liveDot} />
+              <Text style={styles.liveText}>LIVE</Text>
+            </View>
           </View>
-          <TouchableOpacity style={styles.userIconWrap} onPress={() => router.push('/profile')}>
-            <Feather name="user" size={16} color="#005C3A" />
-          </TouchableOpacity>
+          <Text style={styles.premiumSub}>
+            Get notified within seconds when a new listing matches your saved searches — via push notification or SMS.
+          </Text>
+          <View style={styles.premiumToggles}>
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLeft}>
+                <Feather name="bell" size={15} color="rgba(255,255,255,0.9)" />
+                <Text style={styles.toggleLabel}>Push Notifications</Text>
+              </View>
+              <Switch
+                value={prefs.pushAlerts}
+                onValueChange={() => toggle('pushAlerts')}
+                trackColor={{ false: 'rgba(255,255,255,0.3)', true: '#FBC02D' }}
+                thumbColor="#FFF"
+              />
+            </View>
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLeft}>
+                <MaterialCommunityIcons name="message-text" size={15} color="rgba(255,255,255,0.9)" />
+                <Text style={styles.toggleLabel}>SMS Alerts (Premium)</Text>
+              </View>
+              <Switch
+                value={prefs.smsAlerts}
+                onValueChange={() => {
+                  if (!prefs.smsAlerts) {
+                    Alert.alert(
+                      '🔒 Upgrade Required',
+                      'SMS Alerts are a Premium feature. Upgrade to receive instant SMS when your dream listing drops.',
+                      [
+                        { text: 'Later', style: 'cancel' },
+                        { text: 'Upgrade Now', style: 'default', onPress: () => router.push('/boost-listing') },
+                      ]
+                    );
+                  } else {
+                    toggle('smsAlerts');
+                  }
+                }}
+                trackColor={{ false: 'rgba(255,255,255,0.3)', true: '#FBC02D' }}
+                thumbColor="#FFF"
+              />
+            </View>
+          </View>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          
-          {/* SMS Alerts Premium Card */}
-          <View style={styles.premiumCard}>
-            <View style={styles.premiumHeader}>
-              <MaterialIcons name="auto-awesome" size={20} color="#FBC02D" />
-              <Text style={styles.premiumTitle}>SMS Alerts (Premium)</Text>
-            </View>
-            <Text style={styles.premiumSubtitle}>
-              Never miss a deal. Get instant SMS alerts for new listings that match your preferences.
-            </Text>
-            <TouchableOpacity style={styles.upgradeButton}>
-              <Text style={styles.upgradeButtonText}>Upgrade</Text>
-            </TouchableOpacity>
-          </View>
+        {/* ── Alert Type Preferences ──────────────────────────────────────── */}
+        {showPrefs && (
+          <View style={styles.prefsCard}>
+            <Text style={styles.prefsTitle}>Alert Preferences</Text>
+            <Text style={styles.prefsSub}>Choose what alerts you want to receive</Text>
 
-          {/* Recent Updates Header */}
-          <View style={styles.updatesHeader}>
-            <Text style={styles.updatesTitle}>RECENT UPDATES</Text>
-            <TouchableOpacity hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-              <Text style={styles.markReadText}>Mark all as read</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Notification Card 1 */}
-          <View style={[styles.notificationCard, styles.notificationUnread]}>
-            <View style={styles.unreadIndicator} />
-            
-            <View style={styles.iconBoxHouse}>
-              <FontAwesome5 name="home" size={24} color="#FFF" />
-              <View style={styles.iconBadge}>
-                <Text style={styles.iconBadgeText}>+</Text>
-              </View>
-            </View>
-            
-            <View style={styles.notificationContent}>
-              <View style={styles.notificationTitleRow}>
-                <Text style={styles.notificationTitleUnread}>New House Match</Text>
-                <View style={styles.timePill}>
-                  <Text style={styles.timeText}>2m ago</Text>
+            {[
+              { key: 'hotListings', icon: 'fire', label: '🔥 Hot Listing Alerts', desc: 'New listings that match your search, instantly', color: '#DC2626' },
+              { key: 'priceMatch', icon: 'check-circle', label: '✅ Price Match Alerts', desc: 'Listings within your set budget', color: '#16A34A' },
+              { key: 'priceDrop', icon: 'trending-down', label: '📉 Price Drop Alerts', desc: 'When a saved listing lowers its price', color: '#F59E0B' },
+              { key: 'locationMatch', icon: 'map-pin', label: '📍 Location Alerts', desc: 'New listings in your saved areas', color: '#3B82F6' },
+            ].map(pref => (
+              <View key={pref.key} style={styles.prefRow}>
+                <View style={styles.prefLeft}>
+                  <Text style={styles.prefLabel}>{pref.label}</Text>
+                  <Text style={styles.prefDesc}>{pref.desc}</Text>
                 </View>
+                <Switch
+                  value={prefs[pref.key as keyof typeof DEFAULT_PREFS]}
+                  onValueChange={() => toggle(pref.key as keyof typeof DEFAULT_PREFS)}
+                  trackColor={{ false: '#E5E7EB', true: '#D1FAE5' }}
+                  thumbColor={prefs[pref.key as keyof typeof DEFAULT_PREFS] ? '#005C3A' : '#9CA3AF'}
+                />
               </View>
-              <Text style={styles.notificationDesc}>
-                A Studio in Bole matches your criteria.
-              </Text>
-              <TouchableOpacity>
-                <Text style={styles.actionTextProperty}>View Property</Text>
-              </TouchableOpacity>
-            </View>
+            ))}
           </View>
+        )}
 
-          {/* Notification Card 2 */}
-          <View style={styles.notificationCard}>
-            <View style={styles.iconBoxPrice}>
-              <Feather name="trending-down" size={24} color="#92400E" />
-            </View>
-            
-            <View style={styles.notificationContent}>
-              <View style={styles.notificationTitleRow}>
-                <Text style={styles.notificationTitle}>Price Drop</Text>
-                <Text style={styles.timeTextPlain}>4h ago</Text>
-              </View>
-              <Text style={styles.notificationDesc}>
-                The 2-Bedroom in Arada is now 15% cheaper!
-              </Text>
-              <View style={styles.hotDealPill}>
-                <Text style={styles.hotDealText}>HOT DEAL</Text>
-              </View>
-            </View>
-          </View>
+        {/* ── Section Header ──────────────────────────────────────────────── */}
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionLabel}>RECENT ALERTS</Text>
+          {unreadCount > 0 && (
+            <TouchableOpacity onPress={markAllRead}>
+              <Text style={styles.markRead}>Mark all read</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
-          {/* Notification Card 3 */}
-          <View style={styles.notificationCard}>
-            <View style={styles.iconBoxSystem}>
-              <Octicons name="shield-check" size={24} color="#6B7280" />
-            </View>
-            
-            <View style={styles.notificationContent}>
-              <View style={styles.notificationTitleRow}>
-                <Text style={styles.notificationTitle}>System Update</Text>
-                <Text style={styles.timeTextPlain}>Yesterday</Text>
-              </View>
-              <Text style={styles.notificationDesc}>
-                Your profile has been successfully verified.
-              </Text>
-            </View>
-          </View>
+        {/* ── Notification Cards ──────────────────────────────────────────── */}
+        {notifications.map(notif => (
+          <NotifCard
+            key={notif.id}
+            notif={notif}
+            onAction={() => {
+              if (notif.propertyId) {
+                router.push({ pathname: '/property-details', params: { id: notif.propertyId } });
+              } else if (notif.type === 'roommate') {
+                router.push('/roommate-match');
+              }
+            }}
+          />
+        ))}
 
-          {/* Caught Up */}
-          <View style={styles.caughtUpView}>
-            <MaterialIcons name="notifications-off" size={48} color="#9CA3AF" />
-            <Text style={styles.caughtUpText}>You're all caught up for today.</Text>
-          </View>
-          
-        </ScrollView>
-      </View>
+        {/* ── Caught Up ───────────────────────────────────────────────────── */}
+        <View style={styles.caughtUp}>
+          <MaterialIcons name="notifications-none" size={36} color="#D1D5DB" />
+          <Text style={styles.caughtUpText}>You're all caught up!</Text>
+          <Text style={styles.caughtUpSub}>New alerts appear here instantly.</Text>
+        </View>
+
+        <View style={{ height: 40 }} />
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
+// ─── Notification Card ────────────────────────────────────────────────────────
+function NotifCard({ notif, onAction }: { notif: NotifType; onAction: () => void }) {
+  const config: Record<string, { bg: string; border: string; icon: any; iconLib: string }> = {
+    hot_listing:    { bg: '#FFF5F5', border: '#FCA5A5', icon: 'local-fire-department', iconLib: 'material' },
+    price_match:    { bg: '#F0FDF4', border: '#86EFAC', icon: 'check-circle',           iconLib: 'material' },
+    price_drop:     { bg: '#FFFBEB', border: '#FDBA74', icon: 'trending-down',          iconLib: 'material' },
+    location_match: { bg: '#EFF6FF', border: '#93C5FD', icon: 'location-on',            iconLib: 'material' },
+    system:         { bg: '#F9FAFB', border: '#E5E7EB', icon: 'shield-checkmark',       iconLib: 'ionicons' },
+    roommate:       { bg: '#FDF4FF', border: '#E879F9', icon: 'people',                  iconLib: 'ionicons' },
+  };
+
+  const c = config[notif.type] ?? config.system;
+
+  return (
+    <View style={[styles.notifCard, { backgroundColor: c.bg, borderColor: c.border }, notif.unread && styles.notifUnread]}>
+      {notif.unread && <View style={styles.unreadDot} />}
+
+      {/* Icon */}
+      <View style={[styles.notifIconBox, { backgroundColor: c.border }]}>
+        {c.iconLib === 'material'
+          ? <MaterialIcons name={c.icon} size={22} color="#1A1A1A" />
+          : <Ionicons name={c.icon} size={22} color="#1A1A1A" />
+        }
+      </View>
+
+      {/* Content */}
+      <View style={styles.notifContent}>
+        <View style={styles.notifTitleRow}>
+          <Text style={[styles.notifTitle, notif.unread && styles.notifTitleBold]} numberOfLines={1}>
+            {notif.title}
+          </Text>
+          <Text style={styles.notifTime}>{notif.time}</Text>
+        </View>
+        <Text style={styles.notifDesc}>{notif.desc}</Text>
+
+        {/* Price drop savings badge */}
+        {'dropAmount' in notif && notif.dropAmount && (
+          <View style={styles.savingsBadge}>
+            <Feather name="arrow-down" size={11} color="#16A34A" />
+            <Text style={styles.savingsText}>Save {notif.dropAmount}</Text>
+          </View>
+        )}
+
+        {/* CTA */}
+        {notif.action && (
+          <TouchableOpacity style={styles.notifAction} onPress={onAction}>
+            <Text style={styles.notifActionText}>{notif.action}</Text>
+            <Feather name="arrow-right" size={12} color="#005C3A" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F7F8F9',
-  },
-  container: {
-    flex: 1,
-  },
+  safeArea: { flex: 1, backgroundColor: '#FAFBFB' },
+
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, backgroundColor: '#FAFBFB',
   },
-  headerCenter: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
+  backBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center',
   },
-  headerTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#005C3A',
-    marginRight: 6,
+  headerTitle: { fontSize: 18, fontWeight: '800', color: '#1A1A1A' },
+  headerSub: { fontSize: 11, color: '#DC2626', fontWeight: '700', marginTop: 1 },
+  prefBtn: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center',
   },
-  logoText: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#005C3A',
-    letterSpacing: -0.5,
-  },
-  userIconWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: '#005C3A',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 40,
-  },
+  prefBtnActive: { backgroundColor: '#005C3A' },
+
+  scrollContent: { paddingHorizontal: 20, paddingTop: 4 },
+
+  // Premium Card
   premiumCard: {
-    backgroundColor: '#005C3A',
-    borderRadius: 24,
-    padding: 24,
-    marginBottom: 32,
-    shadowColor: '#005C3A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 8,
+    backgroundColor: '#005C3A', borderRadius: 24, padding: 20, marginBottom: 20,
+    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25, shadowRadius: 16, elevation: 8,
   },
-  premiumHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+  premiumRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
+  premiumTitle: { fontSize: 16, fontWeight: '800', color: '#FFF', flex: 1 },
+  liveChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
   },
-  premiumTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#FFF',
-    marginLeft: 8,
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ADE80' },
+  liveText: { fontSize: 9, fontWeight: '800', color: '#4ADE80', letterSpacing: 1 },
+  premiumSub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 20, marginBottom: 16 },
+  premiumToggles: { gap: 10 },
+  toggleRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
   },
-  premiumSubtitle: {
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.85)',
-    lineHeight: 20,
-    marginBottom: 20,
+  toggleLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  toggleLabel: { fontSize: 13, fontWeight: '700', color: '#FFF' },
+
+  // Prefs Card
+  prefsCard: {
+    backgroundColor: '#FFF', borderRadius: 20, padding: 18, marginBottom: 20,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
   },
-  upgradeButton: {
-    backgroundColor: '#FBC02D',
-    borderRadius: 30,
-    paddingVertical: 14,
-    alignItems: 'center',
+  prefsTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
+  prefsSub: { fontSize: 12, color: '#6B7280', marginBottom: 16 },
+  prefRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
   },
-  upgradeButtonText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#926C15',
+  prefLeft: { flex: 1, marginRight: 12 },
+  prefLabel: { fontSize: 14, fontWeight: '700', color: '#1A1A1A', marginBottom: 2 },
+  prefDesc: { fontSize: 11, color: '#6B7280' },
+
+  // Section header
+  sectionHeader: {
+    flexDirection: 'row', justifyContent: 'space-between',
+    alignItems: 'center', marginBottom: 14,
   },
-  updatesHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
+  sectionLabel: { fontSize: 11, fontWeight: '800', color: '#6B7280', letterSpacing: 1.2 },
+  markRead: { fontSize: 12, fontWeight: '700', color: '#005C3A' },
+
+  // Notif Card
+  notifCard: {
+    flexDirection: 'row', borderRadius: 18, padding: 14, marginBottom: 12,
+    borderWidth: 1, position: 'relative', overflow: 'hidden',
   },
-  updatesTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#4A5568',
-    letterSpacing: 1.2,
+  notifUnread: {
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06, shadowRadius: 8, elevation: 2,
   },
-  markReadText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#005C3A',
+  unreadDot: {
+    position: 'absolute', left: 0, top: '25%', bottom: '25%',
+    width: 4, borderTopRightRadius: 4, borderBottomRightRadius: 4, backgroundColor: '#005C3A',
   },
-  notificationCard: {
-    flexDirection: 'row',
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#F3F4F6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.03,
-    shadowRadius: 6,
-    elevation: 2,
-    position: 'relative',
-    overflow: 'hidden',
+  notifIconBox: {
+    width: 46, height: 46, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center', marginRight: 14,
   },
-  notificationUnread: {
-    backgroundColor: '#FFF',
+  notifContent: { flex: 1 },
+  notifTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 },
+  notifTitle: { fontSize: 13, fontWeight: '600', color: '#1A1A1A', flex: 1, marginRight: 8 },
+  notifTitleBold: { fontWeight: '800' },
+  notifTime: { fontSize: 10, color: '#9CA3AF', fontWeight: '500' },
+  notifDesc: { fontSize: 12, color: '#4A5568', lineHeight: 18, marginBottom: 8 },
+
+  savingsBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: '#DCFCE7', paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 20, alignSelf: 'flex-start', marginBottom: 8,
   },
-  unreadIndicator: {
-    position: 'absolute',
-    left: 0,
-    top: '30%',
-    bottom: '30%',
-    width: 4,
-    backgroundColor: '#FBC02D',
-    borderTopRightRadius: 4,
-    borderBottomRightRadius: 4,
-  },
-  iconBoxHouse: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: '#1C1C28',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-    position: 'relative',
-  },
-  iconBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#005C3A',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#FFF',
-  },
-  iconBadgeText: {
-    fontSize: 8,
-    fontWeight: '800',
-    color: '#FFF',
-  },
-  notificationContent: {
-    flex: 1,
-  },
-  notificationTitleRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  notificationTitleUnread: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: '#1A1A1A',
-  },
-  notificationTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
-  timePill: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  timeText: {
-    fontSize: 10,
-    color: '#4A5568',
-    fontWeight: '600',
-  },
-  timeTextPlain: {
-    fontSize: 10,
-    color: '#6B7280',
-  },
-  notificationDesc: {
-    fontSize: 13,
-    color: '#4A5568',
-    lineHeight: 18,
-    marginBottom: 10,
-  },
-  actionTextProperty: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#005C3A',
-  },
-  iconBoxPrice: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: '#FEF3C7',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  hotDealPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  hotDealText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#92400E',
-  },
-  iconBoxSystem: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-    backgroundColor: '#E5E7EB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  caughtUpView: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 40,
-    opacity: 0.6,
-  },
-  caughtUpText: {
-    marginTop: 12,
-    fontSize: 13,
-    color: '#9CA3AF',
-    fontWeight: '500',
-  },
+  savingsText: { fontSize: 11, fontWeight: '800', color: '#16A34A' },
+
+  notifAction: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' },
+  notifActionText: { fontSize: 12, fontWeight: '800', color: '#005C3A' },
+
+  // Caught up
+  caughtUp: { alignItems: 'center', paddingVertical: 32 },
+  caughtUpText: { fontSize: 14, fontWeight: '700', color: '#9CA3AF', marginTop: 12 },
+  caughtUpSub: { fontSize: 12, color: '#D1D5DB', marginTop: 4 },
 });

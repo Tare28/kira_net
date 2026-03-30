@@ -36,7 +36,7 @@ export default function TabLayout() {
           fontSize: 10,
           fontWeight: '600',
           marginTop: 4,
-        }
+        },
       }}>
       <Tabs.Screen
         name="index"
