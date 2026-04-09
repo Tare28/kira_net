@@ -21,6 +21,12 @@ export default function ProfileScreen() {
       ]
     },
     {
+      title: 'Field Operations',
+      items: [
+        { name: 'Agent Terminal', icon: 'briefcase', action: () => router.push('/agent-dashboard') },
+      ]
+    },
+    {
       title: 'Hosting & Landlord',
       items: [
         { name: 'My Properties', icon: 'home', action: () => router.push('/landlord-dashboard') },

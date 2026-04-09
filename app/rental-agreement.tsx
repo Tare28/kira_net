@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, Alert, Modal, Animated, Dimensions,
+  TextInput, Alert, Modal, Animated, Dimensions, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
@@ -51,6 +51,8 @@ const DEFAULT_CLAUSES = [
 type TabType = 'create' | 'stored';
 type Clause = typeof DEFAULT_CLAUSES[number];
 
+type SigningParty = 'landlord' | 'tenant';
+
 export default function RentalAgreementScreen() {
   const [tab, setTab] = useState<TabType>('create');
   const [clauses, setClauses] = useState<Clause[]>(DEFAULT_CLAUSES);
@@ -58,29 +60,56 @@ export default function RentalAgreementScreen() {
   const [tenantName, setTenantName] = useState('');
   const [landlordName, setLandlordName] = useState('Abebe Tadesse');
   const [propertyName, setPropertyName] = useState('The Summit Residency, Bole');
+
+  // Two-party signing state
   const [showSignModal, setShowSignModal] = useState(false);
-  const [signed, setSigned] = useState(false);
+  const [signingParty, setSigningParty] = useState<SigningParty>('landlord');
+  const [landlordSigned, setLandlordSigned] = useState(false);
+  const [tenantSigned, setTenantSigned] = useState(false);
+  const [landlordSig, setLandlordSig] = useState('');
+  const [tenantSig, setTenantSig] = useState('');
   const [signName, setSignName] = useState('');
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
+  const bothSigned = landlordSigned && tenantSigned;
+
   const updateClause = (id: string, value: string) =>
     setClauses(prev => prev.map(c => c.id === id ? { ...c, value } : c));
+
+  const openSignModal = (party: SigningParty) => {
+    const name = party === 'landlord' ? landlordName : tenantName;
+    if (!name.trim()) {
+      Alert.alert('Missing Name', `Please enter the ${party}'s full name first.`);
+      return;
+    }
+    setSigningParty(party);
+    setSignName('');
+    setShowSignModal(true);
+  };
 
   const handleSign = () => {
     if (!signName.trim()) {
       Alert.alert('Signature Required', 'Please type your full name to sign.');
       return;
     }
-    Animated.sequence([
-      Animated.spring(pulseAnim, { toValue: 1.1, useNativeDriver: true }),
-      Animated.spring(pulseAnim, { toValue: 1, useNativeDriver: true }),
-    ]).start();
-    setSigned(true);
+    if (signingParty === 'landlord') {
+      setLandlordSig(signName);
+      setLandlordSigned(true);
+    } else {
+      setTenantSig(signName);
+      setTenantSigned(true);
+    }
     setShowSignModal(false);
-    Alert.alert(
-      '✅ Agreement Signed!',
-      'Your digital rental agreement has been signed and stored securely in Kira-Net.'
-    );
+    const otherSigned = signingParty === 'landlord' ? tenantSigned : landlordSigned;
+    if (otherSigned) {
+      Animated.sequence([
+        Animated.spring(pulseAnim, { toValue: 1.08, useNativeDriver: true }),
+        Animated.spring(pulseAnim, { toValue: 1, useNativeDriver: true }),
+      ]).start();
+      Alert.alert('🎉 Agreement Fully Executed!', 'Both parties have signed. The agreement is now legally binding and stored in the Vault.');
+    } else {
+      Alert.alert(`✅ ${signingParty === 'landlord' ? 'Landlord' : 'Tenant'} Signed`, 'Waiting for the other party to sign to fully execute the agreement.');
+    }
   };
 
   return (
@@ -95,8 +124,8 @@ export default function RentalAgreementScreen() {
           <Text style={styles.headerSub}>Digital · Legally Binding</Text>
         </View>
         <View style={styles.secureChip}>
-          <Feather name="shield" size={11} color="#16A34A" />
-          <Text style={styles.secureText}>Secure</Text>
+          <Feather name="shield" size={11} color="#000" />
+          <Text style={styles.secureText}>Secure Ledger</Text>
         </View>
       </View>
 
@@ -106,16 +135,16 @@ export default function RentalAgreementScreen() {
           style={[styles.tab, tab === 'create' && styles.tabActive]}
           onPress={() => setTab('create')}
         >
-          <Feather name="file-plus" size={15} color={tab === 'create' ? '#005C3A' : '#6B7280'} />
-          <Text style={[styles.tabText, tab === 'create' && styles.tabTextActive]}>New Agreement</Text>
+          <Feather name="file-plus" size={15} color={tab === 'create' ? '#000' : '#6B7280'} />
+          <Text style={[styles.tabText, tab === 'create' && styles.tabTextActive]}>Execute New</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, tab === 'stored' && styles.tabActive]}
           onPress={() => setTab('stored')}
         >
-          <Feather name="archive" size={15} color={tab === 'stored' ? '#005C3A' : '#6B7280'} />
+          <Feather name="archive" size={15} color={tab === 'stored' ? '#000' : '#6B7280'} />
           <Text style={[styles.tabText, tab === 'stored' && styles.tabTextActive]}>
-            Stored ({PAST_AGREEMENTS.length})
+            Vault ({PAST_AGREEMENTS.length})
           </Text>
         </TouchableOpacity>
       </View>
@@ -139,7 +168,7 @@ export default function RentalAgreementScreen() {
           <View style={styles.partyCard}>
             <View style={styles.partyRow}>
               <View style={styles.partyIconBox}>
-                <Feather name="user" size={16} color="#005C3A" />
+                <Feather name="user" size={16} color="#000" />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.partyRole}>LANDLORD</Text>
@@ -200,8 +229,8 @@ export default function RentalAgreementScreen() {
                     style={styles.editChip}
                     onPress={() => setEditingId(editingId === clause.id ? null : clause.id)}
                   >
-                    <Feather name={editingId === clause.id ? 'check' : 'edit-2'} size={12} color="#005C3A" />
-                    <Text style={styles.editChipText}>{editingId === clause.id ? 'Done' : 'Edit'}</Text>
+                    <Feather name={editingId === clause.id ? 'check' : 'edit-2'} size={12} color="#000" />
+                    <Text style={styles.editChipText}>{editingId === clause.id ? 'Save' : 'Edit'}</Text>
                   </TouchableOpacity>
                 )}
               </View>
@@ -228,30 +257,88 @@ export default function RentalAgreementScreen() {
             </Text>
           </View>
 
-          {/* Sign Status */}
-          {signed ? (
+          {/* ── Signature Section ── */}
+          <Text style={styles.sectionLabel}>DIGITAL SIGNATURES</Text>
+
+          {bothSigned ? (
             <Animated.View style={[styles.signedBanner, { transform: [{ scale: pulseAnim }] }]}>
-              <MaterialIcons name="verified" size={22} color="#16A34A" />
-              <View>
-                <Text style={styles.signedTitle}>Agreement Signed!</Text>
-                <Text style={styles.signedSub}>Stored securely · {new Date().toLocaleDateString()}</Text>
+              <MaterialIcons name="verified" size={24} color="#FFF" />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.signedTitle}>FULLY EXECUTED</Text>
+                <Text style={styles.signedSub}>Both parties signed · ID: KN-LX-{Math.random().toString(36).substr(2, 8).toUpperCase()}</Text>
               </View>
             </Animated.View>
           ) : (
-            <TouchableOpacity
-              style={styles.signBtn}
-              onPress={() => {
-                if (!tenantName.trim()) {
-                  Alert.alert('Missing Info', 'Please enter the tenant name before signing.');
-                  return;
-                }
-                setShowSignModal(true);
-              }}
-            >
-              <MaterialCommunityIcons name="file-sign" size={20} color="#FFF" />
-              <Text style={styles.signBtnText}>Sign Agreement Digitally</Text>
-            </TouchableOpacity>
+            <View style={styles.sigStatusBar}>
+              <Feather name="clock" size={13} color="#92400E" />
+              <Text style={styles.sigStatusText}>Awaiting {!landlordSigned && !tenantSigned ? 'both signatures' : !landlordSigned ? 'landlord signature' : 'tenant signature'}</Text>
+            </View>
           )}
+
+          {/* Landlord Signature Slot */}
+          <View style={[styles.sigSlot, landlordSigned && styles.sigSlotSigned]}>
+            <View style={styles.sigSlotHeader}>
+              <View style={styles.sigSlotIconBox}>
+                <Feather name="user" size={14} color={landlordSigned ? '#FFF' : '#000'} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sigSlotRole, landlordSigned && styles.sigSlotRoleSigned]}>LANDLORD</Text>
+                <Text style={[styles.sigSlotName, landlordSigned && styles.sigSlotNameSigned]}>{landlordName || 'Not specified'}</Text>
+              </View>
+              {landlordSigned ? (
+                <View style={styles.sigDoneChip}>
+                  <MaterialIcons name="check-circle" size={14} color="#FFF" />
+                  <Text style={styles.sigDoneText}>Signed</Text>
+                </View>
+              ) : (
+                <TouchableOpacity style={styles.sigSignBtn} onPress={() => openSignModal('landlord')}>
+                  <MaterialCommunityIcons name="fountain-pen-tip" size={13} color="#FFF" />
+                  <Text style={styles.sigSignBtnText}>Sign</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {landlordSigned && (
+              <View style={styles.sigPreviewRow}>
+                <Text style={styles.sigCursive}>{landlordSig}</Text>
+                <Text style={styles.sigDate}>{new Date().toLocaleDateString()}</Text>
+              </View>
+            )}
+          </View>
+
+          {/* Tenant Signature Slot */}
+          <View style={[styles.sigSlot, tenantSigned && styles.sigSlotSigned]}>
+            <View style={styles.sigSlotHeader}>
+              <View style={[styles.sigSlotIconBox, { backgroundColor: tenantSigned ? 'rgba(255,255,255,0.2)' : '#EFF6FF' }]}>
+                <Feather name="user-check" size={14} color={tenantSigned ? '#FFF' : '#1D4ED8'} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.sigSlotRole, { color: tenantSigned ? 'rgba(255,255,255,0.6)' : '#1D4ED8' }]}>TENANT</Text>
+                <Text style={[styles.sigSlotName, tenantSigned && styles.sigSlotNameSigned]}>{tenantName || 'Not specified'}</Text>
+              </View>
+              {tenantSigned ? (
+                <View style={styles.sigDoneChip}>
+                  <MaterialIcons name="check-circle" size={14} color="#FFF" />
+                  <Text style={styles.sigDoneText}>Signed</Text>
+                </View>
+              ) : (
+                <TouchableOpacity style={[styles.sigSignBtn, { backgroundColor: '#1D4ED8' }]} onPress={() => openSignModal('tenant')}>
+                  <MaterialCommunityIcons name="fountain-pen-tip" size={13} color="#FFF" />
+                  <Text style={styles.sigSignBtnText}>Sign</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {tenantSigned && (
+              <View style={styles.sigPreviewRow}>
+                <Text style={styles.sigCursive}>{tenantSig}</Text>
+                <Text style={styles.sigDate}>{new Date().toLocaleDateString()}</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.fingerprintBox}>
+             <Feather name="activity" size={12} color="#ADB5BD" />
+             <Text style={styles.fingerprintText}>HASH: 8f2b..3a1c | TIMESTAMP: {new Date().toISOString()}</Text>
+          </View>
 
           <View style={{ height: 40 }} />
         </ScrollView>
@@ -264,13 +351,22 @@ export default function RentalAgreementScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.signSheet}>
             <View style={styles.sheetHandle} />
+
+            {/* Party indicator */}
+            <View style={styles.signPartyRow}>
+              <View style={[styles.signPartyBadge, { backgroundColor: signingParty === 'landlord' ? '#000' : '#1D4ED8' }]}>
+                <Feather name={signingParty === 'landlord' ? 'user' : 'user-check'} size={13} color="#FFF" />
+                <Text style={styles.signPartyBadgeText}>{signingParty === 'landlord' ? 'LANDLORD' : 'TENANT'}</Text>
+              </View>
+            </View>
+
             <Text style={styles.signSheetTitle}>Digital Signature</Text>
             <Text style={styles.signSheetSub}>
-              By typing your full legal name below, you confirm you have read and agree to all terms in this rental agreement.
+              Signing as <Text style={{ fontWeight: '800', color: '#000' }}>{signingParty === 'landlord' ? landlordName : tenantName}</Text>. By typing your name, you legally agree to all terms.
             </Text>
 
             <View style={styles.signDocSummary}>
-              <MaterialCommunityIcons name="file-document-outline" size={18} color="#005C3A" />
+              <MaterialCommunityIcons name="file-document-outline" size={18} color="#000" />
               <Text style={styles.signDocTitle}>{propertyName}</Text>
             </View>
 
@@ -279,15 +375,15 @@ export default function RentalAgreementScreen() {
               style={styles.signInput}
               value={signName}
               onChangeText={setSignName}
-              placeholder="e.g. Abebe Tadesse"
+              placeholder={signingParty === 'landlord' ? landlordName : tenantName}
               placeholderTextColor="#9CA3AF"
               autoFocus
             />
 
-            {signName.length > 3 && (
+            {signName.length > 2 && (
               <View style={styles.signPreview}>
                 <Text style={styles.signPreviewText}>{signName}</Text>
-                <Text style={styles.signPreviewDate}>{new Date().toLocaleDateString('en-ET')}</Text>
+                <Text style={styles.signPreviewDate}>{new Date().toLocaleDateString()} · {signingParty === 'landlord' ? 'Landlord' : 'Tenant'}</Text>
               </View>
             )}
 
@@ -422,30 +518,32 @@ const styles = StyleSheet.create({
   clauseTitle: { fontSize: 13, fontWeight: '800', color: '#1A1A1A', flex: 1 },
   editChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
+    backgroundColor: '#F8F9FA', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
   },
-  editChipText: { fontSize: 11, fontWeight: '700', color: '#005C3A' },
+  editChipText: { fontSize: 11, fontWeight: '700', color: '#000' },
   clauseText: { fontSize: 13, color: '#4A5568', lineHeight: 20 },
   clauseInput: {
     fontSize: 13, color: '#1A1A1A', lineHeight: 20,
     backgroundColor: '#F7F8F9', borderRadius: 10, padding: 10,
-    borderWidth: 1, borderColor: '#D1FAE5',
+    borderWidth: 1, borderColor: '#EEE',
   },
 
   legalNote: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 10,
-    backgroundColor: '#F9FAFB', borderRadius: 14, padding: 14, marginBottom: 24, marginTop: 4,
+    backgroundColor: '#F8F9FA', borderRadius: 14, padding: 14, marginBottom: 24, marginTop: 4,
   },
   legalNoteText: { flex: 1, fontSize: 12, color: '#6B7280', lineHeight: 18 },
 
   // Signed Banner
   signedBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: '#DCFCE7', borderRadius: 18, padding: 18, marginBottom: 16,
-    borderWidth: 1.5, borderColor: '#86EFAC',
+    backgroundColor: '#005C3A', borderRadius: 18, padding: 18, marginBottom: 16,
   },
-  signedTitle: { fontSize: 15, fontWeight: '800', color: '#16A34A' },
-  signedSub: { fontSize: 11, color: '#4A5568', marginTop: 2 },
+  signedTitle: { fontSize: 13, fontWeight: '900', color: '#FFF', letterSpacing: 1 },
+  signedSub: { fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 2, fontWeight: '700' },
+
+  fingerprintBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 24, paddingVertical: 12, backgroundColor: '#F8F9FA', borderRadius: 12 },
+  fingerprintText: { fontSize: 9, color: '#ADB5BD', fontWeight: '800', fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' },
 
   // Sign Button
   signBtn: {
@@ -468,7 +566,7 @@ const styles = StyleSheet.create({
   signSheetSub: { fontSize: 13, color: '#4A5568', lineHeight: 20, marginBottom: 20 },
   signDocSummary: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#F0FDF4', borderRadius: 12, padding: 12, marginBottom: 20,
+    backgroundColor: '#F8F9FA', borderRadius: 12, padding: 12, marginBottom: 20,
   },
   signDocTitle: { fontSize: 13, fontWeight: '700', color: '#005C3A', flex: 1 },
   signInputLabel: { fontSize: 10, fontWeight: '800', color: '#6B7280', letterSpacing: 1, marginBottom: 10 },
@@ -477,11 +575,12 @@ const styles = StyleSheet.create({
     paddingVertical: 14, fontSize: 16, color: '#1A1A1A', fontWeight: '600', marginBottom: 16,
   },
   signPreview: {
-    backgroundColor: '#F9FAFB', borderRadius: 14, padding: 16, marginBottom: 20,
-    borderWidth: 1.5, borderColor: '#D1FAE5', alignItems: 'center',
+    backgroundColor: '#005C3A', borderRadius: 14, padding: 32, marginBottom: 20,
+    alignItems: 'center', justifyContent: 'center', minHeight: 120,
+    borderWidth: 1, borderColor: '#004A2F'
   },
-  signPreviewText: { fontSize: 22, fontFamily: 'serif', color: '#005C3A', marginBottom: 6 },
-  signPreviewDate: { fontSize: 11, color: '#6B7280' },
+  signPreviewText: { fontSize: 32, fontFamily: Platform.OS === 'ios' ? 'SnellRoundhand-Bold' : 'serif', color: '#FFF', marginBottom: 6 },
+  signPreviewDate: { fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: '700' },
   confirmSignBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
     backgroundColor: '#005C3A', borderRadius: 16, paddingVertical: 18, marginBottom: 12,
@@ -493,9 +592,9 @@ const styles = StyleSheet.create({
   // Stored
   storedBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#EFF6FF', borderRadius: 14, padding: 12, marginBottom: 20,
+    backgroundColor: '#F8F9FA', borderRadius: 14, padding: 12, marginBottom: 20,
   },
-  storedBannerText: { flex: 1, fontSize: 12, color: '#1D4ED8', fontWeight: '600' },
+  storedBannerText: { flex: 1, fontSize: 12, color: '#000', fontWeight: '800' },
   storedCard: {
     backgroundColor: '#FFF', borderRadius: 20, padding: 16, marginBottom: 14,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
@@ -503,26 +602,81 @@ const styles = StyleSheet.create({
   storedTop: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 12 },
   storedIconBox: {
     width: 46, height: 46, borderRadius: 14,
-    backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: '#F8F9FA', justifyContent: 'center', alignItems: 'center',
   },
   storedProperty: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginBottom: 3 },
   storedParties: { fontSize: 12, color: '#4A5568', marginBottom: 2 },
   storedDates: { fontSize: 11, color: '#6B7280' },
   statusChip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
-  statusSigned: { backgroundColor: '#DCFCE7' },
+  statusSigned: { backgroundColor: '#F8F9FA', borderWidth: 1, borderColor: '#EEE' },
   statusPending: { backgroundColor: '#FEF3C7' },
   statusText: { fontSize: 11, fontWeight: '800' },
-  statusTextSigned: { color: '#16A34A' },
+  statusTextSigned: { color: '#000' },
   statusTextPending: { color: '#92400E' },
   storedFooter: {
     flexDirection: 'row', alignItems: 'center',
     borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 12,
   },
-  storedRent: { fontSize: 13, fontWeight: '900', color: '#005C3A', flex: 1 },
+  storedRent: { fontSize: 13, fontWeight: '900', color: '#000', flex: 1 },
   storedDate: { fontSize: 11, color: '#9CA3AF', marginRight: 14 },
   downloadBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: '#E8F5E9', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+    backgroundColor: '#F8F9FA', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+    borderWidth: 1, borderColor: '#EEE'
   },
-  downloadText: { fontSize: 12, fontWeight: '700', color: '#005C3A' },
+  downloadText: { fontSize: 12, fontWeight: '700', color: '#000' },
+
+  // ── Two-party signature slots ─────────────────────────────────────
+  sigStatusBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#FEF3C7', borderRadius: 12, padding: 12, marginBottom: 12,
+  },
+  sigStatusText: { fontSize: 12, fontWeight: '700', color: '#92400E', flex: 1 },
+
+  sigSlot: {
+    backgroundColor: '#F8F9FA', borderRadius: 18, padding: 16, marginBottom: 12,
+    borderWidth: 1.5, borderColor: '#E5E7EB',
+  },
+  sigSlotSigned: {
+    backgroundColor: '#005C3A', borderColor: '#005C3A',
+  },
+  sigSlotHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  sigSlotIconBox: {
+    width: 36, height: 36, borderRadius: 12,
+    backgroundColor: '#EFEFEF', justifyContent: 'center', alignItems: 'center',
+  },
+  sigSlotRole: { fontSize: 9, fontWeight: '900', color: '#6B7280', letterSpacing: 1, marginBottom: 2 },
+  sigSlotRoleSigned: { color: 'rgba(255,255,255,0.5)' },
+  sigSlotName: { fontSize: 14, fontWeight: '800', color: '#1A1A1A' },
+  sigSlotNameSigned: { color: '#FFF' },
+
+  sigDoneChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20,
+  },
+  sigDoneText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
+
+  sigSignBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: '#005C3A', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+  },
+  sigSignBtnText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
+
+  sigPreviewRow: {
+    flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',
+    marginTop: 14, paddingTop: 12, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  sigCursive: {
+    fontSize: 26, color: '#FFF',
+    fontFamily: Platform.OS === 'ios' ? 'SnellRoundhand-Bold' : 'serif',
+  },
+  sigDate: { fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: '700' },
+
+  // ── Modal party badge ─────────────────────────────────────────────
+  signPartyRow: { flexDirection: 'row', marginBottom: 14 },
+  signPartyBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+  },
+  signPartyBadgeText: { fontSize: 11, fontWeight: '900', color: '#FFF', letterSpacing: 0.5 },
 });

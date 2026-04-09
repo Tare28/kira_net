@@ -12,9 +12,9 @@ import {
 } from 'lucide-react';
 
 const listings = [
-  { id: '#KN-1024', name: '2BR Modern Apt', type: 'High-Rise Residential', location: 'Bole, Addis Ababa', sub: 'Near Edna Mall', price: '15,000', deposit: '30,000', status: 'PENDING', agent: 'Desta M.', initial: 'DM' },
-  { id: '#KN-0988', name: 'Luxury Villa', type: 'G+2 Standalone', location: 'Yeka, Addis Ababa', sub: 'Lamberet District', price: '85,000', deposit: '170,000', status: 'VERIFIED', agent: 'Abebe B.', initial: 'AB' },
-  { id: '#KN-0812', name: 'Studio Loft', type: 'Condominium', location: 'Arada, Addis Ababa', sub: 'Piazza Area', price: '7,500', deposit: '15,000', status: 'REJECTED', agent: 'Sara H.', initial: 'SH' },
+  { id: '#KN-001', name: 'The Summit Residency', type: 'High-Rise Apartment', location: 'Bole, Addis Ababa', sub: 'Near Edna Mall', price: '25,000', deposit: '50,000', status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-002', name: 'Modern Garden Villa', type: 'G+2 Villa', location: 'Old Airport, Addis Ababa', sub: 'Bisrate Gabriel', price: '45,000', deposit: '90,000', status: 'PENDING', agent: 'Abebe B.', initial: 'AB', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-003', name: 'Kazanchis Studio', type: 'Condominium Studio', location: 'Kazanchis, Addis Ababa', sub: 'Near UN Hub', price: '18,500', deposit: '37,000', status: 'VERIFIED', agent: 'Sara H.', initial: 'SH', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=700&auto=format&fit=crop' },
 ];
 
 
@@ -62,7 +62,7 @@ export default function ListingsView() {
         </div>
 
         <div className="table-scroll-container">
-            <table>
+            <table style={{ minWidth: '1000px' }}>
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -80,8 +80,13 @@ export default function ListingsView() {
                         <tr key={idx}>
                             <td style={{ fontWeight: 800, color: '#10B981', fontSize: '13px' }}>{item.id}</td>
                             <td>
-                                <strong style={{ display: 'block', fontSize: '14px', marginBottom: '2px' }}>{item.name}</strong>
-                                <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>{item.type}</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                    <img src={item.image} alt="" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1px solid #F1F5F9' }} />
+                                    <div>
+                                        <strong style={{ display: 'block', fontSize: '14px', marginBottom: '2px' }}>{item.name}</strong>
+                                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>{item.type}</span>
+                                    </div>
+                                </div>
                             </td>
                             <td>
                                 <strong style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{item.location}</strong>
@@ -135,9 +140,9 @@ export default function ListingsView() {
         {/* Verification Review Modal */}
         {reviewItem && (
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-                <div style={{ background: 'white', width: '900px', maxWidth: '100%', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }}>
+                <div style={{ background: 'white', width: '1000px', maxWidth: '100%', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
                     {/* Modal Header */}
-                    <div style={{ padding: '24px 32px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ padding: '24px 32px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                         <div>
                             <h2 style={{ fontSize: '20px', fontWeight: 900 }}>Property Field Report</h2>
                             <p style={{ color: '#64748B', fontSize: '12px', fontWeight: 600 }}>Reviewing physical inspection data for {reviewItem.id}</p>
@@ -145,26 +150,26 @@ export default function ListingsView() {
                         <button onClick={() => setReviewItem(null)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20}/></button>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'row', height: '500px' }}>
+                    <div className="modal-body-scroll" style={{ display: 'flex', flexDirection: 'row', flex: 1, overflowY: 'auto', flexWrap: 'wrap' }}>
                         {/* Photos Section */}
-                        <div style={{ flex: 1.2, background: '#F8FAFC', padding: '32px' }}>
+                        <div style={{ flex: '1.2', minWidth: '350px', background: '#F8FAFC', padding: '32px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                                 <h4 style={{ fontSize: '14px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Certified Media</h4>
                                 <span style={{ color: '#10B981', fontSize: '11px', fontWeight: 800 }}>8 Photos Taken Today</span>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                                <div style={{ aspectRatio: '4/3', background: '#E2E8F0', borderRadius: '12px' }}></div>
-                                <div style={{ aspectRatio: '4/3', background: '#E2E8F0', borderRadius: '12px' }}></div>
-                                <div style={{ aspectRatio: '4/3', background: '#E2E8F0', borderRadius: '12px' }}></div>
-                                <div style={{ aspectRatio: '4/3', background: '#E2E8F0', borderRadius: '12px' }}></div>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
+                                <img src={reviewItem.image} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '12px' }} />
+                                <img src="https://images.unsplash.com/photo-1560448204-61dc36dc98c8?q=80&w=400" alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '12px' }} />
+                                <img src="https://images.unsplash.com/photo-1564013799911-0e86b2081822?q=80&w=400" alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '12px' }} />
+                                <img src="https://images.unsplash.com/photo-1628592102751-ba83b0314276?q=80&w=400" alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '12px' }} />
                             </div>
                         </div>
 
                         {/* Checklist Section */}
-                        <div style={{ flex: 1, padding: '32px', borderLeft: '1px solid #F1F5F9' }}>
+                        <div style={{ flex: 1, minWidth: '350px', padding: '32px', borderLeft: '1px solid #F1F5F9' }}>
                             <div style={{ marginBottom: '32px' }}>
                                 <h4 style={{ fontSize: '14px', fontWeight: 800, marginBottom: '20px' }}>Addis Essentials Verified</h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     {[
                                         { label: 'Constant Water Supply', icon: <Droplets size={16}/>, state: 'YES' },
                                         { label: 'Private Electric Meter', icon: <Zap size={16}/>, state: 'YES' },
@@ -195,7 +200,7 @@ export default function ListingsView() {
                                 </p>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '12px' }}>
+                            <div style={{ display: 'flex', gap: '12px', position: 'sticky', bottom: 0, background: 'white', padding: '10px 0' }}>
                                 <button 
                                     onClick={() => handleUpdateStatus(reviewItem.id, 'VERIFIED')}
                                     style={{ flex: 1, background: '#10B981', color: 'white', padding: '16px', borderRadius: '14px', fontSize: '13px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
@@ -203,7 +208,11 @@ export default function ListingsView() {
                                     <ShieldCheck size={18}/> Approve & Certify
                                 </button>
                                 <button 
-                                    onClick={() => handleUpdateStatus(reviewItem.id, 'REJECTED')}
+                                    onClick={() => {
+                                        if (window.confirm('Are you sure you want to reject this property? This will notify the landlord.')) {
+                                            handleUpdateStatus(reviewItem.id, 'REJECTED');
+                                        }
+                                    }}
                                     style={{ border: '1px solid #FEE2E2', color: '#EF4444', padding: '16px', borderRadius: '14px', fontSize: '13px', fontWeight: 800 }}
                                 >
                                     Reject

@@ -9,9 +9,9 @@ import {
 } from 'lucide-react';
 
 const users = [
-  { id: '#U-4402', name: 'Abebe Kebede', role: 'LANDLORD', verified: true, email: 'abebe.k@kira.et', phone: '+251 911 234 567', active: true },
-  { id: '#U-3129', name: 'Selam Tesfaye', role: 'TENANT', verified: true, email: 'selam.t@gmail.com', phone: '+251 944 882 110', active: true },
-  { id: '#U-8821', name: 'Dawit Haile', role: 'LANDLORD', verified: false, email: 'dawit.h@outlook.com', phone: '+251 900 112 233', active: false },
+  { id: '#U-4402', name: 'Abebe Kebede', role: 'LANDLORD', verified: true, email: 'abebe@summit.et', phone: '+251 911 22 33 44', active: true },
+  { id: '#U-3129', name: 'Almaz Zeleke', role: 'LANDLORD', verified: true, email: 'almaz.villas@gmail.com', phone: '+251 922 55 66 77', active: true },
+  { id: '#U-8821', name: 'Dawit Kasahun', role: 'LANDLORD', verified: false, email: 'dawit.studio@outlook.com', phone: '+251 911 88 99 00', active: true },
   { id: '#U-1055', name: 'Sara Mohammed', role: 'AGENT', verified: true, email: 'sara.m@kira.et', phone: '+251 922 456 789', active: true },
 ];
 

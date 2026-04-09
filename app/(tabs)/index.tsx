@@ -35,6 +35,7 @@ import { useFilters } from '@/context/FilterContext';
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const { visits } = useVisitPlan();
   const { filters, updateFilters } = useFilters();
   const { neighborhood } = useLocalSearchParams<{ neighborhood?: string }>();
@@ -50,8 +51,16 @@ export default function ExploreScreen() {
     // 1. Category filter
     if (activeCategory !== 'all' && p.category !== activeCategory) return false;
 
-    // 2. Search filter (if implemented later, for now we skip)
-    
+    // 2. Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      if (
+        !p.title.toLowerCase().includes(query) &&
+        !p.location.toLowerCase().includes(query)
+      ) {
+        return false;
+      }
+    }
     // 3. Price filter
     const numericPrice = parseInt(p.price.replace(',', ''));
     if (numericPrice < filters.minPrice || numericPrice > filters.maxPrice) return false;
@@ -120,7 +129,7 @@ export default function ExploreScreen() {
         <View style={styles.titleSection}>
           <Text style={styles.headline}>Find your</Text>
           <Text style={styles.headline}>sanctuary</Text>
-          <Text style={styles.headlineGreen}>in Addis.</Text>
+          <Text style={styles.headlineBlack}>in Addis.</Text>
         </View>
 
         {/* ── Search & Filter ──────────────────────────────────────────────── */}
@@ -128,9 +137,11 @@ export default function ExploreScreen() {
           <View style={styles.searchInputContainer}>
             <Feather name="search" size={18} color="#6B7280" style={styles.searchIcon} />
             <TextInput
-              placeholder="Search by location or price"
+              placeholder="Search by location or name"
               placeholderTextColor="#6B7280"
               style={styles.searchInput}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
           </View>
           <TouchableOpacity style={styles.filterButton} onPress={() => router.push('/modal')}>
@@ -226,10 +237,9 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
         <View style={styles.imageContainer}>
           <Image source={property.image} style={styles.cardImage} />
 
-          {/* Badge */}
           {property.badge === 'verified' && (
             <View style={styles.verifiedBadge}>
-              <MaterialIcons name="verified" size={12} color="#3B82F6" />
+              <MaterialIcons name="verified" size={12} color={KiraColors.primary} />
               <Text style={styles.verifiedText}>VERIFIED</Text>
             </View>
           )}
@@ -335,7 +345,7 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
             onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
           >
             <Text style={styles.detailBtnText}>View Details</Text>
-            <Feather name="arrow-right" size={14} color={KiraColors.primary} />
+            <Feather name="arrow-right" size={14} color="#FFF" />
           </TouchableOpacity>
 
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -398,7 +408,7 @@ const styles = StyleSheet.create({
     lineHeight: Typography.hero.lineHeight,
     letterSpacing: Typography.hero.letterSpacing,
   },
-  headlineGreen: {
+  headlineBlack: {
     fontSize: Typography.hero.fontSize,
     fontWeight: Typography.hero.fontWeight,
     color: KiraColors.primary,
@@ -436,7 +446,7 @@ const styles = StyleSheet.create({
     borderRadius: 24, marginRight: 12,
   },
   categoryPillActive: { backgroundColor: KiraColors.primary },
-  categoryPillText: { fontSize: 13, fontWeight: '600', color: '#4A5568' },
+  categoryPillText: { fontSize: 13, fontWeight: '600', color: KiraColors.primary },
   categoryPillTextActive: { fontSize: 13, fontWeight: '600', color: '#FFF' },
 
   // Listings
@@ -457,7 +467,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: KiraColors.surface, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
-  verifiedText: { fontSize: 9, fontWeight: '800', color: '#1A1A1A', marginLeft: 4, letterSpacing: 0.5 },
+  verifiedText: { fontSize: 9, fontWeight: '800', color: KiraColors.primary, marginLeft: 4, letterSpacing: 0.5 },
   hotDealBadge: {
     position: 'absolute', top: 16, left: 16,
     backgroundColor: KiraColors.danger, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
@@ -498,8 +508,8 @@ const styles = StyleSheet.create({
   // Neighborhood Tags
   hoodTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 14 },
   hoodTag: {
-    backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 4,
-    borderRadius: 20, borderWidth: 1, borderColor: '#D1FAE5',
+    backgroundColor: '#F3F4F6', paddingHorizontal: 10, paddingVertical: 4,
+    borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB',
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   noiseTag: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
@@ -513,13 +523,13 @@ const styles = StyleSheet.create({
   detailBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     paddingVertical: 12, borderRadius: 14,
-    borderWidth: 1.5, borderColor: KiraColors.primary,
+    backgroundColor: KiraColors.primary,
   },
-  detailBtnText: { fontSize: 13, fontWeight: '700', color: KiraColors.primary },
+  detailBtnText: { fontSize: 13, fontWeight: '700', color: '#FFF' },
   planBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14,
-    borderWidth: 1.5, borderColor: '#D1FAE5', backgroundColor: '#F0FDF4',
+    borderWidth: 1.5, borderColor: KiraColors.primary, backgroundColor: '#FFF',
   },
   planBtnActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   planBtnText: { fontSize: 13, fontWeight: '700', color: KiraColors.primary },
