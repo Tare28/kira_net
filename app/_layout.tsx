@@ -3,6 +3,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 import { VisitPlanProvider } from '@/context/VisitPlanContext';
+import { FilterProvider } from '@/context/FilterContext';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -15,7 +16,8 @@ export default function RootLayout() {
 
   return (
     <VisitPlanProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <FilterProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" />
           <Stack.Screen name="login" />
@@ -36,6 +38,7 @@ export default function RootLayout() {
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
+      </FilterProvider>
     </VisitPlanProvider>
   );
 }

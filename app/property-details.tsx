@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Dimensions, Share, Alert, Animated,
+  Dimensions, Share, Alert, Animated, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useVisitPlan } from '@/context/VisitPlanContext';
+
+import { KiraColors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -20,12 +22,12 @@ const MARKET_DATA: Record<string, { avg: number; cheaper: number; trend: 'up' | 
 };
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
+import { PROPERTIES as SHARED_PROPERTIES } from '@/data/properties';
+
+// We'll merge the UI-specific details with the shared property data
 const PROPERTIES: Record<string, any> = {
   '1': {
-    title: 'The Summit Residency',
-    location: 'Bole, Addis Ababa',
-    price: '25,000',
-    badge: 'verified',
+    ...SHARED_PROPERTIES[0],
     images: [
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?q=80&w=800&auto=format&fit=crop',
@@ -46,7 +48,6 @@ const PROPERTIES: Record<string, any> = {
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&auto=format&fit=crop',
       rating: 4.8, reviews: 34,
     },
-    // ── Trust Layer ──
     trust: {
       score: 91,
       verifiedPhotos: true,
@@ -55,7 +56,6 @@ const PROPERTIES: Record<string, any> = {
       reviewCount: 34,
       reportCount: 0,
     },
-    // ── Neighborhood ──
     hood: {
       safety: 4,       // /5
       noise: 2,        // 1=quiet, 5=very busy
@@ -65,10 +65,7 @@ const PROPERTIES: Record<string, any> = {
     },
   },
   '2': {
-    title: 'Modern Garden Villa',
-    location: 'Old Airport, Addis Ababa',
-    price: '45,000',
-    badge: 'hot_deal',
+    ...SHARED_PROPERTIES[1],
     images: [
       'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1416331108676-a22ccb276e35?q=80&w=800&auto=format&fit=crop',
@@ -106,10 +103,7 @@ const PROPERTIES: Record<string, any> = {
     },
   },
   '3': {
-    title: 'Kazanchis Studio',
-    location: 'Kazanchis, Addis Ababa',
-    price: '18,500',
-    badge: 'verified',
+    ...SHARED_PROPERTIES[2],
     images: [
       'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=800&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1536376072261-38c75010e6c9?q=80&w=800&auto=format&fit=crop',
@@ -150,9 +144,9 @@ const PROPERTIES: Record<string, any> = {
 
 // ─── Trust Score helpers ───────────────────────────────────────────────────────
 function getTrustColor(score: number) {
-  if (score >= 85) return '#16A34A';
-  if (score >= 60) return '#F59E0B';
-  return '#DC2626';
+  if (score >= 85) return KiraColors.success;
+  if (score >= 60) return KiraColors.warning;
+  return KiraColors.danger;
 }
 function getTrustLabel(score: number) {
   if (score >= 85) return 'Highly Trusted';
@@ -174,7 +168,6 @@ export default function PropertyDetailsScreen() {
   const [saved, setSaved] = useState(false);
   const [offlineMapSaved, setOfflineMapSaved] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
-  const [missedCallSent, setMissedCallSent] = useState(false);
 
   const { addVisit, removeVisit, isInPlan } = useVisitPlan();
   const inPlan = isInPlan(id ?? '1');
@@ -243,7 +236,7 @@ export default function PropertyDetailsScreen() {
               <Feather name="share-2" size={20} color="#1A1A1A" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.overlayBtn} onPress={() => setSaved(s => !s)}>
-              <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? '#DC2626' : '#1A1A1A'} />
+              <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? KiraColors.danger : '#1A1A1A'} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.overlayBtn, offlineMapSaved && styles.overlayBtnActive]} 
@@ -257,7 +250,7 @@ export default function PropertyDetailsScreen() {
               <MaterialCommunityIcons 
                 name={offlineMapSaved ? 'map-marker-check' : 'map-marker-plus-outline'} 
                 size={20} 
-                color={offlineMapSaved ? '#005C3A' : '#1A1A1A'} 
+                color={offlineMapSaved ? KiraColors.primary : '#1A1A1A'} 
               />
             </TouchableOpacity>
           </View>
@@ -310,25 +303,25 @@ export default function PropertyDetailsScreen() {
         {/* Quick Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Ionicons name="bed" size={20} color="#005C3A" />
+            <Ionicons name="bed" size={20} color={KiraColors.primary} />
             <Text style={styles.statValue}>{property.bedrooms}</Text>
             <Text style={styles.statLabel}>Bedrooms</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCard}>
-            <FontAwesome5 name="bath" size={18} color="#005C3A" />
+            <FontAwesome5 name="bath" size={18} color={KiraColors.primary} />
             <Text style={styles.statValue}>{property.bathrooms}</Text>
             <Text style={styles.statLabel}>Bathrooms</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCard}>
-            <MaterialIcons name="straighten" size={20} color="#005C3A" />
+            <MaterialIcons name="straighten" size={20} color={KiraColors.primary} />
             <Text style={styles.statValue}>{property.sqm}</Text>
             <Text style={styles.statLabel}>Sq. Meters</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCard}>
-            <Feather name="layers" size={20} color="#005C3A" />
+            <Feather name="layers" size={20} color={KiraColors.primary} />
             <Text style={styles.statValue} numberOfLines={1}>{property.floor}</Text>
             <Text style={styles.statLabel}>Floor</Text>
           </View>
@@ -344,13 +337,13 @@ export default function PropertyDetailsScreen() {
             onPress={() => router.push('/offline-maps')}
           >
             <View style={styles.offlineMapIcon}>
-              <Ionicons name="map" size={18} color="#005C3A" />
+              <Ionicons name="map" size={18} color={KiraColors.primary} />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.offlineMapTitle}>View in Offline Map</Text>
               <Text style={styles.offlineMapSub}>Available without internet</Text>
             </View>
-            <Feather name="chevron-right" size={16} color="#005C3A" />
+            <Feather name="chevron-right" size={16} color={KiraColors.primary} />
           </TouchableOpacity>
         )}
 
@@ -366,14 +359,14 @@ export default function PropertyDetailsScreen() {
           <View style={styles.utilitiesGrid}>
             {property.utilities.map((u: any, i: number) => (
               <View key={i} style={[styles.utilityChip, !u.available && styles.utilityChipOff]}>
-                <Ionicons name={u.icon} size={16} color={u.available ? '#005C3A' : '#9CA3AF'} />
+                <Ionicons name={u.icon} size={16} color={u.available ? KiraColors.primary : '#9CA3AF'} />
                 <Text style={[styles.utilityChipText, !u.available && styles.utilityChipTextOff]}>
                   {u.label}
                 </Text>
               </View>
             ))}
             <View style={[styles.utilityChip, !property.parking && styles.utilityChipOff]}>
-              <MaterialIcons name="local-parking" size={16} color={property.parking ? '#005C3A' : '#9CA3AF'} />
+              <MaterialIcons name="local-parking" size={16} color={property.parking ? KiraColors.primary : '#9CA3AF'} />
               <Text style={[styles.utilityChipText, !property.parking && styles.utilityChipTextOff]}>
                 Parking
               </Text>
@@ -411,7 +404,7 @@ export default function PropertyDetailsScreen() {
               <Text style={styles.ownerRole}>{property.owner.role}</Text>
               <Text style={styles.ownerSince}>{property.owner.since}</Text>
               <View style={styles.ownerRatingRow}>
-                <Ionicons name="star" size={12} color="#FBC02D" />
+                <Ionicons name="star" size={12} color={KiraColors.accent} />
                 <Text style={styles.ownerRating}>{property.owner.rating} ({property.owner.reviews} reviews)</Text>
               </View>
             </View>
@@ -421,7 +414,7 @@ export default function PropertyDetailsScreen() {
         {/* AI Similar Homes */}
         <View style={styles.section}>
           <View style={styles.aiLabelRow}>
-            <MaterialIcons name="auto-awesome" size={16} color="#005C3A" />
+            <MaterialIcons name="auto-awesome" size={16} color={KiraColors.primary} />
             <Text style={styles.sectionLabel}>  AI Picks — Similar Homes</Text>
           </View>
           <Text style={styles.aiSub}>Based on price, location & amenities</Text>
@@ -460,7 +453,7 @@ export default function PropertyDetailsScreen() {
         {/* Report */}
         <View style={styles.section}>
           <TouchableOpacity style={styles.reportBtn} onPress={() => router.push('/report-listing')}>
-            <Feather name="alert-triangle" size={15} color="#DC2626" />
+            <Feather name="alert-triangle" size={15} color={KiraColors.danger} />
             <Text style={styles.reportBtnText}>Report this listing</Text>
           </TouchableOpacity>
         </View>
@@ -475,7 +468,7 @@ export default function PropertyDetailsScreen() {
               activeOpacity={0.88}
             >
               <View style={[styles.postMoveIcon, { backgroundColor: '#E8F5E9' }]}>
-                <MaterialCommunityIcons name="file-sign" size={20} color="#005C3A" />
+                <MaterialCommunityIcons name="file-sign" size={20} color={KiraColors.primary} />
               </View>
               <Text style={styles.postMoveBtnTitle}>Digital Agreement</Text>
               <Text style={styles.postMoveBtnSub}>Sign your lease digitally</Text>
@@ -508,7 +501,7 @@ export default function PropertyDetailsScreen() {
             <MaterialCommunityIcons
               name={inPlan ? 'calendar-check' : 'calendar-plus'}
               size={18}
-              color={inPlan ? '#005C3A' : '#6B7280'}
+              color={inPlan ? KiraColors.primary : KiraColors.muted}
             />
             <Text style={[styles.visitPlanBtnText, inPlan && styles.visitPlanBtnTextActive]}>
               {inPlan ? 'In Plan' : 'Plan Visit'}
@@ -518,28 +511,14 @@ export default function PropertyDetailsScreen() {
 
         {/* Chat */}
         <TouchableOpacity style={styles.chatBtn} onPress={() => router.push('/chat')}>
-          <Feather name="message-circle" size={18} color="#005C3A" />
+          <Feather name="message-circle" size={18} color={KiraColors.primary} />
         </TouchableOpacity>
 
         {/* Contact */}
         <View style={styles.contactWrapper}>
           <TouchableOpacity
-            style={[styles.missedCallBtn, missedCallSent && styles.missedCallBtnSent]}
-            onPress={() => {
-              setMissedCallSent(true);
-              Alert.alert('📞 Missed Call Request', `We've sent a missed call request to ${property.owner.name}. They will call you back shortly.`);
-            }}
-            disabled={missedCallSent}
-          >
-            <MaterialCommunityIcons name="phone-missed" size={18} color={missedCallSent ? '#16A34A' : '#DC2626'} />
-            <Text style={[styles.missedCallText, missedCallSent && styles.missedCallTextSent]}>
-              {missedCallSent ? 'Request Sent' : 'Missed Call'}
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
             style={styles.contactBtn}
-            onPress={() => Alert.alert('Call Owner', `Calling ${property.owner.name}...`)}
+            onPress={() => Linking.openURL(`tel:${property.phone}`)}
           >
             <Ionicons name="call" size={18} color="#FFF" />
             <Text style={styles.contactBtnText}>Call Owner</Text>
@@ -561,7 +540,11 @@ function RentInsightsCard({ location, price }: { location: string; price: string
   const diffPct = Math.round(Math.abs(diff) / market.avg * 100);
 
   const trendIcon = market.trend === 'up' ? 'trending-up' : market.trend === 'down' ? 'trending-down' : 'minus';
-  const trendColor = market.trend === 'up' ? '#DC2626' : market.trend === 'down' ? '#16A34A' : '#6B7280';
+  const trendColor = market.trend === 'up'
+    ? KiraColors.danger
+    : market.trend === 'down'
+      ? KiraColors.success
+      : KiraColors.muted;
   const trendLabel = market.trend === 'up' ? `Rents rising +${market.trendPct}% this month`
     : market.trend === 'down' ? `Rents falling −${market.trendPct}% this month`
     : 'Rents stable this month';
@@ -590,14 +573,14 @@ function RentInsightsCard({ location, price }: { location: string; price: string
         <View style={insightStyles.statDivider} />
         <View style={insightStyles.statBox}>
           <Text style={insightStyles.statLabel}>This listing</Text>
-          <Text style={[insightStyles.statValue, { color: isCheaper ? '#16A34A' : '#DC2626' }]}>
+          <Text style={[insightStyles.statValue, { color: isCheaper ? KiraColors.success : KiraColors.danger }]}>
             {price} ETB
           </Text>
         </View>
         <View style={insightStyles.statDivider} />
         <View style={insightStyles.statBox}>
           <Text style={insightStyles.statLabel}>vs. Market</Text>
-          <Text style={[insightStyles.statValue, { color: isCheaper ? '#16A34A' : '#DC2626' }]}>
+          <Text style={[insightStyles.statValue, { color: isCheaper ? KiraColors.success : KiraColors.danger }]}>
             {isCheaper ? `−${diffPct}%` : `+${diffPct}%`}
           </Text>
         </View>
@@ -611,7 +594,7 @@ function RentInsightsCard({ location, price }: { location: string; price: string
             : `⚠️ Pricier than ${100 - market.cheaper}% of similar listings`}
         </Text>
         <View style={insightStyles.barTrack}>
-          <View style={[insightStyles.barFill, { width: `${market.cheaper}%` as any, backgroundColor: isCheaper ? '#16A34A' : '#F59E0B' }]} />
+          <View style={[insightStyles.barFill, { width: `${market.cheaper}%` as any, backgroundColor: isCheaper ? KiraColors.success : KiraColors.warning }]} />
           <View style={[insightStyles.barMarker, { left: `${market.cheaper}%` as any }]} />
         </View>
         <View style={insightStyles.barLabels}>
@@ -670,7 +653,7 @@ function TrustScoreCard({ trust, trustColor }: { trust: any; trustColor: string 
         </View>
         {trust.reportCount > 0 && (
           <View style={trustStyles.warnChip}>
-            <Feather name="alert-triangle" size={11} color="#DC2626" />
+            <Feather name="alert-triangle" size={11} color={KiraColors.danger} />
             <Text style={trustStyles.warnText}>{trust.reportCount} report{trust.reportCount > 1 ? 's' : ''} filed</Text>
           </View>
         )}
@@ -692,15 +675,15 @@ function TrustCheck({ ok, label }: { ok: boolean; label: string }) {
 
 // ─── Neighborhood Card ────────────────────────────────────────────────────────
 function NeighborhoodCard({ hood }: { hood: any }) {
-  const safetyColor = hood.safety >= 4 ? '#16A34A' : hood.safety >= 3 ? '#F59E0B' : '#DC2626';
-  const noiseColor = hood.noise <= 2 ? '#16A34A' : hood.noise <= 3 ? '#F59E0B' : '#DC2626';
-  const floodColor = hood.floodRisk === 'Low' ? '#16A34A' : hood.floodRisk === 'Moderate' ? '#F59E0B' : '#DC2626';
+  const safetyColor = hood.safety >= 4 ? KiraColors.success : hood.safety >= 3 ? KiraColors.warning : KiraColors.danger;
+  const noiseColor = hood.noise <= 2 ? KiraColors.success : hood.noise <= 3 ? KiraColors.warning : KiraColors.danger;
+  const floodColor = hood.floodRisk === 'Low' ? KiraColors.success : hood.floodRisk === 'Moderate' ? KiraColors.warning : KiraColors.danger;
 
   return (
     <View style={hoodStyles.card}>
       <View style={hoodStyles.headerRow}>
         <View style={hoodStyles.iconWrap}>
-          <Ionicons name="map" size={16} color="#005C3A" />
+          <Ionicons name="map" size={16} color={KiraColors.primary} />
         </View>
         <Text style={hoodStyles.title}>Neighborhood Intelligence</Text>
       </View>
@@ -795,7 +778,7 @@ const styles = StyleSheet.create({
   verifiedText: { fontSize: 9, fontWeight: '800', color: '#1A1A1A', marginLeft: 4 },
   hotDealBadge: {
     position: 'absolute', bottom: 40, left: 16,
-    backgroundColor: '#DC2626', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
+    backgroundColor: KiraColors.danger, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
   },
   hotDealText: { fontSize: 9, fontWeight: '800', color: '#FFF' },
 
@@ -813,7 +796,7 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', alignItems: 'center', marginTop: 6, marginBottom: 10 },
   locationText: { fontSize: 13, color: '#4A5568', marginLeft: 4 },
   priceRow: { flexDirection: 'row', alignItems: 'baseline' },
-  price: { fontSize: 26, fontWeight: '900', color: '#005C3A' },
+  price: { fontSize: 26, fontWeight: '900', color: KiraColors.primary },
   priceUnit: { fontSize: 14, fontWeight: '700' },
   priceDesc: { fontSize: 12, color: '#6B7280', fontWeight: '500' },
 
@@ -837,7 +820,7 @@ const styles = StyleSheet.create({
     borderRadius: 30, marginRight: 10, marginBottom: 10,
   },
   utilityChipOff: { backgroundColor: '#F3F4F6' },
-  utilityChipText: { fontSize: 12, fontWeight: '700', color: '#005C3A', marginLeft: 6 },
+  utilityChipText: { fontSize: 12, fontWeight: '700', color: KiraColors.primary, marginLeft: 6 },
   utilityChipTextOff: { color: '#9CA3AF' },
   termsRow: { flexDirection: 'row' },
   termBox: { flex: 1, backgroundColor: '#F7F8F9', borderRadius: 16, padding: 16, marginRight: 10 },
@@ -851,7 +834,7 @@ const styles = StyleSheet.create({
   ownerInfo: { flex: 1 },
   ownerNameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
   ownerName: { fontSize: 16, fontWeight: '800', color: '#1A1A1A' },
-  ownerRole: { fontSize: 12, fontWeight: '600', color: '#005C3A', marginBottom: 2 },
+  ownerRole: { fontSize: 12, fontWeight: '600', color: KiraColors.primary, marginBottom: 2 },
   ownerSince: { fontSize: 11, color: '#6B7280', marginBottom: 6 },
   ownerRatingRow: { flexDirection: 'row', alignItems: 'center' },
   ownerRating: { fontSize: 11, color: '#4A5568', marginLeft: 4, fontWeight: '600' },
@@ -871,20 +854,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center',
   },
   simBadgeVerified: { backgroundColor: '#FFF' },
-  simBadgeHot: { backgroundColor: '#DC2626' },
+  simBadgeHot: { backgroundColor: KiraColors.danger },
   simBadgeHotText: { fontSize: 8, fontWeight: '800', color: '#FFF' },
   simInfo: { padding: 10 },
   simTitle: { fontSize: 12, fontWeight: '800', color: '#1A1A1A', marginBottom: 3 },
   simLocRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   simLocation: { fontSize: 10, color: '#4A5568', marginLeft: 2 },
-  simPrice: { fontSize: 12, fontWeight: '900', color: '#005C3A' },
+  simPrice: { fontSize: 12, fontWeight: '900', color: KiraColors.primary },
   simPriceUnit: { fontSize: 9, fontWeight: '500', color: '#6B7280' },
   reportBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     paddingVertical: 12, borderWidth: 1, borderColor: '#FCA5A5',
     borderRadius: 12, backgroundColor: '#FEF2F2',
   },
-  reportBtnText: { fontSize: 13, fontWeight: '700', color: '#DC2626', marginLeft: 8 },
+  reportBtnText: { fontSize: 13, fontWeight: '700', color: KiraColors.danger, marginLeft: 8 },
 
   // Post-Move Actions
   postMoveRow: { flexDirection: 'row', gap: 12 },
@@ -901,7 +884,7 @@ const styles = StyleSheet.create({
 
   overlayBtnActive: {
     backgroundColor: '#E8F5E9',
-    borderColor: '#005C3A',
+    borderColor: KiraColors.primary,
   },
   offlineMapBanner: {
     flexDirection: 'row',
@@ -923,7 +906,7 @@ const styles = StyleSheet.create({
   offlineMapTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#005C3A',
+    color: KiraColors.primary,
   },
   offlineMapSub: {
     fontSize: 11,
@@ -952,10 +935,10 @@ const styles = StyleSheet.create({
   missedCallText: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#DC2626',
+    color: KiraColors.danger,
   },
   missedCallTextSent: {
-    color: '#16A34A',
+    color: KiraColors.success,
   },
 
   // Footer
@@ -972,19 +955,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F8F9',
   },
   visitPlanBtnActive: {
-    borderColor: '#005C3A', backgroundColor: '#E8F5E9',
+    borderColor: KiraColors.primary, backgroundColor: '#E8F5E9',
   },
   visitPlanBtnText: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
-  visitPlanBtnTextActive: { color: '#005C3A' },
+  visitPlanBtnTextActive: { color: KiraColors.primary },
   chatBtn: {
     width: 46, height: 46, borderRadius: 23,
-    borderWidth: 1.5, borderColor: '#005C3A',
+    borderWidth: 1.5, borderColor: KiraColors.primary,
     justifyContent: 'center', alignItems: 'center',
   },
   contactBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#005C3A', borderRadius: 14, paddingVertical: 14,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 },
+    backgroundColor: KiraColors.primary, borderRadius: 14, paddingVertical: 14,
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
   contactBtnText: { fontSize: 14, fontWeight: '800', color: '#FFF' },
@@ -1016,8 +999,8 @@ const trustStyles = StyleSheet.create({
   checksRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 14 },
   checkItem: { alignItems: 'center', flex: 1 },
   checkIcon: { width: 20, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center', marginBottom: 5 },
-  checkOk: { backgroundColor: '#16A34A' },
-  checkFail: { backgroundColor: '#DC2626' },
+  checkOk: { backgroundColor: KiraColors.success },
+  checkFail: { backgroundColor: KiraColors.danger },
   checkLabel: { fontSize: 10, color: '#4A5568', fontWeight: '600', textAlign: 'center' },
   footerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   footerItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
@@ -1026,7 +1009,7 @@ const trustStyles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 5,
     backgroundColor: '#FEF2F2', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
   },
-  warnText: { fontSize: 11, fontWeight: '700', color: '#DC2626' },
+  warnText: { fontSize: 11, fontWeight: '700', color: KiraColors.danger },
 });
 
 // ─── Neighborhood Styles ──────────────────────────────────────────────────────
@@ -1057,7 +1040,7 @@ const hoodStyles = StyleSheet.create({
     backgroundColor: '#FFF', borderWidth: 1, borderColor: '#D1FAE5',
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
   },
-  tagText: { fontSize: 11, fontWeight: '700', color: '#005C3A' },
+  tagText: { fontSize: 11, fontWeight: '700', color: KiraColors.primary },
 });
 
 // ─── Rent Insights Styles ─────────────────────────────────────────────────────

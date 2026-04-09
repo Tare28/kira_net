@@ -5,30 +5,34 @@ import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 
+import { Dimensions } from 'react-native';
+import { useFilters } from '@/context/FilterContext';
+import { PROPERTIES } from '@/data/properties';
+import MultiSlider from '@ptomasroos/react-native-multi-slider';
+
+const { width } = Dimensions.get('window');
+
 export default function FiltersModalScreen() {
-  const [activeDeposit, setActiveDeposit] = useState('3 Months');
-  const [privateElectricity, setPrivateElectricity] = useState(true);
-  const [verifiedActive, setVerifiedActive] = useState(false);
-  const [activeNeighborhood, setActiveNeighborhood] = useState('Bole');
-  const [amenities, setAmenities] = useState<string[]>(['Water']);
+  const { filters, updateFilters, resetFilters } = useFilters();
   const [showLocationModal, setShowLocationModal] = useState(false);
 
   const NEIGHBORHOODS = ['Bole', 'Arada', 'Yeka', 'Kazanchis', 'CMC', 'Megenagna'];
 
+  const onValuesChange = (values: number[]) => {
+    updateFilters({ minPrice: values[0], maxPrice: values[1] });
+  };
+  
+  // Static toggle for now as simplified in earlier turn
   const toggleAmenity = (name: string) => {
-    if (amenities.includes(name)) {
-      setAmenities(amenities.filter(a => a !== name));
-    } else {
-      setAmenities([...amenities, name]);
+    if (name === 'Water') {
+        updateFilters({ essentialWater: !filters.essentialWater });
+    } else if (name === 'Internet') {
+        updateFilters({ essentialInternet: !filters.essentialInternet });
     }
   };
 
   const handleReset = () => {
-    setActiveDeposit('3 Months');
-    setPrivateElectricity(true);
-    setVerifiedActive(false);
-    setActiveNeighborhood('Bole');
-    setAmenities(['Water']);
+    resetFilters();
     Alert.alert('Filters Reset', 'All search filters have been cleared.');
   };
 
@@ -59,20 +63,42 @@ export default function FiltersModalScreen() {
 
             <View style={styles.sliderCard}>
               <View style={styles.sliderContainer}>
-                <View style={styles.sliderTrackLine} />
-                <View style={styles.sliderActiveLine} />
-                <View style={[styles.sliderThumb, { left: '10%' }]} />
-                <View style={[styles.sliderThumb, { left: '60%' }]} />
+                <MultiSlider
+                  values={[filters.minPrice, filters.maxPrice]}
+                  sliderLength={width - 88}
+                  onValuesChange={onValuesChange}
+                  min={0}
+                  max={150000}
+                  step={1000}
+                  allowOverlap={false}
+                  snapped
+                  selectedStyle={{ backgroundColor: '#005C3A', height: 4 }}
+                  unselectedStyle={{ backgroundColor: '#E5E7EB', height: 4 }}
+                  trackStyle={{ height: 4 }}
+                  markerStyle={{ 
+                    backgroundColor: '#FFF', 
+                    height: 24, 
+                    width: 24, 
+                    borderRadius: 12, 
+                    borderWidth: 3, 
+                    borderColor: '#005C3A',
+                    top: 2,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                  }}
+                />
               </View>
               <View style={styles.minMaxRow}>
                 <View style={styles.minMaxBox}>
                   <Text style={styles.minMaxLabel}>Minimum</Text>
-                  <Text style={styles.minMaxValue}>5,000</Text>
+                  <Text style={styles.minMaxValue}>{filters.minPrice.toLocaleString()}</Text>
                 </View>
                 <View style={styles.dash} />
                 <View style={styles.minMaxBox}>
                   <Text style={styles.minMaxLabel}>Maximum</Text>
-                  <Text style={styles.minMaxValue}>100,000+</Text>
+                  <Text style={styles.minMaxValue}>{filters.maxPrice >= 150000 ? '150,000+' : filters.maxPrice.toLocaleString()}</Text>
                 </View>
               </View>
             </View>
@@ -85,10 +111,10 @@ export default function FiltersModalScreen() {
               {['1 Month', '3 Months', '6 Months'].map(label => (
                 <TouchableOpacity
                   key={label}
-                  style={[styles.depositPill, activeDeposit === label && styles.depositPillActive]}
-                  onPress={() => setActiveDeposit(label)}
+                  style={[styles.depositPill, filters.deposit === label && styles.depositPillActive]}
+                  onPress={() => updateFilters({ deposit: label })}
                 >
-                  <Text style={[styles.depositPillText, activeDeposit === label && styles.depositPillTextActive]}>{label}</Text>
+                  <Text style={[styles.depositPillText, filters.deposit === label && styles.depositPillTextActive]}>{label}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -102,18 +128,18 @@ export default function FiltersModalScreen() {
               onPress={() => setShowLocationModal(true)}
             >
               <Ionicons name="location-sharp" size={20} color="#005C3A" />
-              <Text style={styles.dropdownText}>{activeNeighborhood}, Addis Ababa</Text>
+              <Text style={styles.dropdownText}>{filters.neighborhood || 'Select Area'}, Addis Ababa</Text>
               <Feather name="chevron-down" size={20} color="#1A1A1A" style={{ marginLeft: 'auto' }} />
             </TouchableOpacity>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
               {NEIGHBORHOODS.slice(0, 4).map(hood => (
                 <TouchableOpacity
                   key={hood}
-                  style={[styles.chip, activeNeighborhood === hood && styles.chipActive]}
-                  onPress={() => setActiveNeighborhood(hood)}
+                  style={[styles.chip, filters.neighborhood === hood && styles.chipActive]}
+                  onPress={() => updateFilters({ neighborhood: hood })}
                 >
-                  <Text style={[styles.chipText, activeNeighborhood === hood && styles.chipTextActive]}>{hood}</Text>
-                  {activeNeighborhood === hood && (
+                  <Text style={[styles.chipText, filters.neighborhood === hood && styles.chipTextActive]}>{hood}</Text>
+                  {filters.neighborhood === hood && (
                     <Feather name="x" size={12} color="#005C3A" style={{ marginLeft: 4 }} />
                   )}
                 </TouchableOpacity>
@@ -126,22 +152,22 @@ export default function FiltersModalScreen() {
             <Text style={styles.sectionTitle}>Essential Amenities</Text>
             <View style={styles.amenitiesGrid}>
               <TouchableOpacity 
-                style={[styles.amenityCard, amenities.includes('Water') && styles.amenityCardActive]}
+                style={[styles.amenityCard, filters.essentialWater && styles.amenityCardActive]}
                 onPress={() => toggleAmenity('Water')}
               >
                 <View style={styles.amenityIconWrap}>
-                  <Ionicons name="water" size={20} color={amenities.includes('Water') ? '#FFF' : '#005C3A'} />
+                  <Ionicons name="water" size={20} color={filters.essentialWater ? '#FFF' : '#005C3A'} />
                 </View>
-                <Text style={[styles.amenityCardText, amenities.includes('Water') && styles.amenityTextActive]}>Constant Water Supply</Text>
+                <Text style={[styles.amenityCardText, filters.essentialWater && styles.amenityTextActive]}>Constant Water Supply</Text>
               </TouchableOpacity>
               <TouchableOpacity 
-                style={[styles.amenityCard, amenities.includes('Internet') && styles.amenityCardActive]}
+                style={[styles.amenityCard, filters.essentialInternet && styles.amenityCardActive]}
                 onPress={() => toggleAmenity('Internet')}
               >
                 <View style={styles.amenityIconWrap}>
-                  <Feather name="wifi" size={20} color={amenities.includes('Internet') ? '#FFF' : '#005C3A'} />
+                  <Feather name="wifi" size={20} color={filters.essentialInternet ? '#FFF' : '#005C3A'} />
                 </View>
-                <Text style={[styles.amenityCardText, amenities.includes('Internet') && styles.amenityTextActive]}>Fiber Optic Internet</Text>
+                <Text style={[styles.amenityCardText, filters.essentialInternet && styles.amenityTextActive]}>Fiber Optic Internet</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -158,8 +184,8 @@ export default function FiltersModalScreen() {
                 <Text style={styles.electricitySub}>Exclude shared utility listings</Text>
               </View>
               <Switch
-                value={privateElectricity}
-                onValueChange={setPrivateElectricity}
+                value={filters.privateMeter}
+                onValueChange={(val) => updateFilters({ privateMeter: val })}
                 trackColor={{ true: '#005C3A', false: '#D1D5DB' }}
                 thumbColor="#FFF"
               />
@@ -177,8 +203,8 @@ export default function FiltersModalScreen() {
                 <Text style={styles.verifySubtitle}>Physically inspected by Kira-Net</Text>
               </View>
               <Switch
-                value={verifiedActive}
-                onValueChange={setVerifiedActive}
+                value={filters.isVerified}
+                onValueChange={(val) => updateFilters({ isVerified: val })}
                 trackColor={{ true: '#005C3A', false: '#D1D5DB' }}
                 thumbColor="#FFF"
               />
@@ -204,7 +230,20 @@ export default function FiltersModalScreen() {
         {/* Footer */}
         <View style={styles.footer}>
           <TouchableOpacity style={styles.applyButton} onPress={() => router.back()}>
-            <Text style={styles.applyButtonText}>Show 142 Properties</Text>
+            <Text style={styles.applyButtonText}>
+              Show {
+                PROPERTIES.filter(p => {
+                  const numericPrice = parseInt(p.price.replace(',', ''));
+                  if (numericPrice < filters.minPrice || numericPrice > filters.maxPrice) return false;
+                  if (filters.neighborhood && !p.location.includes(filters.neighborhood)) return false;
+                  if (filters.essentialWater && !p.utils.includes('Constant Water')) return false;
+                  if (filters.essentialInternet && !p.utils.includes('Fiber Optic') && !p.utils.includes('High Speed')) return false;
+                  if (filters.isVerified && p.badge !== 'verified') return false;
+                  if (filters.privateMeter && !p.utils.includes('Private Meter') && !p.utils.includes('Prepaid')) return false;
+                  return true;
+                }).length
+              } Properties
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -225,12 +264,12 @@ export default function FiltersModalScreen() {
                   <TouchableOpacity 
                     style={styles.locationItem}
                     onPress={() => {
-                      setActiveNeighborhood(item);
+                      updateFilters({ neighborhood: item });
                       setShowLocationModal(false);
                     }}
                   >
                     <Text style={styles.locationItemText}>{item}</Text>
-                    {activeNeighborhood === item && <Feather name="check" size={20} color="#005C3A" />}
+                    {filters.neighborhood === item && <Feather name="check" size={20} color="#005C3A" />}
                   </TouchableOpacity>
                 )}
               />

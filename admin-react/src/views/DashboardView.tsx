@@ -24,9 +24,11 @@ interface DashboardProps {
 const DashboardView: React.FC<DashboardProps> = ({ onNavigate }) => {
     return (
         <section>
-            <div style={{ marginBottom: '40px' }}>
-                <h1 style={{ fontSize: '48px', fontWeight: 900, letterSpacing: '-2px', marginBottom: '8px' }}>Executive Dashboard.</h1>
-                <p style={{ color: '#64748B', fontWeight: 500, fontSize: '16px' }}>Real-time overview of the Kira-Net ecosystem status.</p>
+            <div className="view-header">
+                <div className="view-title">
+                    <h1>Executive Dashboard.</h1>
+                    <p>Real-time overview of the Kira-Net ecosystem status.</p>
+                </div>
             </div>
 
             <div className="stats-grid">

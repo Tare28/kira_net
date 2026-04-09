@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
+import { KiraColors } from '@/constants/colors';
+
 export default function ProfileScreen() {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userName, setUserName] = useState('Cityzens User');
@@ -57,14 +59,14 @@ export default function ProfileScreen() {
         <Text style={styles.headerTitle}>User Profile</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => router.push('/boost-listing')} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-            <Feather name="zap" size={24} color="#F59E0B" />
+            <Feather name="zap" size={24} color={KiraColors.warning} />
           </TouchableOpacity>
           <TouchableOpacity
             hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
             onPress={() => router.push('/(tabs)/alerts')}
             style={styles.bellWrap}
           >
-            <Feather name="bell" size={24} color="#005C3A" />
+            <Feather name="bell" size={24} color={KiraColors.primary} />
             <View style={styles.notifBadge}>
               <Text style={styles.notifBadgeText}>3</Text>
             </View>
@@ -76,7 +78,7 @@ export default function ProfileScreen() {
         
         <View style={styles.userCard}>
           <View style={styles.userAvatar}>
-            <Feather name="user" size={32} color="#005C3A" />
+            <Feather name="user" size={32} color={KiraColors.primary} />
           </View>
           <View style={styles.userInfo}>
             <Text style={styles.userName}>{userName}</Text>
@@ -117,7 +119,7 @@ export default function ProfileScreen() {
           style={styles.logoutBtn} 
           onPress={() => router.replace('/login')}
         >
-          <Feather name="log-out" size={16} color="#DC2626" />
+          <Feather name="log-out" size={16} color={KiraColors.danger} />
           <Text style={styles.logoutBtnText}>Log Out</Text>
         </TouchableOpacity>
 
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -4,
     right: -6,
-    backgroundColor: '#DC2626',
+    backgroundColor: KiraColors.danger,
     width: 14,
     height: 14,
     borderRadius: 7,
@@ -318,12 +320,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     borderRadius: 16,
     paddingVertical: 18,
     marginTop: 10,
     marginBottom: 20,
-    shadowColor: '#005C3A',
+    shadowColor: KiraColors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -347,7 +349,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoutBtnText: {
-    color: '#DC2626',
+    color: KiraColors.danger,
     fontSize: 14,
     fontWeight: '700',
     marginLeft: 8,
@@ -395,7 +397,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   saveBtn: {
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',

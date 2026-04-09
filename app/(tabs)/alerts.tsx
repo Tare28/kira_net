@@ -10,6 +10,8 @@ import {
 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 
+import { KiraColors } from '@/constants/colors';
+
 // ─── Mock notification data ────────────────────────────────────────────────────
 const NOTIFICATIONS = [
   {
@@ -117,7 +119,7 @@ export default function AlertsScreen() {
         {/* ── SMS + Push Premium Card ─────────────────────────────────────── */}
         <View style={styles.premiumCard}>
           <View style={styles.premiumRow}>
-            <MaterialIcons name="auto-awesome" size={20} color="#FBC02D" />
+            <MaterialIcons name="auto-awesome" size={20} color={KiraColors.accent} />
             <Text style={styles.premiumTitle}>SMS & Push Alerts</Text>
             <View style={styles.liveChip}>
               <View style={styles.liveDot} />
@@ -136,7 +138,7 @@ export default function AlertsScreen() {
               <Switch
                 value={prefs.pushAlerts}
                 onValueChange={() => toggle('pushAlerts')}
-                trackColor={{ false: 'rgba(255,255,255,0.3)', true: '#FBC02D' }}
+                trackColor={{ false: 'rgba(255,255,255,0.3)', true: KiraColors.accent }}
                 thumbColor="#FFF"
               />
             </View>
@@ -161,7 +163,7 @@ export default function AlertsScreen() {
                     toggle('smsAlerts');
                   }
                 }}
-                trackColor={{ false: 'rgba(255,255,255,0.3)', true: '#FBC02D' }}
+                trackColor={{ false: 'rgba(255,255,255,0.3)', true: KiraColors.accent }}
                 thumbColor="#FFF"
               />
             </View>
@@ -175,9 +177,9 @@ export default function AlertsScreen() {
             <Text style={styles.prefsSub}>Choose what alerts you want to receive</Text>
 
             {[
-              { key: 'hotListings', icon: 'fire', label: '🔥 Hot Listing Alerts', desc: 'New listings that match your search, instantly', color: '#DC2626' },
-              { key: 'priceMatch', icon: 'check-circle', label: '✅ Price Match Alerts', desc: 'Listings within your set budget', color: '#16A34A' },
-              { key: 'priceDrop', icon: 'trending-down', label: '📉 Price Drop Alerts', desc: 'When a saved listing lowers its price', color: '#F59E0B' },
+              { key: 'hotListings', icon: 'fire', label: '🔥 Hot Listing Alerts', desc: 'New listings that match your search, instantly', color: KiraColors.danger },
+              { key: 'priceMatch', icon: 'check-circle', label: '✅ Price Match Alerts', desc: 'Listings within your set budget', color: KiraColors.success },
+              { key: 'priceDrop', icon: 'trending-down', label: '📉 Price Drop Alerts', desc: 'When a saved listing lowers its price', color: KiraColors.warning },
               { key: 'locationMatch', icon: 'map-pin', label: '📍 Location Alerts', desc: 'New listings in your saved areas', color: '#3B82F6' },
             ].map(pref => (
               <View key={pref.key} style={styles.prefRow}>
@@ -189,7 +191,7 @@ export default function AlertsScreen() {
                   value={prefs[pref.key as keyof typeof DEFAULT_PREFS]}
                   onValueChange={() => toggle(pref.key as keyof typeof DEFAULT_PREFS)}
                   trackColor={{ false: '#E5E7EB', true: '#D1FAE5' }}
-                  thumbColor={prefs[pref.key as keyof typeof DEFAULT_PREFS] ? '#005C3A' : '#9CA3AF'}
+                  thumbColor={prefs[pref.key as keyof typeof DEFAULT_PREFS] ? KiraColors.primary : KiraColors.muted}
                 />
               </View>
             ))}
@@ -224,7 +226,7 @@ export default function AlertsScreen() {
         {/* ── Caught Up ───────────────────────────────────────────────────── */}
         <View style={styles.caughtUp}>
           <MaterialIcons name="notifications-none" size={36} color="#D1D5DB" />
-          <Text style={styles.caughtUpText}>You're all caught up!</Text>
+          <Text style={styles.caughtUpText}>You&apos;re all caught up!</Text>
           <Text style={styles.caughtUpSub}>New alerts appear here instantly.</Text>
         </View>
 
@@ -272,7 +274,7 @@ function NotifCard({ notif, onAction }: { notif: NotifType; onAction: () => void
         {/* Price drop savings badge */}
         {'dropAmount' in notif && notif.dropAmount && (
           <View style={styles.savingsBadge}>
-            <Feather name="arrow-down" size={11} color="#16A34A" />
+            <Feather name="arrow-down" size={11} color={KiraColors.success} />
             <Text style={styles.savingsText}>Save {notif.dropAmount}</Text>
           </View>
         )}
@@ -281,7 +283,7 @@ function NotifCard({ notif, onAction }: { notif: NotifType; onAction: () => void
         {notif.action && (
           <TouchableOpacity style={styles.notifAction} onPress={onAction}>
             <Text style={styles.notifActionText}>{notif.action}</Text>
-            <Feather name="arrow-right" size={12} color="#005C3A" />
+            <Feather name="arrow-right" size={12} color={KiraColors.primary} />
           </TouchableOpacity>
         )}
       </View>
@@ -302,19 +304,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center',
   },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#1A1A1A' },
-  headerSub: { fontSize: 11, color: '#DC2626', fontWeight: '700', marginTop: 1 },
+  headerSub: { fontSize: 11, color: KiraColors.danger, fontWeight: '700', marginTop: 1 },
   prefBtn: {
     width: 40, height: 40, borderRadius: 20,
     backgroundColor: '#F3F4F6', justifyContent: 'center', alignItems: 'center',
   },
-  prefBtnActive: { backgroundColor: '#005C3A' },
+  prefBtnActive: { backgroundColor: KiraColors.primary },
 
   scrollContent: { paddingHorizontal: 20, paddingTop: 4 },
 
   // Premium Card
   premiumCard: {
-    backgroundColor: '#005C3A', borderRadius: 24, padding: 20, marginBottom: 20,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 8 },
+    backgroundColor: KiraColors.primary, borderRadius: 24, padding: 20, marginBottom: 20,
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25, shadowRadius: 16, elevation: 8,
   },
   premiumRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
@@ -357,7 +359,7 @@ const styles = StyleSheet.create({
     alignItems: 'center', marginBottom: 14,
   },
   sectionLabel: { fontSize: 11, fontWeight: '800', color: '#6B7280', letterSpacing: 1.2 },
-  markRead: { fontSize: 12, fontWeight: '700', color: '#005C3A' },
+  markRead: { fontSize: 12, fontWeight: '700', color: KiraColors.primary },
 
   // Notif Card
   notifCard: {
@@ -370,7 +372,7 @@ const styles = StyleSheet.create({
   },
   unreadDot: {
     position: 'absolute', left: 0, top: '25%', bottom: '25%',
-    width: 4, borderTopRightRadius: 4, borderBottomRightRadius: 4, backgroundColor: '#005C3A',
+    width: 4, borderTopRightRadius: 4, borderBottomRightRadius: 4, backgroundColor: KiraColors.primary,
   },
   notifIconBox: {
     width: 46, height: 46, borderRadius: 14,
@@ -388,10 +390,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#DCFCE7', paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 20, alignSelf: 'flex-start', marginBottom: 8,
   },
-  savingsText: { fontSize: 11, fontWeight: '800', color: '#16A34A' },
+  savingsText: { fontSize: 11, fontWeight: '800', color: KiraColors.success },
 
   notifAction: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start' },
-  notifActionText: { fontSize: 12, fontWeight: '800', color: '#005C3A' },
+  notifActionText: { fontSize: 12, fontWeight: '800', color: KiraColors.primary },
 
   // Caught up
   caughtUp: { alignItems: 'center', paddingVertical: 32 },

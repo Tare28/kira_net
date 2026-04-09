@@ -19,15 +19,17 @@ interface AgentsProps {
   onNavigate: (tab: string) => void;
 }
 
-const AgentsView: React.FC<AgentsProps> = ({ onNavigate }) => {
+const AgentsView: React.FC<AgentsProps> = () => {
   return (
     <section>
-        <div style={{ marginBottom: '60px' }}>
-            <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Curator Oversight</p>
-            <h1 style={{ fontSize: '56px', fontWeight: 900, letterSpacing: '-3px', lineHeight: 1 }}>Agent Network.<br/><span style={{ opacity: 0.1 }}>Elite Facilitation.</span></h1>
+        <div className="view-header">
+            <div className="view-title">
+                <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Curator Oversight</p>
+                <h1>Agent Network.<br/><span style={{ opacity: 0.1 }}>Elite Facilitation.</span></h1>
+            </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
             {agents.map((agent, idx) => (
                 <div key={idx} style={{ 
                     background: 'white', 
@@ -75,15 +77,15 @@ const AgentsView: React.FC<AgentsProps> = ({ onNavigate }) => {
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #F1F5F9', paddingTop: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderTop: '1px solid #F1F5F9', paddingTop: '24px', flexWrap: 'wrap', gap: '16px' }}>
                         <div style={{ display: 'flex', gap: '24px' }}>
                             <div>
-                                <span style={{ fontSize: '18px', fontWeight: 900, display: 'block' }}>{agent.listings}</span>
+                                <span style={{ fontSize: '18px', fontWeight: 900, display: 'block', margin: 0 }}>{agent.listings}</span>
                                 <span style={{ fontSize: '9px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Assets</span>
                             </div>
                             {agent.rating !== undefined && (
                                 <div>
-                                    <span style={{ fontSize: '18px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px' }}>{agent.rating} <Star size={10} fill="#FBBF24" color="#FBBF24"/></span>
+                                    <span style={{ fontSize: '18px', fontWeight: 900, display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>{agent.rating} <Star size={10} fill="#FBBF24" color="#FBBF24"/></span>
                                     <span style={{ fontSize: '9px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>{agent.reviews} Reviews</span>
                                 </div>
                             )}
@@ -92,11 +94,11 @@ const AgentsView: React.FC<AgentsProps> = ({ onNavigate }) => {
                         <div style={{ display: 'flex', gap: '8px' }}>
                             {agent.status === 'PENDING' ? (
                                 <button style={{ background: '#10B981', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    Approve Access <ArrowRight size={14}/>
+                                    Approve <ArrowRight size={14}/>
                                 </button>
                             ) : agent.status === 'SUSPENDED' ? (
                                 <button style={{ background: '#0F172A', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800 }}>
-                                    Restore Member
+                                    Restore
                                 </button>
                             ) : (
                                 <>
@@ -120,7 +122,8 @@ const AgentsView: React.FC<AgentsProps> = ({ onNavigate }) => {
                 justifyContent: 'center',
                 gap: '16px',
                 color: '#64748B',
-                transition: '0.2s'
+                transition: '0.2s',
+                minHeight: '200px'
             }}>
                 <div style={{ width: '56px', height: '56px', background: '#F8FAFC', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ShieldPlus size={24}/>
@@ -131,4 +134,5 @@ const AgentsView: React.FC<AgentsProps> = ({ onNavigate }) => {
     </section>
   );
 };
+
 export default AgentsView;

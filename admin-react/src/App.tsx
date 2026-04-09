@@ -10,7 +10,11 @@ import {
   LogOut, 
   Search, 
   Bell, 
-  ShieldCheck
+  ShieldCheck,
+  Menu,
+  X,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 // Import Views
@@ -24,6 +28,16 @@ import ReportsView from './views/ReportsView';
 
 const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+    const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
+
+    const handleTabChange = (tab: string) => {
+        setActiveTab(tab);
+        setIsMobileMenuOpen(false);
+    };
 
     const renderView = () => {
         switch (activeTab) {
@@ -39,84 +53,104 @@ const App: React.FC = () => {
     };
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', width: '100%' }}>
+        <div className="layout-container">
+            {/* Sidebar overlay for mobile */}
+            {isMobileMenuOpen && (
+                <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>
+            )}
+
             {/* Sidebar */}
-            <aside className="sidebar">
+            <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''} ${isSidebarCollapsed ? 'collapsed' : ''}`}>
                 <div className="logo-section">
                     <div className="logo-box">
                         <Shield size={24} />
                     </div>
-                    <div className="logo-text-stack">
-                        <h2>KIRA-NET</h2>
-                        <span>RENTAL MANAGEMENT</span>
-                    </div>
+                    {!isSidebarCollapsed && (
+                        <div className="logo-text-stack">
+                            <h2>KIRA-NET</h2>
+                            <span>RENTAL MANAGEMENT</span>
+                        </div>
+                    )}
                 </div>
 
                 <nav className="nav-menu">
-                    <button className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>
+                    <button className={`nav-link ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => handleTabChange('dashboard')}>
                         <LayoutGrid size={20} />
                         <span>Dashboard</span>
                     </button>
-                    <button className={`nav-link ${activeTab === 'listings' ? 'active' : ''}`} onClick={() => setActiveTab('listings')}>
+                    <button className={`nav-link ${activeTab === 'listings' ? 'active' : ''}`} onClick={() => handleTabChange('listings')}>
                         <Home size={20} />
                         <span>Listings</span>
                     </button>
-                    <button className={`nav-link ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
+                    <button className={`nav-link ${activeTab === 'users' ? 'active' : ''}`} onClick={() => handleTabChange('users')}>
                         <Users size={20} />
                         <span>Users</span>
                     </button>
-                    <button className={`nav-link ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>
+                    <button className={`nav-link ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => handleTabChange('reports')}>
                         <FileText size={20} />
                         <span>Reports</span>
                     </button>
-                    <button className={`nav-link ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => setActiveTab('payments')}>
+                    <button className={`nav-link ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => handleTabChange('payments')}>
                         <CreditCard size={20} />
                         <span>Payments</span>
                     </button>
-                    <button className={`nav-link ${activeTab === 'agents' ? 'active' : ''}`} onClick={() => setActiveTab('agents')}>
+                    <button className={`nav-link ${activeTab === 'agents' ? 'active' : ''}`} onClick={() => handleTabChange('agents')}>
                         <ShieldCheck size={20} />
                         <span>Agents</span>
                     </button>
-                    <button className={`nav-link ${activeTab === 'settings' ? 'active' : ''}`} style={{ marginTop: 'auto' }} onClick={() => setActiveTab('settings')}>
+                    <button className={`nav-link ${activeTab === 'settings' ? 'active' : ''}`} style={{ marginTop: 'auto' }} onClick={() => handleTabChange('settings')}>
                         <Settings size={20} />
                         <span>Settings</span>
                     </button>
                     <button className="nav-link" style={{ color: '#EF4444' }}>
                         <LogOut size={20} />
-                        <span>Logout</span>
+                        {!isSidebarCollapsed && <span>Logout</span>}
                     </button>
                 </nav>
 
-                <div className="profile-card">
-                    <img 
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop" 
-                        alt="Profile" 
-                        className="avatar" 
-                    />
-                    <div className="user-info">
-                        <h4>Admin Portal</h4>
-                        <p>Kira Management</p>
+                {!isSidebarCollapsed && (
+                    <div className="profile-card">
+                        <img 
+                            src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=100&auto=format&fit=crop" 
+                            alt="Profile" 
+                            className="avatar" 
+                        />
+                        <div className="user-info">
+                            <h4>Admin Portal</h4>
+                            <p>Kira Management</p>
+                        </div>
                     </div>
-                </div>
+                )}
             </aside>
 
             {/* Main Content */}
-            <main className="main-content">
+            <main className={`main-content ${isSidebarCollapsed ? 'expanded' : ''}`}>
                 <header className="header">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                        <button className="mobile-menu-toggle" onClick={toggleMobileMenu}>
+                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                        </button>
+                        
+                        <button className="action-circle hide-mobile" onClick={toggleSidebar}>
+                            {isSidebarCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                        </button>
+                    </div>
+                    
                     <div className="search-field">
                         <Search size={18} color="#64748B" />
-                        <input type="text" placeholder="Search Listings, Users, or Payments..." />
+                        <input type="text" placeholder="Search Listings..." />
                     </div>
+                    
                     <div className="header-actions">
-                        <div className="action-circle">
+                        <div className="action-circle hide-mobile">
                             <Bell size={20} />
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: '24px' }}>
-                            <div style={{ textAlign: 'right' }}>
-                                <span style={{ fontSize: '14px', fontWeight: 800, display: 'block' }}>Alex Tadesse</span>
-                                <span style={{ fontSize: '10px', fontWeight: 900, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Super Admin</span>
+                        <div className="user-profile-header">
+                            <div className="user-text hide-mobile">
+                                <span className="user-name">Alex Tadesse</span>
+                                <span className="user-role">Super Admin</span>
                             </div>
-                            <div style={{ width: '40px', height: '40px', background: '#F1F5F9', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>AT</div>
+                            <div className="avatar-circle">AT</div>
                         </div>
                     </div>
                 </header>

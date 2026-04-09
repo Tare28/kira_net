@@ -18,13 +18,13 @@ interface PaymentsProps {
   onNavigate: (tab: string) => void;
 }
 
-const PaymentsView: React.FC<PaymentsProps> = ({ onNavigate }) => {
+const PaymentsView: React.FC<PaymentsProps> = () => {
   return (
     <section>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '60px' }}>
-            <div>
+        <div className="view-header">
+            <div className="view-title">
                 <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Fiscal Ledger</p>
-                <h1 style={{ fontSize: '56px', fontWeight: 900, letterSpacing: '-3px', lineHeight: 1 }}>Revenue Center.<br/><span style={{ opacity: 0.1 }}>Platform Economics.</span></h1>
+                <h1>Revenue Center.<br/><span style={{ opacity: 0.1 }}>Platform Economics.</span></h1>
             </div>
             <div style={{ background: 'white', padding: '12px 24px', borderRadius: '16px', border: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
                 <Calendar size={18} color="#64748B"/>
@@ -66,27 +66,27 @@ const PaymentsView: React.FC<PaymentsProps> = ({ onNavigate }) => {
         </div>
 
         <div className="table-scroll-container">
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
+            <table>
                 <thead>
-                    <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #F1F5F9' }}>
-                        <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Transaction ID</th>
-                        <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Member Access</th>
-                        <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Type Group</th>
-                        <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Nominal Amount</th>
-                        <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Payment Mode</th>
-                        <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Verification State</th>
-                        <th style={{ padding: '20px 24px', textAlign: 'left', fontSize: '11px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>Timeframe</th>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Member Access</th>
+                        <th>Type Group</th>
+                        <th>Nominal Amount</th>
+                        <th>Payment Mode</th>
+                        <th>Verification State</th>
+                        <th>Timeframe</th>
                     </tr>
                 </thead>
                 <tbody>
                     {transactions.map((trx, idx) => (
-                        <tr key={idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                            <td style={{ padding: '24px', fontWeight: 800, color: '#10B981', fontSize: '13px' }}>{trx.id}</td>
-                            <td style={{ padding: '24px' }}>
+                        <tr key={idx}>
+                            <td style={{ fontWeight: 800, color: '#10B981', fontSize: '13px' }}>{trx.id}</td>
+                            <td>
                                 <strong style={{ display: 'block', fontSize: '14px', marginBottom: '2px' }}>{trx.user}</strong>
                                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>{trx.role}</span>
                             </td>
-                            <td style={{ padding: '24px' }}>
+                            <td>
                                 <span style={{ 
                                     padding: '6px 14px', 
                                     borderRadius: '8px', 
@@ -97,14 +97,14 @@ const PaymentsView: React.FC<PaymentsProps> = ({ onNavigate }) => {
                                     border: '1px solid #F1F5F9'
                                 }}>{trx.type}</span>
                             </td>
-                            <td style={{ padding: '24px' }}>
+                            <td>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <strong style={{ fontSize: '15px', color: '#0F172A' }}>ETB {trx.amount}</strong>
                                     {trx.status === 'SUCCESS' ? <ArrowUpRight size={14} color="#10B981"/> : <ArrowDownRight size={14} color={trx.status === 'FAILED' ? '#EF4444' : '#F59E0B'}/>}
                                 </div>
                             </td>
-                            <td style={{ padding: '24px', fontSize: '13px', fontWeight: 800, color: '#64748B' }}>{trx.method}</td>
-                            <td style={{ padding: '24px' }}>
+                            <td style={{ fontSize: '13px', fontWeight: 800, color: '#64748B' }}>{trx.method}</td>
+                            <td>
                                 <span style={{ 
                                     display: 'flex', 
                                     alignItems: 'center', 
@@ -117,7 +117,7 @@ const PaymentsView: React.FC<PaymentsProps> = ({ onNavigate }) => {
                                     {trx.status}
                                 </span>
                             </td>
-                            <td style={{ padding: '24px', fontSize: '12px', fontWeight: 700, color: '#64748B' }}>{trx.date}</td>
+                            <td style={{ fontSize: '12px', fontWeight: 700, color: '#64748B' }}>{trx.date}</td>
                         </tr>
                     ))}
                 </tbody>

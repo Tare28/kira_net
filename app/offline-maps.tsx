@@ -5,6 +5,8 @@ import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 
+import { KiraColors } from '@/constants/colors';
+
 const { width, height } = Dimensions.get('window');
 
 const OFFLINE_PINS = [
@@ -48,7 +50,11 @@ export default function OfflineMapScreen() {
               onPress={() => setSelectedPin(pin)}
             >
               <View style={[styles.pinMarker, selectedPin?.id === pin.id && styles.pinMarkerActive]}>
-                <Ionicons name="location" size={24} color={selectedPin?.id === pin.id ? '#FBC02D' : '#005C3A'} />
+                <Ionicons
+                  name="location"
+                  size={24}
+                  color={selectedPin?.id === pin.id ? KiraColors.accent : KiraColors.primary}
+                />
               </View>
               {selectedPin?.id === pin.id && (
                 <View style={styles.pinLabel}>
@@ -65,7 +71,7 @@ export default function OfflineMapScreen() {
             <Feather name="arrow-left" size={24} color="#1A1A1A" />
           </TouchableOpacity>
           <View style={styles.offlineChip}>
-            <MaterialIcons name="offline-pin" size={14} color="#005C3A" />
+            <MaterialIcons name="offline-pin" size={14} color={KiraColors.primary} />
             <Text style={styles.offlineText}>Offline Mode</Text>
           </View>
         </SafeAreaView>
@@ -73,10 +79,10 @@ export default function OfflineMapScreen() {
         {/* Floating Action Buttons */}
         <View style={styles.fabContainer}>
           <TouchableOpacity style={styles.fab}>
-            <Ionicons name="locate" size={24} color="#005C3A" />
+            <Ionicons name="locate" size={24} color={KiraColors.primary} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.fab}>
-            <Ionicons name="layers" size={24} color="#005C3A" />
+            <Ionicons name="layers" size={24} color={KiraColors.primary} />
           </TouchableOpacity>
         </View>
 
@@ -114,7 +120,7 @@ export default function OfflineMapScreen() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.savedScroll}>
           <TouchableOpacity style={styles.savedAreaCard}>
             <View style={styles.savedIcon}>
-              <Ionicons name="download" size={20} color="#005C3A" />
+              <Ionicons name="download" size={20} color={KiraColors.primary} />
             </View>
             <Text style={styles.savedAreaName}>Bole Central</Text>
             <Text style={styles.savedAreaSize}>12 MB · 48 pins</Text>
@@ -122,7 +128,7 @@ export default function OfflineMapScreen() {
           
           <TouchableOpacity style={styles.savedAreaCard}>
             <View style={styles.savedIcon}>
-              <Ionicons name="download" size={20} color="#005C3A" />
+              <Ionicons name="download" size={20} color={KiraColors.primary} />
             </View>
             <Text style={styles.savedAreaName}>Kazanchis</Text>
             <Text style={styles.savedAreaSize}>8 MB · 32 pins</Text>
@@ -185,12 +191,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     gap: 6,
     borderWidth: 1,
-    borderColor: '#005C3A',
+    borderColor: KiraColors.primary,
   },
   offlineText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#005C3A',
+    color: KiraColors.primary,
   },
   pinWrapper: {
     position: 'absolute',
@@ -213,12 +219,12 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: -8,
     borderWidth: 1,
-    borderColor: '#005C3A',
+    borderColor: KiraColors.primary,
   },
   pinLabelText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#005C3A',
+    color: KiraColors.primary,
   },
   fabContainer: {
     position: 'absolute',
@@ -280,7 +286,7 @@ const styles = StyleSheet.create({
   infoPrice: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#005C3A',
+    color: KiraColors.primary,
   },
   infoClose: {
     padding: 4,
@@ -309,7 +315,7 @@ const styles = StyleSheet.create({
   },
   manageText: {
     fontSize: 13,
-    color: '#005C3A',
+    color: KiraColors.primary,
     fontWeight: '700',
   },
   savedScroll: {

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Alert, Linking, Animated, Dimensions,
+  Alert, Linking, Animated, Dimensions, Modal,
 } from 'react-native';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -17,16 +18,16 @@ const TIME_SLOTS = [
 ];
 
 // Neighborhood coords (mock — tied to listing location strings)
-const LOCATION_COORDS: Record<string, { lat: number; lng: number }> = {
-  'Bole, Addis Ababa':       { lat: 9.0222, lng: 38.7949 },
-  'Old Airport, Addis Ababa':{ lat: 9.0104, lng: 38.7566 },
-  'Kazanchis, Addis Ababa':  { lat: 9.0172, lng: 38.7628 },
-  'CMC, Addis Ababa':        { lat: 9.0465, lng: 38.7966 },
-  'Sarbet, Addis Ababa':     { lat: 9.0058, lng: 38.7459 },
+const LOCATION_COORDS: Record<string, { latitude: number; longitude: number }> = {
+  'Bole, Addis Ababa':       { latitude: 9.0222, longitude: 38.7949 },
+  'Old Airport, Addis Ababa':{ latitude: 9.0104, longitude: 38.7566 },
+  'Kazanchis, Addis Ababa':  { latitude: 9.0172, longitude: 38.7628 },
+  'CMC, Addis Ababa':        { latitude: 9.0465, longitude: 38.7966 },
+  'Sarbet, Addis Ababa':     { latitude: 9.0058, longitude: 38.7459 },
 };
 
 function getCoords(location: string) {
-  return LOCATION_COORDS[location] ?? { lat: 9.03, lng: 38.75 };
+  return LOCATION_COORDS[location] ?? { latitude: 9.03, longitude: 38.75 };
 }
 
 function buildGoogleMapsRoute(visits: any[]) {
@@ -36,12 +37,12 @@ function buildGoogleMapsRoute(visits: any[]) {
     .slice(0, -1)
     .map(v => {
       const c = getCoords(v.location);
-      return `${c.lat},${c.lng}`;
+      return `${c.latitude},${c.longitude}`;
     })
     .join('|');
   const dest = (() => {
     const c = getCoords(visits[visits.length - 1].location);
-    return `${c.lat},${c.lng}`;
+    return `${c.latitude},${c.longitude}`;
   })();
   let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${dest}`;
   if (waypoints) url += `&waypoints=${waypoints}`;
@@ -52,6 +53,7 @@ function buildGoogleMapsRoute(visits: any[]) {
 export default function VisitPlannerScreen() {
   const { visits, removeVisit, clearAll, updateTime } = useVisitPlan();
   const [timePickerId, setTimePickerId] = useState<string | null>(null);
+  const [showMap, setShowMap] = useState(false);
 
   const totalVisits = visits.length;
   const estimatedTime = totalVisits * 45; // 45 min per visit avg
@@ -185,18 +187,90 @@ export default function VisitPlannerScreen() {
             ))}
 
             {/* Map CTA */}
-            <TouchableOpacity style={styles.mapBtn} onPress={openDirections} activeOpacity={0.88}>
+            <TouchableOpacity style={styles.mapBtn} onPress={() => setShowMap(true)} activeOpacity={0.88}>
               <View style={styles.mapBtnLeft}>
                 <View style={styles.mapIconWrap}>
                   <Ionicons name="map" size={22} color="#FFF" />
                 </View>
                 <View>
                   <Text style={styles.mapBtnTitle}>Open Full Route</Text>
-                  <Text style={styles.mapBtnSub}>View in Google Maps with directions</Text>
+                  <Text style={styles.mapBtnSub}>View interactive route in-app</Text>
                 </View>
               </View>
               <Feather name="chevron-right" size={20} color="#005C3A" />
             </TouchableOpacity>
+
+            {/* In-App Map Modal */}
+            <Modal visible={showMap} animationType="slide" presentationStyle="fullScreen">
+               <View style={styles.mapContainer}>
+                  <MapView
+                    provider={PROVIDER_GOOGLE}
+                    style={styles.mapFullscreen}
+                    initialRegion={{
+                      latitude: 9.0222,
+                      longitude: 38.7469,
+                      latitudeDelta: 0.1,
+                      longitudeDelta: 0.1,
+                    }}
+                  >
+                    {/* Markers */}
+                    {visits.map((v, i) => {
+                      const coords = getCoords(v.location);
+                      return (
+                        <Marker
+                          key={v.id}
+                          coordinate={coords}
+                          title={v.title}
+                          description={`Stop ${i + 1}`}
+                        >
+                          <View style={styles.customMarker}>
+                            <Text style={styles.markerText}>{i + 1}</Text>
+                          </View>
+                        </Marker>
+                      );
+                    })}
+
+                    {/* Route Line */}
+                    {visits.length > 1 && (
+                      <Polyline
+                        coordinates={visits.map(v => getCoords(v.location))}
+                        strokeColor="#005C3A"
+                        strokeWidth={4}
+                      />
+                    )}
+                  </MapView>
+
+                  {/* Map Close Header */}
+                  <SafeAreaView style={styles.mapHeader}>
+                    <TouchableOpacity style={styles.closeMapBtn} onPress={() => setShowMap(false)}>
+                       <Ionicons name="close" size={24} color="#1A1A1A" />
+                    </TouchableOpacity>
+                    <View style={styles.mapHeaderText}>
+                       <Text style={styles.mapHeaderTitle}>Live Route Optimizer</Text>
+                       <Text style={styles.mapHeaderSub}>{visits.length} Stops Planned</Text>
+                    </View>
+                  </SafeAreaView>
+
+                  {/* Map Info Card */}
+                  <View style={styles.mapFooter}>
+                     <View style={styles.footerRow}>
+                        <View style={styles.footerItem}>
+                           <Text style={styles.footerLabel}>ETA</Text>
+                           <Text style={styles.footerVal}>45m</Text>
+                        </View>
+                        <View style={styles.footerSep} />
+                        <View style={styles.footerItem}>
+                           <Text style={styles.footerLabel}>Distance</Text>
+                           <Text style={styles.footerVal}>8.2 km</Text>
+                        </View>
+                     </View>
+                     <TouchableOpacity style={styles.startNavBtn} onPress={openDirections}>
+                        <Text style={styles.startNavText}>Start GPS Navigation</Text>
+                        <Feather name="navigation" size={16} color="#FFF" />
+                     </TouchableOpacity>
+                  </View>
+               </View>
+            </Modal>
 
             {/* Tips */}
             <View style={styles.hintsSection}>
@@ -301,6 +375,63 @@ const styles = StyleSheet.create({
   },
   headerTitle: { fontSize: 18, fontWeight: '800', color: '#1A1A1A' },
   clearText: { fontSize: 14, fontWeight: '700', color: '#DC2626' },
+
+  // Map Styles
+  mapContainer: { flex: 1, backgroundColor: '#000' },
+  mapFullscreen: { width: '100%', height: '100%' },
+  mapHeader: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+  },
+  closeMapBtn: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center', alignItems: 'center',
+    marginRight: 15,
+  },
+  mapHeaderText: { flex: 1 },
+  mapHeaderTitle: { fontSize: 16, fontWeight: '800', color: '#1A1A1A' },
+  mapHeaderSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
+  
+  customMarker: {
+    backgroundColor: '#005C3A',
+    width: 28, height: 28,
+    borderRadius: 14,
+    borderWidth: 3, borderColor: '#FFF',
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2, shadowRadius: 4,
+  },
+  markerText: { color: '#FFF', fontSize: 12, fontWeight: '900' },
+
+  mapFooter: {
+    position: 'absolute',
+    bottom: 40, left: 20, right: 20,
+    backgroundColor: '#FFF',
+    borderRadius: 24,
+    padding: 24,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2, shadowRadius: 20,
+    elevation: 8,
+  },
+  footerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  footerItem: { flex: 1, alignItems: 'center' },
+  footerLabel: { fontSize: 10, fontWeight: '700', color: '#6B7280', textTransform: 'uppercase', marginBottom: 4 },
+  footerVal: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
+  footerSep: { width: 1, height: 30, backgroundColor: '#E5E7EB' },
+  startNavBtn: {
+    flexDirection: 'row',
+    backgroundColor: '#005C3A',
+    paddingVertical: 16,
+    borderRadius: 16,
+    justifyContent: 'center', alignItems: 'center',
+    gap: 10,
+  },
+  startNavText: { color: '#FFF', fontSize: 14, fontWeight: '800' },
 
   summaryBanner: {
     flexDirection: 'row', alignItems: 'center',

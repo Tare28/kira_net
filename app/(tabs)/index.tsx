@@ -1,61 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet, Dimensions, ScrollView, View, Text,
   TextInput, TouchableOpacity, Animated,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVisitPlan } from '@/context/VisitPlanContext';
+
+import { KiraColors } from '@/constants/colors';
+import { Typography } from '@/constants/typography';
 
 const { width } = Dimensions.get('window');
 
 // Trust score colors (same logic as property-details)
 function trustColor(score: number) {
-  if (score >= 85) return '#16A34A';
-  if (score >= 60) return '#F59E0B';
-  return '#DC2626';
+  if (score >= 85) return KiraColors.success;
+  if (score >= 60) return KiraColors.warning;
+  return KiraColors.danger;
 }
 
-const PROPERTIES = [
-  {
-    id: '1',
-    category: 'apartments',
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=700&auto=format&fit=crop',
-    badge: 'verified',
-    title: 'The Summit Residency',
-    location: 'Bole, Addis Ababa',
-    price: '25,000',
-    utils: ['Constant Water', 'Private Meter', 'Fiber Optic'],
-    trust: 91,
-    hood: { safety: 4, noise: 2, tags: ['Business Hub', 'Near Airport'] },
-  },
-  {
-    id: '2',
-    category: 'villas',
-    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=700&auto=format&fit=crop',
-    badge: 'hot_deal',
-    title: 'Modern Garden Villa',
-    location: 'Old Airport, Addis Ababa',
-    price: '45,000',
-    utils: ['Tanker Water', 'Shared Meter', 'Available'],
-    trust: 64,
-    hood: { safety: 3, noise: 3, tags: ['Family-Friendly', 'Near Schools'] },
-  },
-  {
-    id: '3',
-    category: 'studios',
-    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=700&auto=format&fit=crop',
-    badge: 'verified',
-    title: 'Kazanchis Studio',
-    location: 'Kazanchis, Addis Ababa',
-    price: '18,500',
-    utils: ['Constant Water', 'Prepaid', 'High Speed'],
-    trust: 97,
-    hood: { safety: 3, noise: 5, tags: ['Popular for Students', 'Very Central'] },
-  },
-];
+import { PROPERTIES } from '@/data/properties';
 
 const CATEGORIES = [
   { key: 'all', label: 'All Homes' },
@@ -64,14 +30,47 @@ const CATEGORIES = [
   { key: 'villas', label: '2 Bedrooms' },
 ];
 
+import { useFilters } from '@/context/FilterContext';
+
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
   const [activeCategory, setActiveCategory] = useState('all');
   const { visits } = useVisitPlan();
+  const { filters, updateFilters } = useFilters();
+  const { neighborhood } = useLocalSearchParams<{ neighborhood?: string }>();
 
-  const filtered = activeCategory === 'all'
-    ? PROPERTIES
-    : PROPERTIES.filter(p => p.category === activeCategory);
+  // Sync neighborhood from navigation params (e.g. from Areas tab)
+  useEffect(() => {
+    if (neighborhood) {
+      updateFilters({ neighborhood });
+    }
+  }, [neighborhood]);
+
+  const filtered = PROPERTIES.filter(p => {
+    // 1. Category filter
+    if (activeCategory !== 'all' && p.category !== activeCategory) return false;
+
+    // 2. Search filter (if implemented later, for now we skip)
+    
+    // 3. Price filter
+    const numericPrice = parseInt(p.price.replace(',', ''));
+    if (numericPrice < filters.minPrice || numericPrice > filters.maxPrice) return false;
+
+    // 4. Neighborhood filter
+    if (filters.neighborhood && !p.location.includes(filters.neighborhood)) return false;
+
+    // 5. Amenities filters
+    if (filters.essentialWater && !p.utils.includes('Constant Water')) return false;
+    if (filters.essentialInternet && !p.utils.includes('Fiber Optic') && !p.utils.includes('High Speed')) return false;
+
+    // 6. Verification filter
+    if (filters.isVerified && p.badge !== 'verified') return false;
+
+    // 7. Private Meter filter
+    if (filters.privateMeter && !p.utils.includes('Private Meter') && !p.utils.includes('Prepaid')) return false;
+
+    return true;
+  });
 
   return (
     <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) }]}>
@@ -82,7 +81,7 @@ export default function ExploreScreen() {
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           onPress={() => router.push('/boost-listing')}
         >
-          <Feather name="zap" size={24} color="#F59E0B" />
+          <Feather name="zap" size={24} color={KiraColors.warning} />
         </TouchableOpacity>
 
         <Text style={styles.logoText}>Kira-Net</Text>
@@ -93,7 +92,7 @@ export default function ExploreScreen() {
             style={styles.plannerHeaderBtn}
             onPress={() => router.push('/visit-planner')}
           >
-            <MaterialCommunityIcons name="calendar-check" size={20} color="#005C3A" />
+            <MaterialCommunityIcons name="calendar-check" size={20} color={KiraColors.primary} />
             {visits.length > 0 && (
               <View style={styles.plannerBadge}>
                 <Text style={styles.plannerBadgeText}>{visits.length}</Text>
@@ -107,7 +106,7 @@ export default function ExploreScreen() {
             onPress={() => router.push('/(tabs)/alerts')}
             style={styles.bellWrap}
           >
-            <Feather name="bell" size={24} color="#005C3A" />
+            <Feather name="bell" size={24} color={KiraColors.primary} />
             <View style={styles.notifBadge}>
               <Text style={styles.notifBadgeText}>3</Text>
             </View>
@@ -187,10 +186,6 @@ export default function ExploreScreen() {
         </View>
       </ScrollView>
 
-      {/* ── FAB ─────────────────────────────────────────────────────────────── */}
-      <TouchableOpacity style={styles.fab} onPress={() => router.push('/list-property')}>
-        <Feather name="plus" size={24} color="#FFF" />
-      </TouchableOpacity>
     </View>
   );
 }
@@ -284,15 +279,15 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
         {/* Utilities */}
         <View style={styles.utilsRow}>
           <View style={styles.utilItem}>
-            <Ionicons name="water" size={12} color="#4A5568" />
+            <Ionicons name="water" size={12} color={KiraColors.primary} />
             <Text style={styles.utilText}>{property.utils[0]}</Text>
           </View>
           <View style={styles.utilItem}>
-            <Ionicons name="flash" size={12} color="#4A5568" />
+            <Ionicons name="flash" size={12} color={KiraColors.primary} />
             <Text style={styles.utilText}>{property.utils[1]}</Text>
           </View>
           <View style={styles.utilItem}>
-            <Ionicons name="wifi" size={12} color="#4A5568" />
+            <Ionicons name="wifi" size={12} color={KiraColors.primary} />
             <Text style={styles.utilText}>{property.utils[2]}</Text>
           </View>
         </View>
@@ -309,11 +304,24 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
             <Ionicons
               name="volume-medium-outline"
               size={10}
-              color={property.hood.noise <= 2 ? '#16A34A' : property.hood.noise <= 3 ? '#F59E0B' : '#DC2626'}
+              color={
+                property.hood.noise <= 2
+                  ? KiraColors.success
+                  : property.hood.noise <= 3
+                    ? KiraColors.warning
+                    : KiraColors.danger
+              }
             />
             <Text style={[
               styles.hoodTagText,
-              { color: property.hood.noise <= 2 ? '#16A34A' : property.hood.noise <= 3 ? '#F59E0B' : '#DC2626' }
+              {
+                color:
+                  property.hood.noise <= 2
+                    ? KiraColors.success
+                    : property.hood.noise <= 3
+                      ? KiraColors.warning
+                      : KiraColors.danger
+              }
             ]}>
               {property.hood.noise <= 2 ? 'Quiet' : property.hood.noise <= 3 ? 'Moderate' : 'Busy'}
             </Text>
@@ -327,7 +335,7 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
             onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
           >
             <Text style={styles.detailBtnText}>View Details</Text>
-            <Feather name="arrow-right" size={14} color="#005C3A" />
+            <Feather name="arrow-right" size={14} color={KiraColors.primary} />
           </TouchableOpacity>
 
           <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
@@ -338,7 +346,7 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
               <MaterialCommunityIcons
                 name={inPlan ? 'calendar-check' : 'calendar-plus'}
                 size={16}
-                color={inPlan ? '#FFF' : '#005C3A'}
+                color={inPlan ? KiraColors.surface : KiraColors.primary}
               />
               <Text style={[styles.planBtnText, inPlan && styles.planBtnTextActive]}>
                 {inPlan ? 'In Plan' : 'Plan Visit'}
@@ -360,31 +368,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, marginBottom: 20,
   },
-  logoText: { fontSize: 18, fontWeight: '900', color: '#005C3A', letterSpacing: -0.5 },
+  logoText: { fontSize: 18, fontWeight: '900', color: KiraColors.primary, letterSpacing: -0.5 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 14 },
   plannerHeaderBtn: { position: 'relative', padding: 4 },
   plannerBadge: {
     position: 'absolute', top: -2, right: -2,
     width: 16, height: 16, borderRadius: 8,
-    backgroundColor: '#DC2626', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: KiraColors.danger, justifyContent: 'center', alignItems: 'center',
     borderWidth: 1.5, borderColor: '#F7F8F9',
   },
   plannerBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
   bellWrap: { position: 'relative' },
   notifBadge: {
     position: 'absolute', top: -4, right: -6,
-    backgroundColor: '#DC2626', width: 16, height: 16, borderRadius: 8,
+    backgroundColor: KiraColors.danger, width: 16, height: 16, borderRadius: 8,
     justifyContent: 'center', alignItems: 'center',
     borderWidth: 1.5, borderColor: '#F7F8F9',
   },
   notifBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
 
-  scrollContent: { paddingBottom: 120 },
+  scrollContent: { paddingBottom: 90 },
 
   // Hero
   titleSection: { paddingHorizontal: 20, marginBottom: 24 },
-  headline: { fontSize: 42, fontWeight: '900', color: '#1A1A1A', lineHeight: 46, letterSpacing: -1.5 },
-  headlineGreen: { fontSize: 42, fontWeight: '900', color: '#005C3A', lineHeight: 46, letterSpacing: -1.5 },
+  headline: {
+    fontSize: Typography.hero.fontSize,
+    fontWeight: Typography.hero.fontWeight,
+    color: '#1A1A1A',
+    lineHeight: Typography.hero.lineHeight,
+    letterSpacing: Typography.hero.letterSpacing,
+  },
+  headlineGreen: {
+    fontSize: Typography.hero.fontSize,
+    fontWeight: Typography.hero.fontWeight,
+    color: KiraColors.primary,
+    lineHeight: Typography.hero.lineHeight,
+    letterSpacing: Typography.hero.letterSpacing,
+  },
 
   // Search
   searchSection: { paddingHorizontal: 20, marginBottom: 20 },
@@ -404,7 +424,7 @@ const styles = StyleSheet.create({
   // Visit Planner Strip
   plannerStrip: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#005C3A', marginHorizontal: 20, borderRadius: 14,
+    backgroundColor: KiraColors.primary, marginHorizontal: 20, borderRadius: 14,
     paddingVertical: 12, paddingHorizontal: 16, marginBottom: 20,
   },
   plannerStripText: { flex: 1, fontSize: 13, fontWeight: '700', color: '#FFF' },
@@ -415,14 +435,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#F3F4F6', paddingHorizontal: 20, paddingVertical: 10,
     borderRadius: 24, marginRight: 12,
   },
-  categoryPillActive: { backgroundColor: '#005C3A' },
+  categoryPillActive: { backgroundColor: KiraColors.primary },
   categoryPillText: { fontSize: 13, fontWeight: '600', color: '#4A5568' },
   categoryPillTextActive: { fontSize: 13, fontWeight: '600', color: '#FFF' },
 
   // Listings
   listingsContainer: { paddingHorizontal: 20 },
   card: {
-    marginBottom: 32, backgroundColor: '#FFF', borderRadius: 24,
+    marginBottom: 32, backgroundColor: KiraColors.surface, borderRadius: 24,
     shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06, shadowRadius: 16, elevation: 3,
     overflow: 'hidden',
@@ -435,12 +455,12 @@ const styles = StyleSheet.create({
   verifiedBadge: {
     position: 'absolute', top: 16, left: 16,
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFF', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
+    backgroundColor: KiraColors.surface, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
   verifiedText: { fontSize: 9, fontWeight: '800', color: '#1A1A1A', marginLeft: 4, letterSpacing: 0.5 },
   hotDealBadge: {
     position: 'absolute', top: 16, left: 16,
-    backgroundColor: '#DC2626', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
+    backgroundColor: KiraColors.danger, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
   hotDealText: { fontSize: 9, fontWeight: '800', color: '#FFF', letterSpacing: 0.5 },
   trustChip: {
@@ -466,7 +486,7 @@ const styles = StyleSheet.create({
   locationRow: { flexDirection: 'row', alignItems: 'center' },
   locationText: { fontSize: 12, color: '#4A5568', marginLeft: 4 },
   priceContainer: { alignItems: 'flex-end' },
-  cardPrice: { fontSize: 17, fontWeight: '900', color: '#005C3A' },
+  cardPrice: { fontSize: 17, fontWeight: '900', color: KiraColors.primary },
   cardPriceUnit: { fontSize: 11, fontWeight: '800' },
   cardPriceDesc: { fontSize: 8, fontWeight: '700', color: '#6B7280', marginTop: 2, letterSpacing: 0.5 },
 
@@ -483,7 +503,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   noiseTag: { backgroundColor: '#F9FAFB', borderColor: '#E5E7EB' },
-  hoodTagText: { fontSize: 10, fontWeight: '700', color: '#005C3A' },
+  hoodTagText: { fontSize: 10, fontWeight: '700', color: KiraColors.primary },
 
   // Action Row
   cardActions: {
@@ -493,24 +513,24 @@ const styles = StyleSheet.create({
   detailBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
     paddingVertical: 12, borderRadius: 14,
-    borderWidth: 1.5, borderColor: '#005C3A',
+    borderWidth: 1.5, borderColor: KiraColors.primary,
   },
-  detailBtnText: { fontSize: 13, fontWeight: '700', color: '#005C3A' },
+  detailBtnText: { fontSize: 13, fontWeight: '700', color: KiraColors.primary },
   planBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14,
     borderWidth: 1.5, borderColor: '#D1FAE5', backgroundColor: '#F0FDF4',
   },
-  planBtnActive: { backgroundColor: '#005C3A', borderColor: '#005C3A' },
-  planBtnText: { fontSize: 13, fontWeight: '700', color: '#005C3A' },
+  planBtnActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
+  planBtnText: { fontSize: 13, fontWeight: '700', color: KiraColors.primary },
   planBtnTextActive: { color: '#FFF' },
 
   // FAB
   fab: {
     position: 'absolute', bottom: 100, right: 20,
     width: 56, height: 56, borderRadius: 28,
-    backgroundColor: '#005C3A', justifyContent: 'center', alignItems: 'center',
-    elevation: 5, shadowColor: '#005C3A',
+    backgroundColor: KiraColors.primary, justifyContent: 'center', alignItems: 'center',
+    elevation: 5, shadowColor: KiraColors.primary,
     shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
   },
 

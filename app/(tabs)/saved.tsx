@@ -6,6 +6,8 @@ import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useVisitPlan } from '@/context/VisitPlanContext';
 
+import { KiraColors } from '@/constants/colors';
+
 export default function SavedScreen() {
   const { visits } = useVisitPlan();
   return (
@@ -52,7 +54,7 @@ export default function SavedScreen() {
                 <Text style={styles.plannerBadgeText}>{visits.length}</Text>
               </View>
             )}
-            <Feather name="chevron-right" size={18} color="#005C3A" />
+            <Feather name="chevron-right" size={18} color={KiraColors.primary} />
           </View>
         </TouchableOpacity>
 
@@ -71,7 +73,7 @@ export default function SavedScreen() {
               <Text style={styles.offlineSub}>View saved house locations without data</Text>
             </View>
           </View>
-          <Feather name="chevron-right" size={18} color="#005C3A" />
+          <Feather name="chevron-right" size={18} color={KiraColors.primary} />
         </TouchableOpacity>
 
         <TouchableOpacity activeOpacity={0.92} onPress={() => router.push({ pathname: '/property-details', params: { id: '1' } })}>
@@ -138,7 +140,7 @@ function SavedCard({ image, price, title, location, isVerified }: any) {
       <View style={styles.imageContainer}>
         <Image source={image} style={styles.cardImage} />
         <TouchableOpacity style={styles.heartBtn}>
-          <Ionicons name="heart" size={18} color="#DC2626" style={{ marginTop: 2 }} />
+          <Ionicons name="heart" size={18} color={KiraColors.danger} style={{ marginTop: 2 }} />
         </TouchableOpacity>
         {isVerified && (
           <View style={styles.verifiedBadge}>
@@ -175,7 +177,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#005C3A',
+    color: KiraColors.primary,
   },
   scrollContent: {
     paddingHorizontal: 20,
@@ -260,12 +262,12 @@ const styles = StyleSheet.create({
   cardPrice: {
     fontSize: 14,
     fontWeight: '800',
-    color: '#005C3A',
+    color: KiraColors.primary,
     marginBottom: 4,
   },
   cardPriceUnit: {
     fontSize: 12,
-    color: '#005C3A',
+    color: KiraColors.primary,
     fontWeight: '600',
   },
   cardTitle: {
@@ -284,7 +286,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   promoteCard: {
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     borderRadius: 20,
     padding: 24,
     marginTop: 10,
@@ -313,7 +315,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   promoteBtn: {
-    backgroundColor: '#FBC02D',
+    backgroundColor: KiraColors.accent,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 20,
@@ -334,7 +336,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     borderWidth: 1.5,
     borderColor: '#D1FAE5',
-    shadowColor: '#005C3A',
+    shadowColor: KiraColors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -350,7 +352,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -374,7 +376,7 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -393,7 +395,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 20,
     borderWidth: 1.5,
-    borderColor: '#005C3A',
+    borderColor: KiraColors.primary,
   },
   offlineLeft: {
     flexDirection: 'row',
@@ -404,7 +406,7 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     justifyContent: 'center',
     alignItems: 'center',
   },

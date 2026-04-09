@@ -12,6 +12,7 @@ export default function ListPropertyScreen() {
   const [waterStatus, setWaterStatus] = useState('Yes');
   const [electricType, setElectricType] = useState('Private');
   const [internetType, setInternetType] = useState('Available');
+  const [roadAccess, setRoadAccess] = useState('Asphalt');
 
   const [images, setImages] = useState<string[]>([]);
   const [location, setLocation] = useState('Select Location');
@@ -110,6 +111,50 @@ export default function ListPropertyScreen() {
               numberOfLines={4}
               textAlignVertical="top"
             />
+          </View>
+
+          {/* New Structural Info Grid */}
+          <View style={styles.gridRow}>
+            <View style={styles.gridItem}>
+              <Text style={styles.inputLabel}>Bedrooms</Text>
+              <View style={styles.inputContainer}>
+                <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+              </View>
+            </View>
+            <View style={styles.gridItem}>
+              <Text style={styles.inputLabel}>Bathrooms</Text>
+              <View style={styles.inputContainer}>
+                <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.gridRow}>
+            <View style={styles.gridItem}>
+              <Text style={styles.inputLabel}>Sq. Meters</Text>
+              <View style={styles.inputContainer}>
+                <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+              </View>
+            </View>
+            <View style={styles.gridItem}>
+              <Text style={styles.inputLabel}>Floor</Text>
+              <View style={styles.inputContainer}>
+                <TextInput style={styles.textInput} placeholder="G+1" />
+              </View>
+            </View>
+          </View>
+
+          <Text style={styles.inputLabel}>Road Access</Text>
+          <View style={styles.pillToggleFull}>
+            {['Asphalt', 'Cobalt', 'Gravel'].map(type => (
+              <TouchableOpacity 
+                key={type}
+                style={[styles.pillOption, roadAccess === type && styles.pillOptionActive]}
+                onPress={() => setRoadAccess(type)}
+              >
+                <Text style={[styles.pillText, roadAccess === type && styles.pillTextActive]}>{type}</Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
           {/* Utilities & Amenities */}
@@ -212,7 +257,7 @@ export default function ListPropertyScreen() {
             <Ionicons name="send" size={14} color="#FFF" style={{ marginLeft: 6 }} />
           </TouchableOpacity>
           <Text style={styles.submitDisclaimer}>
-            By submitting, you agree to Kira-Net's Landlord{'\n'}Terms of Service and Privacy Policy.
+            By submitting, you agree to Kira-Net&apos;s Landlord{'\n'}Terms of Service and Privacy Policy.
           </Text>
 
         </ScrollView>
@@ -369,6 +414,21 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 14,
+  },
+  gridRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 8,
+  },
+  gridItem: {
+    flex: 1,
+  },
+  pillToggleFull: {
+    flexDirection: 'row',
+    backgroundColor: '#E5E7EB',
+    borderRadius: 16,
+    padding: 2,
+    width: '100%',
   },
   textInput: {
     flex: 1,

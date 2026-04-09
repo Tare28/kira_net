@@ -8,6 +8,8 @@ import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 
+import { KiraColors } from '@/constants/colors';
+
 // ─── Auto-reply templates (landlord side) ─────────────────────────────────────
 const AUTO_REPLIES: Record<string, string> = {
   available: "Yes, the house is still available ✅",
@@ -195,11 +197,11 @@ export default function ChatScreen() {
               <MaterialCommunityIcons
                 name={isLandlordMode ? 'home' : 'account'}
                 size={16}
-                color={isLandlordMode ? '#005C3A' : '#6B7280'}
+                color={isLandlordMode ? KiraColors.primary : KiraColors.muted}
               />
             </TouchableOpacity>
             <TouchableOpacity hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Ionicons name="call" size={20} color="#005C3A" />
+              <Ionicons name="call" size={20} color={KiraColors.primary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -263,7 +265,7 @@ export default function ChatScreen() {
           <View style={styles.autoReplySheet}>
             <View style={styles.autoReplyHeader}>
               <View style={styles.autoReplyTitleRow}>
-                <MaterialCommunityIcons name="lightning-bolt" size={16} color="#F59E0B" />
+                <MaterialCommunityIcons name="lightning-bolt" size={16} color={KiraColors.warning} />
                 <Text style={styles.autoReplyTitle}>Auto-Reply Templates</Text>
               </View>
               <TouchableOpacity onPress={() => setShowQuickReplies(false)}>
@@ -295,7 +297,7 @@ export default function ChatScreen() {
               <MaterialCommunityIcons
                 name="lightning-bolt"
                 size={18}
-                color={showQuickReplies ? '#FFF' : '#F59E0B'}
+                color={showQuickReplies ? KiraColors.surface : KiraColors.warning}
               />
             </TouchableOpacity>
           )}
@@ -339,7 +341,7 @@ function MessageBubble({ msg }: { msg: Message }) {
       <View style={[isUser ? styles.bubbleRight : styles.bubbleLeft]}>
         {msg.isAutoReply && (
           <View style={styles.autoReplyTag}>
-            <MaterialCommunityIcons name="lightning-bolt" size={9} color="#F59E0B" />
+            <MaterialCommunityIcons name="lightning-bolt" size={9} color={KiraColors.warning} />
             <Text style={styles.autoReplyTagText}>Auto-reply</Text>
           </View>
         )}
@@ -377,11 +379,11 @@ const styles = StyleSheet.create({
   onlineDot: {
     position: 'absolute', bottom: 1, right: 11,
     width: 10, height: 10, borderRadius: 5,
-    backgroundColor: '#16A34A', borderWidth: 2, borderColor: '#FFF',
+  backgroundColor: KiraColors.success, borderWidth: 2, borderColor: '#FFF',
   },
   headerText: { justifyContent: 'center' },
   nameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  headerName: { fontSize: 15, fontWeight: '800', color: '#005C3A' },
+  headerName: { fontSize: 15, fontWeight: '800', color: KiraColors.primary },
   headerRole: { fontSize: 10, fontWeight: '600', color: '#6B7280' },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   modeBtn: {
@@ -400,11 +402,11 @@ const styles = StyleSheet.create({
   propertyImg: { width: 56, height: 56, borderRadius: 12, marginRight: 12 },
   propertyInfo: { flex: 1 },
   propertyLabel: { fontSize: 9, fontWeight: '800', color: '#926C15', letterSpacing: 0.5, marginBottom: 3 },
-  propertyTitle: { fontSize: 13, fontWeight: '800', color: '#005C3A', marginBottom: 3 },
+  propertyTitle: { fontSize: 13, fontWeight: '800', color: KiraColors.primary, marginBottom: 3 },
   propertyLocRow: { flexDirection: 'row', alignItems: 'center' },
   propertyLoc: { fontSize: 11, color: '#4A5568', marginLeft: 3 },
   propertyPrice: { alignItems: 'flex-end' },
-  propertyPriceText: { fontSize: 16, fontWeight: '900', color: '#005C3A' },
+  propertyPriceText: { fontSize: 16, fontWeight: '900', color: KiraColors.primary },
   propertyPriceUnit: { fontSize: 9, color: '#6B7280' },
 
   // Chat
@@ -422,7 +424,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 1,
   },
   bubbleRight: {
-    backgroundColor: '#005C3A', paddingHorizontal: 16, paddingVertical: 12,
+    backgroundColor: KiraColors.primary, paddingHorizontal: 16, paddingVertical: 12,
     borderRadius: 20, borderBottomRightRadius: 4, maxWidth: '82%',
   },
   bubbleTextLeft: { fontSize: 14, color: '#1A1A1A', lineHeight: 21 },
@@ -482,7 +484,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFBEB', justifyContent: 'center', alignItems: 'center',
     borderWidth: 1.5, borderColor: '#FCD34D',
   },
-  autoBtnActive: { backgroundColor: '#F59E0B', borderColor: '#F59E0B' },
+  autoBtnActive: { backgroundColor: KiraColors.warning, borderColor: KiraColors.warning },
   textInputBox: {
     flex: 1, backgroundColor: '#F3F4F6', borderRadius: 22,
     paddingHorizontal: 16, paddingVertical: 10, minHeight: 44, justifyContent: 'center',
@@ -491,7 +493,7 @@ const styles = StyleSheet.create({
   inputField: { fontSize: 15, color: '#1A1A1A', padding: 0, maxHeight: 100 },
   sendBtn: {
     width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#FBC02D', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: KiraColors.accent, justifyContent: 'center', alignItems: 'center',
   },
   sendBtnDisabled: { opacity: 0.5 },
 });
