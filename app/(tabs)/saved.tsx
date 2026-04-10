@@ -8,11 +8,17 @@ import { useVisitPlan } from '@/context/VisitPlanContext';
 import { useSaved } from '@/context/SavedContext';
 import { KiraColors } from '@/constants/colors';
 import * as Haptics from 'expo-haptics';
-import Animated, { FadeInUp, FadeOutDown, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { useUser } from '@/context/UserContext';
+import LandlordDashboardScreen from '../landlord-dashboard';
 
 export default function SavedScreen() {
+  const { role } = useUser();
   const { visits } = useVisitPlan();
   const { saved, unsaveProperty, saveProperty } = useSaved();
+
+  if (role === 'landlord') {
+    return <LandlordDashboardScreen hideBack />;
+  }
   const [showToast, setShowToast] = useState(false);
   const [lastUnsaved, setLastUnsaved] = useState<any>(null);
   const toastTimer = useRef<any>(null);

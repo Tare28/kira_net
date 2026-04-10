@@ -13,9 +13,11 @@ import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 
 import { KiraColors } from '@/constants/colors';
 import { useAlerts, Notification } from '@/context/AlertsContext';
+import { useUser } from '@/context/UserContext';
+import { LinearGradient } from 'expo-linear-gradient';
 
 // ─── Alert preferences ─────────────────────────────────────────────────────────
-const DEFAULT_PREFS = {
+const RENTER_PREFS = {
   hotListings: true,
   priceMatch: true,
   priceDrop: true,
@@ -24,14 +26,33 @@ const DEFAULT_PREFS = {
   pushAlerts: true,
 };
 
+const LANDLORD_PREFS = {
+  newInquiries: true,
+  visitReminders: true,
+  marketTrends: true,
+  boostExpiries: true,
+  smsAlerts: false,
+  pushAlerts: true,
+};
+
 export default function AlertsScreen() {
   const { notifications, unreadCount, markAllRead, removeNotification, markAsRead } = useAlerts();
-  const [prefs, setPrefs] = useState(DEFAULT_PREFS);
+  const { role } = useUser();
+  const isLandlord = role === 'landlord';
+  const [prefs, setPrefs] = useState(isLandlord ? LANDLORD_PREFS : RENTER_PREFS);
   const [showPrefs, setShowPrefs] = useState(false);
 
-  const toggle = (key: keyof typeof DEFAULT_PREFS) => {
+  const toggle = (key: string) => {
     setPrefs(prev => ({ ...prev, [key]: !prev[key] }));
   };
+
+  // Filter notifications based on role
+  const landlordTypes = ['inquiry', 'visit_scheduled', 'market_intel', 'boost_expiry', 'system'];
+  const filteredNotifs = notifications.filter(n => 
+    isLandlord ? landlordTypes.includes(n.type) : !landlordTypes.filter(t => t !== 'system').includes(n.type)
+  );
+
+  const roleUnreadCount = filteredNotifs.filter(n => n.unread).length;
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -45,16 +66,16 @@ export default function AlertsScreen() {
             <Feather name="arrow-left" size={20} color="#1A1A1A" />
           </TouchableOpacity>
           <View>
-            <Text style={styles.headerTitle}>Smart Alerts</Text>
-            {unreadCount > 0 && (
-              <Text style={styles.headerSub}>{unreadCount} unread</Text>
+            <Text style={styles.headerTitle}>{isLandlord ? 'Business Center' : 'Smart Alerts'}</Text>
+            {roleUnreadCount > 0 && (
+              <Text style={styles.headerSub}>{roleUnreadCount} unread alerts</Text>
             )}
           </View>
           <TouchableOpacity
             style={[styles.prefBtn, showPrefs && styles.prefBtnActive]}
             onPress={() => setShowPrefs(p => !p)}
           >
-            <Feather name="settings" size={18} color={showPrefs ? '#FFF' : '#1A1A1A'} />
+            <Feather name="sliders" size={18} color={showPrefs ? '#FFF' : '#1A1A1A'} />
           </TouchableOpacity>
         </View>
 
@@ -63,19 +84,27 @@ export default function AlertsScreen() {
           showsVerticalScrollIndicator={false}
         >
 
-          {/* ── SMS + Push Premium Card ─────────────────────────────────────── */}
-          <View style={styles.premiumCard}>
+          {/* ── Role-Based Premium Card ─────────────────────────────────────── */}
+          <View style={[styles.premiumCard, isLandlord && styles.landlordCard]}>
+            <LinearGradient
+               colors={isLandlord ? ['#1A1A1A', '#2D2D2D'] : [KiraColors.primary, '#82B136']}
+               style={StyleSheet.absoluteFill}
+               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+            />
             <View style={styles.premiumRow}>
-              <MaterialIcons name="auto-awesome" size={20} color={KiraColors.accent} />
-              <Text style={styles.premiumTitle}>SMS & Push Alerts</Text>
+              <MaterialIcons name={isLandlord ? "business-center" : "auto-awesome"} size={20} color={isLandlord ? '#9CC942' : KiraColors.accent} />
+              <Text style={styles.premiumTitle}>{isLandlord ? 'Business Insights' : 'SMS & Push Alerts'}</Text>
               <View style={styles.liveChip}>
-                <View style={styles.liveDot} />
+                <View style={[styles.liveDot, { backgroundColor: isLandlord ? '#9CC942' : '#FFF' }]} />
                 <Text style={styles.liveText}>LIVE</Text>
               </View>
             </View>
             <Text style={styles.premiumSub}>
-              Get notified within seconds when a new listing matches your saved searches — via push notification or SMS.
+              {isLandlord 
+                 ? "Get instant alerts for new inquiries and property performance so you never miss a potential tenant."
+                 : "Get notified within seconds when a new listing matches your saved searches."}
             </Text>
+            
             <View style={styles.premiumToggles}>
               <View style={styles.toggleRow}>
                 <View style={styles.toggleLeft}>
@@ -85,32 +114,7 @@ export default function AlertsScreen() {
                 <Switch
                   value={prefs.pushAlerts}
                   onValueChange={() => toggle('pushAlerts')}
-                  trackColor={{ false: 'rgba(255,255,255,0.3)', true: KiraColors.accent }}
-                  thumbColor="#FFF"
-                />
-              </View>
-              <View style={styles.toggleRow}>
-                <View style={styles.toggleLeft}>
-                  <MaterialCommunityIcons name="message-text" size={15} color="rgba(255,255,255,0.9)" />
-                  <Text style={styles.toggleLabel}>SMS Alerts (Premium)</Text>
-                </View>
-                <Switch
-                  value={prefs.smsAlerts}
-                  onValueChange={() => {
-                    if (!prefs.smsAlerts) {
-                      Alert.alert(
-                        '🔒 Upgrade Required',
-                        'SMS Alerts are a Premium feature. Upgrade to receive instant SMS when your dream listing drops.',
-                        [
-                          { text: 'Later', style: 'cancel' },
-                          { text: 'Upgrade Now', style: 'default', onPress: () => router.push('/boost-listing') },
-                        ]
-                      );
-                    } else {
-                      toggle('smsAlerts');
-                    }
-                  }}
-                  trackColor={{ false: 'rgba(255,255,255,0.3)', true: KiraColors.accent }}
+                  trackColor={{ false: 'rgba(255,255,255,0.3)', true: isLandlord ? '#9CC942' : KiraColors.accent }}
                   thumbColor="#FFF"
                 />
               </View>
@@ -120,25 +124,30 @@ export default function AlertsScreen() {
           {/* ── Alert Type Preferences ──────────────────────────────────────── */}
           {showPrefs && (
             <Animated.View entering={FadeIn} exiting={FadeOut} style={styles.prefsCard}>
-              <Text style={styles.prefsTitle}>Alert Preferences</Text>
-              <Text style={styles.prefsSub}>Choose what alerts you want to receive</Text>
+              <Text style={styles.prefsTitle}>{isLandlord ? 'Business Preferences' : 'Alert Preferences'}</Text>
+              <Text style={styles.prefsSub}>Choose what insights you want to receive</Text>
 
-              {[
-                { key: 'hotListings', label: '🔥 Hot Listing Alerts', desc: 'New listings that match your search, instantly' },
+              {(isLandlord ? [
+                { key: 'newInquiries', label: '💬 New Daily Inquiries', desc: 'Alerts when potential tenants message' },
+                { key: 'visitReminders', label: '📅 Visit Confirmations', desc: 'When visits are booked or rescheduled' },
+                { key: 'marketTrends', label: '📈 Local Market Trends', desc: 'AI insights into pricing and demand' },
+                { key: 'boostExpiries', label: '⚡ Listing Boost Expiry', desc: 'Alerts before your premium boost ends' },
+              ] : [
+                { key: 'hotListings', label: '🔥 Hot Listing Alerts', desc: 'New listings that match your search' },
                 { key: 'priceMatch', label: '✅ Price Match Alerts', desc: 'Listings within your set budget' },
                 { key: 'priceDrop', label: '📉 Price Drop Alerts', desc: 'When a saved listing lowers its price' },
                 { key: 'locationMatch', label: '📍 Location Alerts', desc: 'New listings in your saved areas' },
-              ].map(pref => (
+              ]).map(pref => (
                 <View key={pref.key} style={styles.prefRow}>
                   <View style={styles.prefLeft}>
                     <Text style={styles.prefLabel}>{pref.label}</Text>
                     <Text style={styles.prefDesc}>{pref.desc}</Text>
                   </View>
                   <Switch
-                    value={prefs[pref.key as keyof typeof DEFAULT_PREFS]}
-                    onValueChange={() => toggle(pref.key as keyof typeof DEFAULT_PREFS)}
-                    trackColor={{ false: '#E5E7EB', true: '#D1FAE5' }}
-                    thumbColor={prefs[pref.key as keyof typeof DEFAULT_PREFS] ? KiraColors.primary : KiraColors.muted}
+                    value={(prefs as any)[pref.key]}
+                    onValueChange={() => toggle(pref.key)}
+                    trackColor={{ false: '#E5E7EB', true: isLandlord ? '#DCFCE7' : '#D1FAE5' }}
+                    thumbColor={(prefs as any)[pref.key] ? (isLandlord ? '#9CC942' : KiraColors.primary) : KiraColors.muted}
                   />
                 </View>
               ))}
@@ -148,7 +157,7 @@ export default function AlertsScreen() {
           {/* ── Section Header ──────────────────────────────────────────────── */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionLabel}>RECENT ALERTS</Text>
-            {unreadCount > 0 && (
+            {roleUnreadCount > 0 && (
               <TouchableOpacity onPress={markAllRead}>
                 <Text style={styles.markRead}>Mark all read</Text>
               </TouchableOpacity>
@@ -156,13 +165,13 @@ export default function AlertsScreen() {
           </View>
 
           {/* ── Notification Cards with Swipe-to-Dismiss ───────────────────── */}
-          {notifications.map(notif => (
+          {filteredNotifs.map(notif => (
             <Swipeable
               key={notif.id}
               renderRightActions={() => (
                 <TouchableOpacity 
-                  onPress={() => removeNotification(notif.id)}
-                  style={styles.deleteAction}
+                   onPress={() => removeNotification(notif.id)}
+                   style={styles.deleteAction}
                 >
                   <Feather name="trash-2" size={20} color="#FFF" />
                 </TouchableOpacity>
@@ -172,7 +181,11 @@ export default function AlertsScreen() {
                 notif={notif}
                 onAction={() => {
                   markAsRead(notif.id);
-                  if (notif.propertyId) {
+                  if (isLandlord && notif.type === 'inquiry') {
+                    router.push('/chat');
+                  } else if (isLandlord && notif.type === 'visit_scheduled') {
+                    router.push('/(tabs)/locations');
+                  } else if (notif.propertyId) {
                     router.push({ pathname: '/property-details', params: { id: notif.propertyId } });
                   } else if (notif.type === 'roommate') {
                     router.push('/roommate-match');
@@ -183,7 +196,7 @@ export default function AlertsScreen() {
           ))}
 
           {/* ── Caught Up ───────────────────────────────────────────────────── */}
-          {notifications.length === 0 && (
+          {filteredNotifs.length === 0 && (
             <View style={styles.caughtUp}>
               <MaterialIcons name="notifications-none" size={36} color="#D1D5DB" />
               <Text style={styles.caughtUpText}>You're all caught up!</Text>
@@ -278,7 +291,9 @@ const styles = StyleSheet.create({
     backgroundColor: KiraColors.primary, borderRadius: 24, padding: 20, marginBottom: 20,
     shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.25, shadowRadius: 16, elevation: 8,
+    overflow: 'hidden', position: 'relative',
   },
+  landlordCard: { backgroundColor: '#1A1A1A' },
   premiumRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10 },
   premiumTitle: { fontSize: 16, fontWeight: '800', color: '#FFF', flex: 1 },
   liveChip: {
@@ -286,8 +301,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20,
   },
-  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#4ADE80' },
-  liveText: { fontSize: 9, fontWeight: '800', color: '#4ADE80', letterSpacing: 1 },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#FFF' },
+  liveText: { fontSize: 9, fontWeight: '800', color: '#FFF', letterSpacing: 1 },
   premiumSub: { fontSize: 13, color: 'rgba(255,255,255,0.8)', lineHeight: 20, marginBottom: 16 },
   premiumToggles: { gap: 10 },
   toggleRow: {

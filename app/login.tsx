@@ -1,11 +1,47 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { KiraColors } from '@/constants/colors';
+import { useUser, UserRole } from '@/context/UserContext';
+import { useLanguage } from '@/context/LanguageContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen() {
+  const { t, language, setLanguage } = useLanguage();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const { login } = useUser();
+
+  const handleLogin = async () => {
+    // ─── MOCK USERS ───────────────────────────────────────────────────────────
+    const MOCK_USERS: Record<string, { pass: string; role: UserRole; name: string }> = {
+      'tenant@kiranet.com': { pass: 'pass123', role: 'tenant', name: 'Tadesse Renter' },
+      'landlord@kiranet.com': { pass: 'pass123', role: 'landlord', name: 'Lomi Landlord' },
+    };
+
+    const user = MOCK_USERS[email.toLowerCase()];
+
+    if (user && user.pass === password) {
+       try {
+         await login(email, user.role);
+         await AsyncStorage.setItem('@user_name', user.name);
+         await AsyncStorage.setItem('@user_email', email);
+         router.replace('/(tabs)');
+       } catch (e) {
+         Alert.alert('System Error', 'Failed to initialize session.');
+       }
+    } else {
+      Alert.alert(
+        'Invalid Credentials', 
+        'Try:\n' + 
+        '• RENTER: tenant@kiranet.com / pass123\n' + 
+        '• LANDLORD: landlord@kiranet.com / pass123'
+      );
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView 
@@ -14,50 +50,69 @@ export default function LoginScreen() {
       >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
+          <View style={styles.headerToggleRow}>
+            <TouchableOpacity 
+              style={styles.langPill}
+              onPress={() => {
+                const nextLang: Record<Language, Language> = { en: 'am', am: 'om', om: 'en' };
+                setLanguage(nextLang[language]);
+              }}
+            >
+              <Feather name="globe" size={12} color={KiraColors.primary} />
+              <Text style={styles.langPillText}>
+                {language === 'en' ? 'English' : language === 'am' ? 'አማርኛ' : 'Oromoo'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           <View style={styles.topSection}>
             <View style={styles.logoCircle}>
               <FontAwesome5 name="feather-alt" size={24} color="#000" />
             </View>
-            <Text style={styles.welcomeText}>Welcome back.</Text>
-            <Text style={styles.subWelcome}>Secure access to the Kira-Net ecosystem.</Text>
+            <Text style={styles.welcomeText}>{t.welcomeBack}</Text>
+            <Text style={styles.subWelcome}>{t.secureAccess}</Text>
           </View>
 
           <View style={styles.card}>
             <View style={styles.inputGroup}>
-              <Text style={styles.fieldLabel}>EMAIL</Text>
+              <Text style={styles.fieldLabel}>{t.emailLabel}</Text>
               <View style={styles.inputWrapper}>
                 <Feather name="mail" size={16} color="#000" />
                 <TextInput 
                   style={styles.textInput}
-                  placeholder="name@kira.net"
+                  placeholder={t.emailPlaceholder}
                   placeholderTextColor="#9CA3AF"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  value={email}
+                  onChangeText={setEmail}
                 />
               </View>
             </View>
 
             <View style={styles.inputGroup}>
               <View style={styles.passwordLabelRow}>
-                <Text style={styles.fieldLabel}>PASSWORD</Text>
+                <Text style={styles.fieldLabel}>{t.passwordLabel}</Text>
                 <TouchableOpacity>
-                  <Text style={styles.forgotText}>Reset?</Text>
+                  <Text style={styles.forgotText}>{t.forgotPassword}</Text>
                 </TouchableOpacity>
               </View>
               <View style={styles.inputWrapper}>
                 <Feather name="lock" size={16} color="#000" />
                 <TextInput 
                   style={styles.textInput}
-                  placeholder="••••••••"
+                  placeholder={t.passwordPlaceholder}
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry
+                  value={password}
+                  onChangeText={setPassword}
                 />
               </View>
             </View>
 
-            <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/(tabs)')}>
-              <Text style={styles.primaryBtnText}>Continue</Text>
-              <Feather name="arrow-right" size={18} color="#FFF" />
+            <TouchableOpacity style={styles.primaryBtn} onPress={handleLogin}>
+              <Text style={styles.primaryBtnText}>{t.signIn}</Text>
+              <Feather name="arrow-right" size={18} color="#1A1A1A" />
             </TouchableOpacity>
 
             <View style={styles.divider}>
@@ -79,7 +134,7 @@ export default function LoginScreen() {
           </View>
 
           <TouchableOpacity style={styles.footerLink} onPress={() => router.push('/signup')}>
-            <Text style={styles.footerText}>New to Kira-Net? <Text style={styles.footerBold}>Create an account</Text></Text>
+            <Text style={styles.footerText}>{t.noAccount} <Text style={styles.footerBold}>{t.signUpLink}</Text></Text>
           </TouchableOpacity>
 
         </ScrollView>
@@ -94,6 +149,14 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1, paddingHorizontal: 30, paddingVertical: 40, justifyContent: 'center' },
   
   topSection: { marginBottom: 48 },
+  headerToggleRow: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 20 },
+  langPill: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#FFF', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12,
+    borderWidth: 1, borderColor: '#E2E8F0',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 5, elevation: 1
+  },
+  langPillText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
   logoCircle: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center', marginBottom: 24, borderWidth: 1, borderColor: '#C8E6C9' },
   welcomeText: { fontSize: 42, fontWeight: '900', color: KiraColors.primary, letterSpacing: -2, lineHeight: 46 },
   subWelcome: { fontSize: 15, color: '#64748B', fontWeight: '500', marginTop: 8 },

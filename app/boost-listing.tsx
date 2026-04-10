@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -43,8 +44,30 @@ const PAYMENT_METHODS = [
 
 type Step = 'select_property' | 'select_plan' | 'select_payment' | 'processing' | 'success';
 
+import { useUser } from '@/context/UserContext';
+
 export default function BoostListingScreen() {
+  const { role } = useUser();
   const [step, setStep] = useState<Step>('select_property');
+
+  if (role === 'tenant') {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.restrictedContainer}>
+          <View style={[styles.iconCircle, { backgroundColor: '#FFFBEB' }]}>
+             <Feather name="zap" size={48} color={KiraColors.warning} />
+          </View>
+          <Text style={styles.restrictedTitle}>Boost Your Business</Text>
+          <Text style={styles.restrictedSubtitle}>
+            Property boosting and featured status are professional tools reserved for Landlords and Property Managers.
+          </Text>
+          <TouchableOpacity style={styles.upgradeBtn} onPress={() => router.replace('/(tabs)/profile')}>
+            <Text style={styles.upgradeBtnText}>Switch to Landlord</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
   const [selectedProperty, setSelectedProperty] = useState<any>(null);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
@@ -543,4 +566,50 @@ const styles = StyleSheet.create({
   },
   primaryBtnDisabled: { backgroundColor: '#D1D5DB', shadowOpacity: 0 },
   primaryBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  restrictedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#FAFBFB',
+  },
+  iconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F0FDF4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  restrictedTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  restrictedSubtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  upgradeBtn: {
+    backgroundColor: KiraColors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 30,
+    shadowColor: KiraColors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  upgradeBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFF',
+  },
 });

@@ -8,6 +8,7 @@ import { router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
 import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { useAlerts } from '@/context/AlertsContext';
+import { useUser } from '@/context/UserContext';
 
 const { width } = Dimensions.get('window');
 const TAB_COUNT = 5;
@@ -47,6 +48,7 @@ const CurvedBackground = ({ activeIndex }: { activeIndex: number }) => {
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
+  const { role } = useUser();
 
   const activeIndex = useMemo(() => {
     if (pathname === '/' || pathname === '/(tabs)') return 0;
@@ -98,12 +100,16 @@ export default function TabLayout() {
         <Tabs.Screen
           name="locations"
           options={{
-            title: 'Areas',
+            title: role === 'landlord' ? 'Leads' : 'Areas',
             tabBarIcon: ({ focused }) => (
               <View style={styles.iconContainer}>
                 {focused && <View style={styles.activeDot} />}
                 <View style={[styles.iconWrap, { transform: [{ scale: focused ? 1.15 : 1 }] }]}>
-                  <Feather size={18} name="map-pin" color={focused ? KiraColors.primary : '#94A3B8'} />
+                  {role === 'landlord' ? (
+                    <Feather size={18} name="message-circle" color={focused ? KiraColors.primary : '#94A3B8'} />
+                  ) : (
+                    <Feather size={18} name="map-pin" color={focused ? KiraColors.primary : '#94A3B8'} />
+                  )}
                 </View>
               </View>
             ),
@@ -129,12 +135,16 @@ export default function TabLayout() {
         <Tabs.Screen
           name="saved"
           options={{
-            title: 'Saved',
+            title: role === 'landlord' ? 'My Properties' : 'Saved',
             tabBarIcon: ({ focused }) => (
               <View style={styles.iconContainer}>
                 {focused && <View style={styles.activeDot} />}
                 <View style={[styles.iconWrap, { transform: [{ scale: focused ? 1.15 : 1 }] }]}>
-                  <Ionicons size={18} name={focused ? 'heart' : 'heart-outline'} color={focused ? KiraColors.primary : '#94A3B8'} />
+                  {role === 'landlord' ? (
+                    <Feather size={18} name="home" color={focused ? KiraColors.primary : '#94A3B8'} />
+                  ) : (
+                    <Ionicons size={18} name={focused ? 'heart' : 'heart-outline'} color={focused ? KiraColors.primary : '#94A3B8'} />
+                  )}
                 </View>
               </View>
             ),
@@ -158,15 +168,17 @@ export default function TabLayout() {
       </Tabs>
 
       {/* Center Action Button */}
-      <View style={[styles.centerBtnContainer, { bottom: Platform.OS === 'ios' ? insets.bottom + 22 : 22 }]}>
-        <TouchableOpacity
-          activeOpacity={0.9}
-          style={styles.centerBtn}
-          onPress={() => router.push('/list-property')}
-        >
-          <Feather name="plus" size={22} color="#FFFFFF" />
-        </TouchableOpacity>
-      </View>
+      {(role === 'landlord' || role === 'agent') && (
+        <View style={[styles.centerBtnContainer, { bottom: Platform.OS === 'ios' ? insets.bottom + 22 : 22 }]}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.centerBtn}
+            onPress={() => router.push('/list-property')}
+          >
+            <Feather name="plus" size={22} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+      )}
     </>
   );
 }

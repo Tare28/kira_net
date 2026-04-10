@@ -14,6 +14,32 @@ export interface Notification {
 }
 
 const INITIAL_NOTIFS: Notification[] = [
+  // Landlord Notifications
+  {
+    id: 'l1', type: 'inquiry', unread: true,
+    title: '💬 New Inquiry: Summit Residency',
+    desc: 'Mekdes Zeleke (Trusted ✓) just sent a message regarding your 2-bedroom listing.',
+    time: '5m ago', action: 'Open Chat', propertyId: '#KN-001',
+  },
+  {
+    id: 'l2', type: 'visit_scheduled', unread: true,
+    title: '📅 Visit Confirmed',
+    desc: 'Kalkidan Alemu confirmed a visit for Saturday, 10:00 AM at Summit Residency.',
+    time: '45m ago', action: 'View Plan', propertyId: '#KN-001',
+  },
+  {
+    id: 'l3', type: 'market_intel', unread: true,
+    title: '📈 Market Opportunity: Bole',
+    desc: 'Rental prices in Bole are up 5%. Our AI suggesting adding 2,000 ETB to your next lease.',
+    time: '3h ago', action: 'Update Pricing',
+  },
+  {
+    id: 'l4', type: 'boost_expiry', unread: false,
+    title: '⚡ Boost Expiring Soon',
+    desc: 'Your "Premium Boost" for Garden Villa expires in 2 hours. Extend now to keep top visibility.',
+    time: '5h ago', action: 'Extend Boost', propertyId: '#KN-002',
+  },
+  // Renter Notifications
   {
     id: '1', type: 'hot_listing', unread: true,
     title: '🔥 Hot Listing Alert',

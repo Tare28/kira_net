@@ -8,6 +8,7 @@ import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { KiraColors } from '@/constants/colors';
+import { useUser } from '@/context/UserContext';
 
 const { width } = Dimensions.get('window');
 
@@ -87,6 +88,7 @@ function matchColor(score: number) {
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function RoommateMatchScreen() {
+  const { role } = useUser();
   const [activeGender, setActiveGender] = useState('Any');
   const [maxBudget, setMaxBudget] = useState(25000);
   const [selectedLifestyle, setSelectedLifestyle] = useState<string[]>([]);
@@ -123,9 +125,11 @@ export default function RoommateMatchScreen() {
           <Text style={styles.headerTitle}>Roommate Match</Text>
           <Text style={styles.headerSub}>{filtered.length} profiles available</Text>
         </View>
-        <TouchableOpacity style={styles.createBtn} onPress={() => setShowCreateModal(true)}>
-          <Feather name="plus" size={18} color="#FFF" />
-        </TouchableOpacity>
+        {(role === 'tenant' || !role) && (
+          <TouchableOpacity style={styles.createBtn} onPress={() => setShowCreateModal(true)}>
+            <Feather name="plus" size={18} color="#FFF" />
+          </TouchableOpacity>
+        )}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>

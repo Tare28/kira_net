@@ -48,8 +48,30 @@ const MY_PROPERTIES = [
   },
 ];
 
-export default function LandlordDashboardScreen() {
+import { useUser } from '@/context/UserContext';
+
+export default function LandlordDashboardScreen({ hideBack = false }: { hideBack?: boolean }) {
+  const { role } = useUser();
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'boosted'>('all');
+
+  if (role === 'tenant') {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.restrictedContainer}>
+          <View style={styles.iconCircle}>
+             <MaterialIcons name="business" size={48} color={KiraColors.primary} />
+          </View>
+          <Text style={styles.restrictedTitle}>Exclusive Landlord Access</Text>
+          <Text style={styles.restrictedSubtitle}>
+            To manage listings and see your performance analytics, you must be registered as a Landlord.
+          </Text>
+          <TouchableOpacity style={styles.upgradeBtn} onPress={() => router.replace('/(tabs)/profile')}>
+            <Text style={styles.upgradeBtnText}>Upgrade My Account</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const filtered = MY_PROPERTIES.filter(p => {
     if (activeTab === 'all') return true;
@@ -65,10 +87,14 @@ export default function LandlordDashboardScreen() {
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} hitSlop={{top:10,bottom:10,left:10,right:10}}>
-          <Feather name="arrow-left" size={22} color="#1A1A1A" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Dashboard</Text>
+        {!hideBack ? (
+          <TouchableOpacity onPress={() => router.back()} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+            <Feather name="arrow-left" size={22} color="#1A1A1A" />
+          </TouchableOpacity>
+        ) : (
+          <View style={{ width: 22 }} />
+        )}
+        <Text style={styles.headerTitle}>My Properties</Text>
         <TouchableOpacity
           style={styles.addBtn}
           onPress={() => router.push('/list-property')}
@@ -79,27 +105,6 @@ export default function LandlordDashboardScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
-        {/* Stats Row */}
-        <View style={styles.statsRow}>
-          <View style={styles.statCard}>
-            <Feather name="eye" size={18} color="#9CC942" />
-            <Text style={styles.statValue}>{totalViews}</Text>
-            <Text style={styles.statLabel}>Total Views</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statCard}>
-            <Feather name="message-circle" size={18} color="#9CC942" />
-            <Text style={styles.statValue}>{totalInquiries}</Text>
-            <Text style={styles.statLabel}>Inquiries</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statCard}>
-            <Feather name="home" size={18} color="#9CC942" />
-            <Text style={styles.statValue}>{MY_PROPERTIES.length}</Text>
-            <Text style={styles.statLabel}>Listings</Text>
-          </View>
-        </View>
 
         {/* Filter Tabs */}
         <View style={styles.tabsRow}>
@@ -116,8 +121,9 @@ export default function LandlordDashboardScreen() {
           ))}
         </View>
 
+        <Text style={styles.sectionLabel}>Listed Properties ({filtered.length})</Text>
+
         {/* Property Cards */}
-        <Text style={styles.sectionLabel}>Your Properties</Text>
         {filtered.map(property => (
           <View key={property.id} style={styles.propertyCard}>
             
@@ -141,26 +147,6 @@ export default function LandlordDashboardScreen() {
               </View>
               <Text style={styles.cardPrice}>{property.price} ETB <Text style={styles.cardPriceMonth}>/month</Text></Text>
 
-              {/* Metrics */}
-              <View style={styles.metricsRow}>
-                <View style={styles.metric}>
-                  <Feather name="eye" size={12} color="#6B7280" />
-                  <Text style={styles.metricText}>{property.views} views</Text>
-                </View>
-                <View style={styles.metric}>
-                  <Feather name="message-circle" size={12} color="#6B7280" />
-                  <Text style={styles.metricText}>{property.inquiries} inquiries</Text>
-                </View>
-                {property.daysLeft && (
-                  <View style={styles.metric}>
-                    <Feather name="zap" size={12} color="#9CC942" />
-                    <Text style={[styles.metricText, { color: '#9CC942', fontWeight: '700' }]}>
-                      {property.daysLeft}d boost left
-                    </Text>
-                  </View>
-                )}
-              </View>
-
               {/* Actions */}
               <View style={styles.actionsRow}>
                 <TouchableOpacity
@@ -168,7 +154,7 @@ export default function LandlordDashboardScreen() {
                   onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
                 >
                   <Feather name="eye" size={14} color="#9CC942" />
-                  <Text style={styles.actionBtnOutlineText}>View</Text>
+                  <Text style={styles.actionBtnOutlineText}>View Detail</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnOutline}
@@ -179,10 +165,10 @@ export default function LandlordDashboardScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnOutline}
-                  onPress={() => router.push('/chat')}
+                  onPress={() => router.push('/list-property')}
                 >
-                  <Feather name="message-circle" size={14} color="#9CC942" />
-                  <Text style={styles.actionBtnOutlineText}>Chat</Text>
+                  <Feather name="edit-2" size={14} color="#9CC942" />
+                  <Text style={styles.actionBtnOutlineText}>Edit</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -198,7 +184,7 @@ export default function LandlordDashboardScreen() {
           <Feather name="chevron-right" size={18} color="#9CC942" />
         </TouchableOpacity>
 
-        <View style={{ height: 40 }} />
+        <View style={{ height: 60 }} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -278,4 +264,67 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', marginRight: 14,
   },
   addPropertyText: { flex: 1, fontSize: 14, fontWeight: '700', color: '#9CC942' },
+  restrictedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#FAFBFB',
+  },
+  iconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F0FDF4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  restrictedTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  restrictedSubtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  upgradeBtn: {
+    backgroundColor: KiraColors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 30,
+    shadowColor: KiraColors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  upgradeBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFF',
+  },
+  leadsHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    marginTop: 32, marginBottom: 16,
+  },
+  viewAllText: { fontSize: 13, fontWeight: '700', color: KiraColors.primary },
+  leadCard: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
+    padding: 14, borderRadius: 20, marginBottom: 10,
+    borderWidth: 1, borderColor: '#F3F4F6',
+  },
+  leadAvatar: { width: 44, height: 44, borderRadius: 22, marginRight: 14 },
+  leadInfo: { flex: 1 },
+  leadName: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginBottom: 2 },
+  leadProperty: { fontSize: 11, color: '#64748B', fontWeight: '500' },
+  leadMeta: { alignItems: 'flex-end', gap: 6 },
+  leadTime: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
+  unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3B82F6' },
 });

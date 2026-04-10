@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   User, 
   CheckCircle2, 
@@ -6,10 +6,11 @@ import {
   Slash,
   Star,
   ShieldPlus,
-  ArrowRight
+  ArrowRight,
+  RotateCcw
 } from 'lucide-react';
 
-const agents = [
+const INITIAL_AGENTS = [
   { id: '#AG-1024', name: 'Elias Tesfaye', phone: '+251 911 234 567', commission: '5.0%', listings: 28, rating: 4.9, reviews: 142, status: 'VERIFIED' },
   { id: '#AG-2105', name: 'Selamawit D.', phone: '+251 944 882 110', commission: '4.5%', listings: 3, rating: 0.0, reviews: 0, status: 'PENDING' },
   { id: '#AG-8892', name: 'Yonas Kebede', phone: '+251 900 112 233', lastActive: 'Oct 12, 2023', listings: 12, status: 'SUSPENDED' },
@@ -20,6 +21,35 @@ interface AgentsProps {
 }
 
 const AgentsView: React.FC<AgentsProps> = () => {
+  const [data, setData] = useState(INITIAL_AGENTS);
+
+  const updateStatus = (id: string, status: string) => {
+    setData(prev => prev.map(a => a.id === id ? { ...a, status } : a));
+  };
+
+  const deleteAgent = (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to suspend agent ${name}?`)) {
+      updateStatus(id, 'SUSPENDED');
+    }
+  };
+
+  const onboardAgent = () => {
+    const name = prompt('Enter new agent name:');
+    if (name) {
+      const newAgent = {
+        id: `#AG-${Math.floor(1000 + Math.random() * 9000)}`,
+        name,
+        phone: '+251 9XX XXX XXX',
+        commission: '4.0%',
+        listings: 0,
+        rating: 0.0,
+        reviews: 0,
+        status: 'PENDING'
+      };
+      setData([...data, newAgent]);
+    }
+  };
+
   return (
     <section>
         <div className="view-header">
@@ -30,7 +60,7 @@ const AgentsView: React.FC<AgentsProps> = () => {
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
-            {agents.map((agent, idx) => (
+            {data.map((agent, idx) => (
                 <div key={idx} style={{ 
                     background: 'white', 
                     borderRadius: '24px', 
@@ -93,17 +123,33 @@ const AgentsView: React.FC<AgentsProps> = () => {
                         
                         <div style={{ display: 'flex', gap: '8px' }}>
                             {agent.status === 'PENDING' ? (
-                                <button style={{ background: '#9CC942', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button 
+                                  onClick={() => updateStatus(agent.id, 'VERIFIED')}
+                                  style={{ background: '#9CC942', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}
+                                >
                                     Approve <ArrowRight size={14}/>
                                 </button>
                             ) : agent.status === 'SUSPENDED' ? (
-                                <button style={{ background: '#0F172A', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800 }}>
-                                    Restore
+                                <button 
+                                  onClick={() => updateStatus(agent.id, 'PENDING')}
+                                  style={{ background: '#0F172A', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}
+                                >
+                                    <RotateCcw size={14}/> Restore
                                 </button>
                             ) : (
                                 <>
-                                    <button style={{ width: '40px', height: '40px', background: '#F8FAFC', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', border: '1px solid #F1F5F9' }}><Edit3 size={16}/></button>
-                                    <button style={{ width: '40px', height: '40px', background: '#FEE2E2', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', border: '1px solid #FEE2E2' }}><Slash size={16}/></button>
+                                    <button 
+                                      onClick={() => alert(`Edit profile for ${agent.name}`)}
+                                      style={{ width: '40px', height: '40px', background: '#F8FAFC', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', border: '1px solid #F1F5F9' }}
+                                    >
+                                      <Edit3 size={16}/>
+                                    </button>
+                                    <button 
+                                      onClick={() => deleteAgent(agent.id, agent.name)}
+                                      style={{ width: '40px', height: '40px', background: '#FEE2E2', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#EF4444', border: '1px solid #FEE2E2' }}
+                                    >
+                                      <Slash size={16}/>
+                                    </button>
                                 </>
                             )}
                         </div>
@@ -111,7 +157,9 @@ const AgentsView: React.FC<AgentsProps> = () => {
                 </div>
             ))}
 
-            <button style={{ 
+            <button 
+              onClick={onboardAgent}
+              style={{ 
                 background: '#FFFFFF', 
                 border: '2px dashed #CBD5E1', 
                 borderRadius: '24px', 
@@ -123,8 +171,10 @@ const AgentsView: React.FC<AgentsProps> = () => {
                 gap: '16px',
                 color: '#64748B',
                 transition: '0.2s',
-                minHeight: '200px'
-            }}>
+                minHeight: '200px',
+                cursor: 'pointer'
+              }}
+            >
                 <div style={{ width: '56px', height: '56px', background: '#F8FAFC', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <ShieldPlus size={24}/>
                 </div>

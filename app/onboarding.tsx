@@ -18,37 +18,39 @@ import Animated, {
   runOnJS
 } from 'react-native-reanimated';
 import { KiraColors } from '@/constants/colors';
+import { useLanguage } from '@/context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
-const SLIDES = [
-  {
-    id: 1,
-    title: 'Find Your\nPerfect Home',
-    subtitle: 'Browse hundreds of verified rentals across Addis Ababa — studios, apartments, villas, and more.',
-    image: require('../assets/images/onboarding_1.png'),
-    tag: 'Premium Listings'
-  },
-  {
-    id: 2,
-    title: 'Smart Filters\n& AI Matching',
-    subtitle: 'Filter by price, deposit, and utilities. Our AI recommends listings tailored just for your lifestyle.',
-    image: require('../assets/images/onboarding_2.png'),
-    tag: 'Elite Search'
-  },
-  {
-    id: 3,
-    title: 'Verified Listings\nYou Can Trust',
-    subtitle: 'Every listing has been physically inspected by the Kira-Net team. No scams, no fake photos.',
-    image: require('../assets/images/onboarding_3.png'),
-    tag: 'Safe & Secure'
-  },
-];
-
 export default function OnboardingScreen() {
+  const { t, language, setLanguage } = useLanguage();
   const scrollRef = useRef<Animated.ScrollView>(null);
   const [activeSlide, setActiveSlide] = useState(0);
   const scrollX = useSharedValue(0);
+
+  const SLIDES = [
+    {
+      id: 1,
+      title: t.slide1Title,
+      subtitle: t.slide1Sub,
+      image: require('../assets/images/onboarding_1.png'),
+      tag: 'Premium Listings'
+    },
+    {
+      id: 2,
+      title: t.slide2Title,
+      subtitle: t.slide2Sub,
+      image: require('../assets/images/onboarding_2.png'),
+      tag: 'Elite Search'
+    },
+    {
+      id: 3,
+      title: t.slide3Title,
+      subtitle: t.slide3Sub,
+      image: require('../assets/images/onboarding_3.png'),
+      tag: 'Safe & Secure'
+    },
+  ];
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -105,11 +107,26 @@ export default function OnboardingScreen() {
 
       {/* Top Bar Actions */}
       <SafeAreaView style={styles.topBar}>
-        <View style={styles.logoWrap}>
-           <Text style={styles.brandText}>KIRA-NET</Text>
-        </View>
-        <TouchableOpacity onPress={skip} style={styles.skipBtn}>
-           <Text style={styles.skipText}>Skip</Text>
+        <TouchableOpacity 
+          style={styles.langTogglePill} 
+          onPress={() => {
+            const nextLang: Record<Language, Language> = { en: 'am', am: 'om', om: 'en' };
+            setLanguage(nextLang[language]);
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          }}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.langToggleText}>
+            {language === 'en' ? 'EN' : language === 'am' ? 'አማ' : 'OM'}
+          </Text>
+          <Feather name="globe" size={10} color="#FFF" style={{ marginLeft: 4 }} />
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.skipBtn} 
+          onPress={() => router.push('/login')}
+        >
+          <Text style={styles.skipText}>{t.skip}</Text>
         </TouchableOpacity>
       </SafeAreaView>
 
@@ -176,7 +193,7 @@ export default function OnboardingScreen() {
           activeOpacity={0.9}
         >
           <Text style={styles.mainCtaText}>
-            {activeSlide === SLIDES.length - 1 ? 'Get Started' : 'Next Step'}
+            {activeSlide === SLIDES.length - 1 ? t.getStarted : t.next}
           </Text>
           <Feather name="arrow-right" size={18} color="#1A1A1A" />
         </TouchableOpacity>
@@ -197,7 +214,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24, paddingVertical: 12,
   },
   logoWrap: { flexDirection: 'row', alignItems: 'center' },
-  brandText: { fontSize: 16, fontWeight: '900', color: '#FFF', letterSpacing: 2 },
+  randText: { fontSize: 16, fontWeight: '900', color: '#FFF', letterSpacing: 2 },
+  langTogglePill: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.15)',
+  },
+  langToggleText: { fontSize: 10, fontWeight: '900', color: '#FFF', letterSpacing: 1 },
   skipBtn: {
     backgroundColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
@@ -205,7 +229,7 @@ const styles = StyleSheet.create({
   },
   skipText: { fontSize: 12, fontWeight: '800', color: '#FFF', textTransform: 'uppercase' },
   
-  slide: { width, flex: 1, justifyContent: 'flex-end', paddingBottom: 100 },
+  slide: { width, flex: 1, justifyContent: 'flex-end', paddingBottom: 180 },
   contentWrap: { paddingHorizontal: 32 },
   tagWrap: { 
     backgroundColor: 'rgba(255,255,255,0.12)', 
@@ -219,14 +243,14 @@ const styles = StyleSheet.create({
 
   footerContainer: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
-    paddingHorizontal: 24, paddingBottom: 40, alignItems: 'center',
+    paddingHorizontal: 24, paddingBottom: 30, alignItems: 'center',
   },
-  dotsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 32 },
+  dotsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
   dot: { height: 4, borderRadius: 2, marginHorizontal: 3 },
 
   mainCta: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
-    width: '100%', backgroundColor: KiraColors.primary, paddingVertical: 20, borderRadius: 20,
+    width: '100%', backgroundColor: KiraColors.primary, paddingVertical: 18, borderRadius: 20,
     shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 12,
   },
   mainCtaText: { fontSize: 16, fontWeight: '900', color: '#1A1A1A' },

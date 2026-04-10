@@ -13,6 +13,7 @@ import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { useAlerts } from '@/context/AlertsContext';
+import { useUser } from '@/context/UserContext';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -52,8 +53,178 @@ const CATEGORIES = [
 
 import { useFilters } from '@/context/FilterContext';
 
+function LandlordHome({ insets }: { insets: any }) {
+  const now = new Date();
+  const hour = now.getHours();
+  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+
+  const AI_RECS = [
+    {
+      id: 'rec1', icon: 'zap', color: '#F59E0B', bg: '#FFFBEB',
+      title: 'Boost Summit Residency',
+      desc: '48 saves this week — this listing is gaining traction. A 7-day boost could convert into 3–5 signed leases.',
+      cta: 'Boost Now',
+      route: '/boost-listing',
+    },
+    {
+      id: 'rec2', icon: 'camera', color: '#8B5CF6', bg: '#F5F3FF',
+      title: 'Add Photos to Garden Villa',
+      desc: 'Listings with 6+ photos get 4× more inquiries. Garden Villa only has 3. Request a professional shoot today.',
+      cta: 'Request Shoot',
+      route: null,
+    },
+    {
+      id: 'rec3', icon: 'trending-up', color: '#0EA5E9', bg: '#F0F9FF',
+      title: 'Reprice Kazanchis Studio',
+      desc: 'Similar studios in Kazanchis now list at 21,000 ETB. You\'re 12% below market — consider raising to capture extra revenue.',
+      cta: 'Edit Price',
+      route: null,
+    },
+  ];
+
+  const MARKET_INTEL = [
+    { area: 'Bole', change: '+5.2%', trend: 'up', desc: 'Rental surge', color: '#9CC942' },
+    { area: 'Kazanchis', change: 'Peak', trend: 'fire', desc: 'Studio demand', color: '#F59E0B' },
+    { area: 'Old Airport', change: 'Stable', trend: 'minus', desc: 'Mid-range', color: '#64748B' },
+    { area: 'Sarbet', change: '+2.1%', trend: 'up', desc: 'Growing', color: '#9CC942' },
+  ];
+
+  return (
+    <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingTop: insets.top + 120, paddingHorizontal: 20, paddingBottom: 120 }}
+    >
+        {/* ── Premium Greeting ──────────────────────────────────────────────── */}
+        <View style={lh.greetRow}>
+            <View>
+                <Text style={lh.greetSmall}>{greeting} 👋</Text>
+                <Text style={lh.greetBig}>Command Center</Text>
+            </View>
+            <TouchableOpacity
+                style={lh.notifPill}
+                onPress={() => router.push('/(tabs)/alerts')}
+            >
+                <Feather name="bell" size={15} color={KiraColors.primary} />
+                <Text style={lh.notifPillText}>Alerts</Text>
+                <View style={lh.notifDot} />
+            </TouchableOpacity>
+        </View>
+
+        {/* ── Revenue + KPI Card ─────────────────────────────────────────────── */}
+        <View style={lh.revenueCard}>
+            <LinearGradient
+                colors={['#1A1A1A', '#2C2C2C']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={StyleSheet.absoluteFill}
+            />
+            {/* Brand green accent blob */}
+            <View style={[lh.decorCircle, { top: -40, right: -20, width: 140, height: 140, backgroundColor: KiraColors.primary, opacity: 0.12 }]} />
+            <View style={[lh.decorCircle, { bottom: -10, left: 20, width: 70, height: 70, backgroundColor: KiraColors.primary, opacity: 0.07 }]} />
+
+            <Text style={lh.revenueLabel}>APRIL 2026 PROJECTED INCOME</Text>
+            <Text style={lh.revenueAmount}>88,500 <Text style={lh.revenueCur}>ETB</Text></Text>
+            <View style={lh.revenueMeta}>
+                <View style={lh.revenueBadge}>
+                    <Feather name="trending-up" size={11} color={KiraColors.primary} />
+                    <Text style={lh.revenueBadgeText}>+12.4% vs March</Text>
+                </View>
+                <Text style={lh.revenueAssets}>Portfolio: 14.2M ETB</Text>
+            </View>
+
+            {/* Mini KPI Row */}
+            <View style={lh.miniKpiRow}>
+                {[
+                    { label: 'PROPERTIES', val: '3' },
+                    { label: 'OCCUPANCY', val: '67%' },
+                    { label: 'LEADS', val: '12' },
+                    { label: 'VIEWS', val: '1.2K' },
+                ].map((k, i) => (
+                    <View key={i} style={lh.miniKpi}>
+                        <Text style={lh.miniKpiVal}>{k.val}</Text>
+                        <Text style={lh.miniKpiLab}>{k.label}</Text>
+                    </View>
+                ))}
+            </View>
+        </View>
+
+        {/* ── AI Recommendations ────────────────────────────────────────────── */}
+        <View style={lh.sectionHeaderRow}>
+            <View style={lh.aiTag}>
+                <MaterialCommunityIcons name="robot-outline" size={12} color="#FFF" />
+                <Text style={lh.aiTagText}>AI</Text>
+            </View>
+            <Text style={lh.sectionH}>Recommendations</Text>
+        </View>
+
+        <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={{ marginHorizontal: -20 }}
+            contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 20, gap: 14 }}
+        >
+            {AI_RECS.map((rec) => (
+                <View key={rec.id} style={lh.recCard}>
+                    <View style={[lh.recIconWrap, { backgroundColor: rec.bg }]}>
+                        <Feather name={rec.icon as any} size={22} color={rec.color} />
+                    </View>
+                    <Text style={lh.recTitle}>{rec.title}</Text>
+                    <Text style={lh.recDesc}>{rec.desc}</Text>
+                    <TouchableOpacity
+                        style={[lh.recCta, { borderColor: rec.color }]}
+                        onPress={() => rec.route && router.push(rec.route as any)}
+                    >
+                        <Text style={[lh.recCtaText, { color: rec.color }]}>{rec.cta}</Text>
+                        <Feather name="arrow-right" size={12} color={rec.color} />
+                    </TouchableOpacity>
+                </View>
+            ))}
+        </ScrollView>
+
+        {/* ── Market Intelligence ───────────────────────────────────────────── */}
+        <View style={[lh.sectionHeaderRow, { marginTop: 32 }]}>
+            <Text style={lh.sectionH}>Market Intel</Text>
+            <TouchableOpacity><Text style={lh.seeAll}>Full Report →</Text></TouchableOpacity>
+        </View>
+
+        <View style={lh.intelGrid}>
+            {MARKET_INTEL.map((m, i) => (
+                <View key={i} style={lh.intelCard}>
+                    <Text style={lh.intelArea}>{m.area}</Text>
+                    <Text style={[lh.intelChange, { color: m.color }]}>{m.change}</Text>
+                    <Text style={lh.intelDesc}>{m.desc}</Text>
+                    {m.trend === 'up' && <Feather name="trending-up" size={14} color={m.color} style={{ marginTop: 4 }} />}
+                    {m.trend === 'fire' && <Text style={{ fontSize: 14 }}>🔥</Text>}
+                    {m.trend === 'minus' && <Feather name="minus" size={14} color={m.color} style={{ marginTop: 4 }} />}
+                </View>
+            ))}
+        </View>
+
+        {/* ── Operational Shortcuts ────────────────────────────────────────── */}
+        <Text style={[lh.sectionH, { marginTop: 32, marginBottom: 16 }]}>Quick Actions</Text>
+        <View style={lh.opsRow}>
+            {[
+                { icon: 'camera', label: 'Request Photos', color: '#8B5CF6', bg: '#F5F3FF', onPress: null },
+                { icon: 'file-text', label: 'Legal Forms', color: '#0EA5E9', bg: '#F0F9FF', onPress: null },
+                { icon: 'home', label: 'My Inventory', color: '#9CC942', bg: '#F4F9EB', onPress: () => router.push('/landlord-dashboard') },
+                { icon: 'plus-circle', label: 'New Listing', color: '#F59E0B', bg: '#FFFBEB', onPress: () => router.push('/list-property') },
+            ].map((op, i) => (
+                <TouchableOpacity key={i} style={lh.opsCard} onPress={op.onPress ?? undefined}>
+                    <View style={[lh.opsIconWrap, { backgroundColor: op.bg }]}>
+                        <Feather name={op.icon as any} size={20} color={op.color} />
+                    </View>
+                    <Text style={lh.opsLabel}>{op.label}</Text>
+                </TouchableOpacity>
+            ))}
+        </View>
+
+        <View style={{ height: 120 }} />
+    </ScrollView>
+  );
+}
+
 export default function ExploreScreen() {
   const insets = useSafeAreaInsets();
+  const { role } = useUser();
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const { visits } = useVisitPlan();
@@ -134,52 +305,43 @@ export default function ExploreScreen() {
           <View style={styles.headerContent}>
             {/* Left: Quick Profile/Account */}
             <View style={styles.headerAvatar}>
-              <Text style={styles.avatarInitial}>K</Text>
+               <Text style={styles.avatarInitial}>K</Text>
             </View>
 
             {/* Center: Brand Identity */}
             <View style={styles.headerCenter}>
-              <Text style={styles.logoText}>Kira-Net</Text>
-              <View style={styles.locationChip}>
-                <Ionicons name="location-sharp" size={10} color={KiraColors.primary} />
-                <Text style={styles.locationChipText}>{filters.neighborhood || 'Addis Ababa'}</Text>
-              </View>
+               <View style={styles.logoRow}>
+                  <Text style={styles.logoTextKira}>Kira</Text>
+                  <Text style={styles.logoTextNet}>-Net</Text>
+               </View>
+               <View style={styles.roleBadge}>
+                  <Text style={styles.roleBadgeText}>{role?.toUpperCase() || 'TENANT'}</Text>
+               </View>
             </View>
 
-            {/* Right: Actions Cluster */}
-            <View style={styles.headerRightCluster}>
-              <TouchableOpacity
-                style={styles.headerActionBtn}
-                onPress={() => router.push('/visit-planner')}
-              >
-                <MaterialCommunityIcons name="calendar-check" size={20} color={KiraColors.primary} />
-                {visits.length > 0 && <View style={styles.dotBadge} />}
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.headerActionBtn}
+            {/* Right: Notifications */}
+            <TouchableOpacity 
+                style={styles.headerNotif}
                 onPress={() => router.push('/(tabs)/alerts')}
-              >
-                <Feather name="bell" size={20} color={KiraColors.primary} />
-                {unreadCount > 0 && (
-                  <View style={styles.badgeContainer}>
-                    <Text style={styles.badgeText}>{unreadCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
+            >
+               <Feather name="bell" size={20} color="#1A1A1A" />
+               {unreadCount > 0 && <View style={styles.headerNotifDot} />}
+            </TouchableOpacity>
           </View>
         </View>
       </Animated.View>
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false} 
-        contentContainerStyle={styles.scrollContent}
-        onScroll={(e) => {
-          scrollY.value = e.nativeEvent.contentOffset.y;
-        }}
-        scrollEventThrottle={16}
-      >
+      {role === 'landlord' ? (
+        <LandlordHome insets={insets} />
+      ) : (
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 80 }]}
+          onScroll={(e) => {
+            scrollY.value = e.nativeEvent.contentOffset.y;
+          }}
+          scrollEventThrottle={16}
+        >
         
         {/* ── Mesh Gradient Background ─────────────────────────────────────── */}
         <View style={styles.meshContainer}>
@@ -287,40 +449,47 @@ export default function ExploreScreen() {
              </>
           ) : (
             <>
-              {filtered.map(p => (
-                <PropertyCard key={p.id} property={p} />
+              {filtered.map((p, i) => (
+                <React.Fragment key={p.id}>
+                  <PropertyCard property={p} />
+                  
+                  {/* ── Boost Promo In-Line ─────────────────────────────────── */}
+                  {i === 1 && (role === 'landlord' || role === 'agent') && (
+                    <TouchableOpacity 
+                      style={styles.boostBanner}
+                      onPress={() => router.push('/boost-listing')}
+                      activeOpacity={0.9}
+                    >
+                      <View style={styles.boostBannerLeft}>
+                        <View style={styles.boostIconRound}>
+                          <Feather name="zap" size={20} color="#FFF" />
+                        </View>
+                        <View>
+                          <Text style={styles.boostBannerTitle}>Get 10x More Leads</Text>
+                          <Text style={styles.boostBannerSub}>Push your listing to the top of results</Text>
+                        </View>
+                      </View>
+                      <Feather name="chevron-right" size={20} color={KiraColors.primary} />
+                    </TouchableOpacity>
+                  )}
+                </React.Fragment>
               ))}
+
               {filtered.length === 0 && (
                 <View style={styles.emptyState}>
                   <Feather name="home" size={40} color="#D1D5DB" />
                   <Text style={styles.emptyStateText}>No listings in this category yet.</Text>
                 </View>
               )}
-
-              {/* ── Boost Promo In-Line ─────────────────────────────────── */}
-              <TouchableOpacity 
-                style={styles.boostBanner}
-                onPress={() => router.push('/boost-listing')}
-                activeOpacity={0.9}
-              >
-                <View style={styles.boostBannerLeft}>
-                  <View style={styles.boostIconRound}>
-                    <Feather name="zap" size={20} color="#FFF" />
-                  </View>
-                  <View>
-                    <Text style={styles.boostBannerTitle}>Get 10x More Leads</Text>
-                    <Text style={styles.boostBannerSub}>Push your listing to the top of results</Text>
-                  </View>
-                </View>
-                <Feather name="chevron-right" size={20} color={KiraColors.primary} />
-              </TouchableOpacity>
             </>
           )}
         </View>
       </ScrollView>
+      )}
 
       {/* ── Floating Boost FAB ────────────────────────────────────────── */}
-      <View style={styles.fabContainer}>
+      {(role === 'landlord' || role === 'agent') && (
+        <View style={styles.fabContainer}>
         <TouchableOpacity 
           style={styles.fabInner}
           onPress={() => {
@@ -332,6 +501,7 @@ export default function ExploreScreen() {
           <Text style={styles.fabText}>Boost</Text>
         </TouchableOpacity>
       </View>
+      )}
 
     </View>
   );
@@ -629,45 +799,19 @@ const styles = StyleSheet.create({
   },
   avatarInitial: { color: '#1A1A1A', fontSize: 13, fontWeight: '900' },
   headerCenter: { alignItems: 'center' },
-  logoText: { fontSize: 16, fontWeight: '900', color: KiraColors.primary, letterSpacing: -0.5 },
-  locationChip: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
-  locationChipText: { fontSize: 10, fontWeight: '800', color: KiraColors.muted },
-  headerRightCluster: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  headerActionBtn: {
-    position: 'relative',
-    padding: 6,
-    backgroundColor: '#F7F8F9',
-    borderRadius: 12,
+  logoRow: { flexDirection: 'row', alignItems: 'center' },
+  logoTextKira: { fontSize: 16, fontWeight: '900', color: '#1A1A1A' },
+  logoTextNet: { fontSize: 16, fontWeight: '900', color: KiraColors.primary },
+  roleBadge: { 
+    backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2, 
+    borderRadius: 6, marginTop: 2 
   },
-  badgeContainer: {
-    position: 'absolute',
-    top: -2,
-    right: -2,
-    backgroundColor: KiraColors.danger,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-    borderWidth: 1.5,
-    borderColor: '#FFF',
-    zIndex: 1,
-  },
-  badgeText: {
-    color: '#FFF',
-    fontSize: 8,
-    fontWeight: '900',
-  },
-  dotBadge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: KiraColors.primary,
-    borderWidth: 1.5, borderColor: '#FFF',
+  roleBadgeText: { fontSize: 8, fontWeight: '900', color: '#64748B' },
+  headerNotif: { position: 'relative', width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
+  headerNotifDot: { 
+    position: 'absolute', top: 8, right: 8, width: 8, height: 8, 
+    borderRadius: 4, backgroundColor: KiraColors.primary, 
+    borderWidth: 1.5, borderColor: '#FFF' 
   },
 
   // FAB
@@ -682,7 +826,7 @@ const styles = StyleSheet.create({
     shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.4, shadowRadius: 12, elevation: 12,
   },
-  fabText: { color: '#FFF', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
+  fabText: { color: '#1A1A1A', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
 
   meshContainer: {
     position: 'absolute', top: 0, left: 0, right: 0, height: 400, overflow: 'hidden', zIndex: -1,
@@ -864,7 +1008,7 @@ const styles = StyleSheet.create({
   fabText: { color: '#1A1A1A', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
 
   // Empty
-  emptyStateText: { fontSize: 14, color: '#9CA3AF', marginTop: 12, fontWeight: '500' },
+  emptyStateText: { fontSize: 13, color: '#94A3B8', fontWeight: '500' },
 
   // Boost Banner
   boostBanner: {
@@ -884,4 +1028,107 @@ const styles = StyleSheet.create({
   },
   boostBannerTitle: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
   boostBannerSub: { fontSize: 9, color: '#6B7280', fontWeight: '500', marginTop: 1 },
+});
+
+const appStyles = StyleSheet.create({
+    heroSection: { marginBottom: 24 },
+    heroTitle: { fontSize: 28, fontWeight: '900', color: '#1A1A1A' },
+    heroSub: { fontSize: 14, color: '#64748B', marginTop: 4 },
+    glassCardContainer: { 
+        height: 180, borderRadius: 28, overflow: 'hidden', marginBottom: 32,
+        shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10
+    },
+    glassCard: { flex: 1 },
+    glassContent: { flex: 1, padding: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    glassLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1, marginBottom: 8 },
+    glassValue: { fontSize: 32, fontWeight: '900', color: '#1A1A1A' },
+    glassCurrency: { fontSize: 14, fontWeight: '600', color: '#64748B' },
+    glassDivider: { width: 1, height: '60%', backgroundColor: 'rgba(0,0,0,0.05)' },
+    trendBadge: { 
+        flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F9EB', 
+        paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginTop: 12, alignSelf: 'flex-start'
+    },
+    trendText: { fontSize: 11, fontWeight: '700', color: '#9CC942', marginLeft: 4 },
+    intelSection: { marginBottom: 32 },
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    sectionTitle: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
+    seeAll: { fontSize: 13, fontWeight: '800', color: KiraColors.primary },
+    trendCard: { 
+        flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', 
+        padding: 16, borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9'
+    },
+    trendIconWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+    trendBody: { flex: 1 },
+    trendTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
+    trendDesc: { fontSize: 12, color: '#64748B', lineHeight: 18 },
+    opsSection: { marginBottom: 24 },
+    opsGrid: { flexDirection: 'row', justifyContent: 'space-between' },
+    opsItem: { 
+        width: (width - 40 - 24) / 3, alignItems: 'center', 
+        backgroundColor: '#FFF', paddingVertical: 16, borderRadius: 20,
+        borderWidth: 1, borderColor: '#F1F5F9'
+    },
+    opsIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F4F9EB', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+    opsText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
+});
+
+const lh = StyleSheet.create({
+    greetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+    greetSmall: { fontSize: 13, color: '#64748B', fontWeight: '600' },
+    greetBig: { fontSize: 26, fontWeight: '900', color: '#1A1A1A', marginTop: 2 },
+    notifPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: KiraColors.softPrimary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: KiraColors.primary, position: 'relative' },
+    notifPillText: { fontSize: 12, fontWeight: '800', color: KiraColors.primary },
+    notifDot: { position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: 4, backgroundColor: '#EF4444', borderWidth: 1.5, borderColor: KiraColors.softPrimary },
+
+    revenueCard: { borderRadius: 28, overflow: 'hidden', padding: 24, marginBottom: 32, minHeight: 200 },
+    decorCircle: { position: 'absolute', borderRadius: 999 },
+    revenueLabel: { fontSize: 9, fontWeight: '900', color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 8 },
+    revenueAmount: { fontSize: 36, fontWeight: '900', color: '#FFF', marginBottom: 12 },
+    revenueCur: { fontSize: 18, fontWeight: '700', color: 'rgba(255,255,255,0.6)' },
+    revenueMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    revenueBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(156,201,66,0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, gap: 5 },
+    revenueBadgeText: { fontSize: 11, fontWeight: '800', color: '#9CC942' },
+    revenueAssets: { fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
+    miniKpiRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)', paddingTop: 14 },
+    miniKpi: { alignItems: 'center', flex: 1 },
+    miniKpiVal: { fontSize: 15, fontWeight: '900', color: '#FFF' },
+    miniKpiLab: { fontSize: 8, fontWeight: '700', color: 'rgba(255,255,255,0.65)', letterSpacing: 0.6, marginTop: 3 },
+
+    sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16, marginTop: 8 },
+    aiTag: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A1A', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, gap: 4 },
+    aiTagText: { fontSize: 9, fontWeight: '900', color: '#9CC942', letterSpacing: 1 },
+    sectionH: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
+    seeAll: { fontSize: 13, fontWeight: '800', color: KiraColors.primary },
+
+    recCard: {
+        width: width * 0.76,
+        marginRight: 14,
+        backgroundColor: '#FFF', borderRadius: 24, padding: 20,
+        borderWidth: 1, borderColor: '#F1F5F9',
+        shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 16, elevation: 4,
+    },
+    recIconWrap: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
+    recTitle: { fontSize: 15, fontWeight: '900', color: '#1A1A1A', marginBottom: 8 },
+    recDesc: { fontSize: 12, color: '#64748B', lineHeight: 18, marginBottom: 16 },
+    recCta: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1.5, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, alignSelf: 'flex-start' },
+    recCtaText: { fontSize: 12, fontWeight: '800' },
+
+    intelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
+    intelCard: {
+        width: (width - 40 - 12) / 2,
+        backgroundColor: '#FFF', borderRadius: 20, padding: 16,
+        borderWidth: 1, borderColor: '#F1F5F9',
+    },
+    intelArea: { fontSize: 13, fontWeight: '900', color: '#1A1A1A', marginBottom: 4 },
+    intelChange: { fontSize: 20, fontWeight: '900', marginBottom: 4 },
+    intelDesc: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+
+    opsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+    opsCard: {
+        width: (width - 40 - 12) / 2,
+        backgroundColor: '#FFF', borderRadius: 20, padding: 18,
+        borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'flex-start',
+    },
+    opsIconWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+    opsLabel: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
 });

@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { KiraColors } from '@/constants/colors';
+import { useUser } from '@/context/UserContext';
 
 const ASSIGNED_WORK = [
   { id: '1', title: 'Modern Garden Villa', location: 'Old Airport', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=400', deadline: 'Today', status: 'pending' },
@@ -11,6 +12,27 @@ const ASSIGNED_WORK = [
 ];
 
 export default function AgentDashboard() {
+  const { role } = useUser();
+
+  if (role !== 'agent') {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.restrictedContainer}>
+          <View style={styles.iconCircle}>
+             <MaterialIcons name="security" size={48} color={KiraColors.primary} />
+          </View>
+          <Text style={styles.restrictedTitle}>Operator Permissions Required</Text>
+          <Text style={styles.restrictedSubtitle}>
+            This terminal is restricted to authorized Kira-Net verification agents only. Please contact administration for clearance.
+          </Text>
+          <TouchableOpacity style={styles.upgradeBtn} onPress={() => router.replace('/(tabs)/profile')}>
+            <Text style={styles.upgradeBtnText}>Back to Profile</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -127,4 +149,51 @@ const styles = StyleSheet.create({
   barContainer: { height: 6, backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: 3, marginBottom: 16 },
   bar: { height: 6, backgroundColor: '#1A1A1A', borderRadius: 3 },
   metricSub: { color: 'rgba(0,0,0,0.4)', fontSize: 11, lineHeight: 16, fontWeight: '500' },
+
+  restrictedContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+    backgroundColor: '#FAFBFB',
+  },
+  iconCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F0FDF4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  restrictedTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  restrictedSubtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 32,
+  },
+  upgradeBtn: {
+    backgroundColor: KiraColors.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 30,
+    shadowColor: KiraColors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  upgradeBtnText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFF',
+  },
 });

@@ -6,7 +6,9 @@ import { VisitPlanProvider } from '@/context/VisitPlanContext';
 import { FilterProvider } from '@/context/FilterContext';
 import { SavedProvider } from '@/context/SavedContext';
 import { AlertsProvider } from '@/context/AlertsContext';
-import '@/localization/i18n'; // Bootstrap i18next — must be imported before any screen renders
+import { UserProvider } from '@/context/UserContext';
+import { LanguageProvider } from '@/context/LanguageContext';
+import '@/localization/i18n'; 
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import * as SplashScreen from 'expo-splash-screen';
@@ -20,7 +22,6 @@ import { Image } from 'expo-image';
 
 const { width, height } = Dimensions.get('window');
 
-// Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
@@ -32,19 +33,16 @@ export default function RootLayout() {
   const [appReady, setAppReady] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
 
-  // Splash loader bar: animates from 0 → full width
   const loaderProgress = useSharedValue(0);
   const loaderStyle = useAnimatedStyle(() => ({
     width: `${loaderProgress.value * 100}%` as any,
   }));
 
   useEffect(() => {
-    // Start the loading bar animation from 0 → 100% over 2.2s
     loaderProgress.value = withTiming(1, { duration: 2200 });
 
     const timer = setTimeout(() => {
       setAppReady(true);
-      // Let the custom splash show until the bar finishes
       setTimeout(() => {
         setShowSplash(false);
         SplashScreen.hideAsync();
@@ -54,68 +52,74 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <AlertsProvider>
-      <SavedProvider>
-        <VisitPlanProvider>
-          <FilterProvider>
-            <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-              <View style={{ flex: 1 }}>
-                <Stack screenOptions={{ headerShown: false }}>
-                  <Stack.Screen name="index" />
-                  <Stack.Screen name="login" />
-                  <Stack.Screen name="(tabs)" />
-                  <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-                  <Stack.Screen name="chat" />
-                  <Stack.Screen name="list-property" />
-                  <Stack.Screen name="boost-listing" />
-                  <Stack.Screen name="report-listing" />
-                  <Stack.Screen name="property-details" />
-                  <Stack.Screen name="onboarding" />
-                  <Stack.Screen name="landlord-dashboard" />
-                  <Stack.Screen name="visit-planner" />
-                  <Stack.Screen name="roommate-match" />
-                  <Stack.Screen name="rental-agreement" />
-                  <Stack.Screen name="moving-services" />
-                  <Stack.Screen name="offline-maps" />
-                </Stack>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <LanguageProvider>
+        <UserProvider>
+          <AlertsProvider>
+            <SavedProvider>
+              <VisitPlanProvider>
+                <FilterProvider>
+                  <View style={{ flex: 1 }}>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name="index" />
+                      <Stack.Screen name="language-select" />
+                      <Stack.Screen name="login" />
+                      <Stack.Screen name="signup" />
+                      <Stack.Screen name="(tabs)" />
+                      <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+                      <Stack.Screen name="chat" />
+                      <Stack.Screen name="list-property" />
+                      <Stack.Screen name="boost-listing" />
+                      <Stack.Screen name="report-listing" />
+                      <Stack.Screen name="property-details" />
+                      <Stack.Screen name="onboarding" />
+                      <Stack.Screen name="landlord-dashboard" />
+                      <Stack.Screen name="visit-planner" />
+                      <Stack.Screen name="roommate-match" />
+                      <Stack.Screen name="rental-agreement" />
+                      <Stack.Screen name="moving-services" />
+                      <Stack.Screen name="offline-maps" />
+                    </Stack>
 
-                {showSplash && (
-                  <Animated.View 
-                    entering={FadeIn.duration(500)}
-                    exiting={FadeOut.duration(800)}
-                    style={StyleSheet.absoluteFill}
-                  >
-                    <Image 
-                      source={require('../assets/images/splash.png')}
+                  {showSplash && (
+                    <Animated.View 
+                      entering={FadeIn.duration(500)}
+                      exiting={FadeOut.duration(800)}
                       style={StyleSheet.absoluteFill}
-                      contentFit="cover"
-                    />
-                    <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
-                    
-                    <View style={styles.splashContent}>
-                       <Animated.View entering={SlideInDown.delay(300).springify()}>
-                          <View style={styles.logoWrap}>
-                            <FontAwesome5 name="feather-alt" size={40} color="#FFF" />
-                          </View>
-                          <Text style={styles.splashTitle}>Kira-Net</Text>
-                          <Text style={styles.splashSubtitle}>Properties in Addis</Text>
-                       </Animated.View>
+                    >
+                      <Image 
+                        source={require('../assets/images/splash.png')}
+                        style={StyleSheet.absoluteFill}
+                        contentFit="cover"
+                      />
+                      <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+                      
+                      <View style={styles.splashContent}>
+                         <Animated.View entering={SlideInDown.delay(300).springify()}>
+                            <View style={styles.logoWrap}>
+                              <FontAwesome5 name="feather-alt" size={40} color="#FFF" />
+                            </View>
+                            <Text style={styles.splashTitle}>Kira-Net</Text>
+                            <Text style={styles.splashSubtitle}>Properties in Addis</Text>
+                         </Animated.View>
 
-                       <View style={styles.loaderContainer}>
-                          <View style={styles.loaderLine}>
-                            <Animated.View style={[styles.loaderActive, loaderStyle]} />
-                          </View>
-                       </View>
-                    </View>
-                  </Animated.View>
-                )}
-              </View>
-              <StatusBar style="light" />
-            </ThemeProvider>
-          </FilterProvider>
-        </VisitPlanProvider>
-      </SavedProvider>
-    </AlertsProvider>
+                         <View style={styles.loaderContainer}>
+                            <View style={styles.loaderLine}>
+                              <Animated.View style={[styles.loaderActive, loaderStyle]} />
+                            </View>
+                         </View>
+                      </View>
+                    </Animated.View>
+                  )}
+                </View>
+                <StatusBar style="light" />
+              </FilterProvider>
+            </VisitPlanProvider>
+          </SavedProvider>
+        </AlertsProvider>
+      </UserProvider>
+    </LanguageProvider>
+  </ThemeProvider>
   );
 }
 
@@ -138,7 +142,7 @@ const styles = StyleSheet.create({
   splashTitle: {
     fontSize: 48,
     fontWeight: '900',
-    color: '#FFF', // Keeping white title because it sits on a dark frosted background
+    color: '#FFF',
     letterSpacing: -2,
     textAlign: 'center',
   },

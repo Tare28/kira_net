@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, Modal, Fl
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 import { Dimensions } from 'react-native';
 import { useFilters } from '@/context/FilterContext';
@@ -14,9 +14,58 @@ import Animated, { SlideInDown } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
+function SupportContent({ type }: { type: 'help' | 'safety' | 'terms' }) {
+  const content = {
+    help: {
+      title: 'Help Center',
+      text: 'How can we help you today? \n\n• Finding a Property: Use the Filter button on the home screen to narrow down results by price and location. \n\n• Contacting Landlords: Click on any property to see the "Message" or "Call" buttons. \n\n• For Landlords: Use the "Agent Terminal" or "My Properties" to manage your listings. \n\nNeed further assistance? Email us at support@kiranet.com'
+    },
+    safety: {
+      title: 'Safety Center',
+      text: 'Your safety is our priority. \n\n• Verified Listings: Look for the blue checkmark. These properties have been physically inspected by a Kira-Net agent. \n\n• Meet Safely: When visiting a property, try to go during daylight and bring a friend. \n\n• Secure Payments: Never send money outside of the secure payment links provided within the app. \n\nReport suspicious activity using the "Report Listing" button.'
+    },
+    terms: {
+      title: 'Terms of Service',
+      text: 'Welcome to Kira-Net. By using our service, you agree to: \n\n1. provide accurate information when creating an account. \n\n2. treat all participants in the ecosystem with respect. \n\n3. use the platform only for legitimate rental and property management purposes. \n\nKira-Net acts as a facilitator and is not responsible for the direct legal agreements between landlords and tenants.'
+    }
+  };
+
+  const active = content[type];
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Feather name="arrow-left" size={24} color={KiraColors.primary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{active.title}</Text>
+          <View style={{ width: 24 }} />
+        </View>
+        <ScrollView contentContainerStyle={{ padding: 24 }}>
+          <View style={styles.supportCard}>
+             <Feather 
+               name={type === 'help' ? 'help-circle' : type === 'safety' ? 'shield' : 'file-text'} 
+               size={48} 
+               color={KiraColors.primary} 
+               style={{ marginBottom: 20 }}
+             />
+             <Text style={styles.supportText}>{active.text}</Text>
+          </View>
+        </ScrollView>
+      </View>
+    </SafeAreaView>
+  );
+}
+
 export default function FiltersModalScreen() {
+  const { type } = useLocalSearchParams();
   const { filters, updateFilters, resetFilters } = useFilters();
   const [showLocationModal, setShowLocationModal] = useState(false);
+
+  if (type === 'help' || type === 'safety' || type === 'terms') {
+    return <SupportContent type={type as any} />;
+  }
 
   const NEIGHBORHOODS = ['Bole', 'Arada', 'Yeka', 'Kazanchis', 'CMC', 'Megenagna'];
 
@@ -24,7 +73,6 @@ export default function FiltersModalScreen() {
     updateFilters({ minPrice: values[0], maxPrice: values[1] });
   };
   
-  // Static toggle for now as simplified in earlier turn
   const toggleAmenity = (name: string) => {
     if (name === 'Water') {
         updateFilters({ essentialWater: !filters.essentialWater });
@@ -38,414 +86,188 @@ export default function FiltersModalScreen() {
     Alert.alert('Filters Reset', 'All search filters have been cleared.');
   };
 
+  const matchCount = PROPERTIES.filter(p => {
+    const price = parseInt(p.price.replace(/,/g, ''));
+    const matchesPrice = price >= filters.minPrice && price <= filters.maxPrice;
+    const matchesLoc = !filters.neighborhood || p.location.includes(filters.neighborhood);
+    const matchesWater = !filters.essentialWater || p.amenities?.includes('Water');
+    const matchesWifi = !filters.essentialInternet || p.amenities?.includes('Wifi');
+    return matchesPrice && matchesLoc && matchesWater && matchesWifi;
+  }).length;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-
-        {/* Header */}
-        <View style={styles.header}>
+         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{top:10,bottom:10,left:10,right:10}}>
             <Feather name="x" size={24} color={KiraColors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Filters</Text>
-          <TouchableOpacity hitSlop={{top:10,bottom:10,left:10,right:10}} onPress={handleReset}>
+          <TouchableOpacity onPress={handleReset}>
             <Text style={styles.resetText}>Reset</Text>
           </TouchableOpacity>
         </View>
 
-        <Animated.View 
-        entering={SlideInDown.springify().damping(15)} 
-        style={{ flex: 1 }}
-      >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-
-          {/* Budget Range */}
-          <View style={styles.section}>
-            <Text style={styles.sectionOverline}>MONTHLY RENT</Text>
-            <View style={styles.titleRow}>
-              <Text style={styles.sectionTitleGreen}>Budget Range</Text>
-              <Text style={styles.currencyText}>ETB</Text>
-            </View>
-
-            <View style={styles.sliderCard}>
-              <View style={styles.sliderContainer}>
-                <MultiSlider
-                  values={[filters.minPrice, filters.maxPrice]}
-                  sliderLength={width - 88}
-                  onValuesChange={onValuesChange}
-                  min={0}
-                  max={150000}
-                  step={1000}
-                  allowOverlap={false}
-                  snapped
-                  selectedStyle={{ backgroundColor: KiraColors.primary, height: 4 }}
-                  unselectedStyle={{ backgroundColor: '#E5E7EB', height: 4 }}
-                  trackStyle={{ height: 4 }}
-                  markerStyle={{ 
-                    backgroundColor: '#FFF', 
-                    height: 24, 
-                    width: 24, 
-                    borderRadius: 12, 
-                    borderWidth: 3, 
-                    borderColor: KiraColors.primary,
-                    top: 2,
-                    shadowColor: '#000',
-                    shadowOffset: { width: 0, height: 2 },
-                    shadowOpacity: 0.1,
-                    shadowRadius: 4,
-                  }}
-                />
+          <Text style={styles.sectionTitle}>PRICE RANGE (ETB)</Text>
+          <View style={styles.priceContainer}>
+            <View style={styles.priceRow}>
+              <View style={styles.priceInput}>
+                <Text style={styles.currency}>ETB</Text>
+                <Text style={styles.priceText}>{filters.minPrice.toLocaleString()}</Text>
               </View>
-              <View style={styles.minMaxRow}>
-                <View style={styles.minMaxBox}>
-                  <Text style={styles.minMaxLabel}>Minimum</Text>
-                  <Text style={styles.minMaxValue}>{filters.minPrice.toLocaleString()}</Text>
-                </View>
-                <View style={styles.dash} />
-                <View style={styles.minMaxBox}>
-                  <Text style={styles.minMaxLabel}>Maximum</Text>
-                  <Text style={styles.minMaxValue}>{filters.maxPrice >= 150000 ? '150,000+' : filters.maxPrice.toLocaleString()}</Text>
-                </View>
+              <View style={styles.priceDivider} />
+              <View style={styles.priceInput}>
+                <Text style={styles.currency}>ETB</Text>
+                <Text style={styles.priceText}>{filters.maxPrice.toLocaleString()}</Text>
               </View>
             </View>
-          </View>
-
-          {/* Security Deposit */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Security Deposit</Text>
-            <View style={styles.rowSpacing}>
-              {['1 Month', '3 Months', '6 Months'].map(label => (
-                <TouchableOpacity
-                  key={label}
-                  style={[styles.depositPill, filters.deposit === label && styles.depositPillActive]}
-                  onPress={() => updateFilters({ deposit: label })}
-                >
-                  <Text style={[styles.depositPillText, filters.deposit === label && styles.depositPillTextActive]}>{label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-
-          {/* Preferred Neighbourhood */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Preferred Neighborhood</Text>
-            <TouchableOpacity 
-              style={styles.dropdownInput}
-              onPress={() => setShowLocationModal(true)}
-            >
-              <Ionicons name="location-sharp" size={20} color={KiraColors.primary} />
-              <Text style={styles.dropdownText}>{filters.neighborhood || 'Select Area'}, Addis Ababa</Text>
-              <Feather name="chevron-down" size={20} color="#1A1A1A" style={{ marginLeft: 'auto' }} />
-            </TouchableOpacity>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipsRow}>
-              {NEIGHBORHOODS.slice(0, 4).map(hood => (
-                <TouchableOpacity
-                  key={hood}
-                  style={[styles.chip, filters.neighborhood === hood && styles.chipActive]}
-                  onPress={() => updateFilters({ neighborhood: hood })}
-                >
-                  <Text style={[styles.chipText, filters.neighborhood === hood && styles.chipTextActive]}>{hood}</Text>
-                  {filters.neighborhood === hood && (
-                    <Feather name="x" size={12} color={KiraColors.primary} style={{ marginLeft: 4 }} />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          {/* Essential Amenities */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Essential Amenities</Text>
-            <View style={styles.amenitiesGrid}>
-              <TouchableOpacity 
-                style={[styles.amenityCard, filters.essentialWater && styles.amenityCardActive]}
-                onPress={() => toggleAmenity('Water')}
-              >
-                <View style={styles.amenityIconWrap}>
-                  <Ionicons name="water" size={20} color={filters.essentialWater ? '#FFF' : KiraColors.primary} />
-                </View>
-                <Text style={[styles.amenityCardText, filters.essentialWater && styles.amenityTextActive]}>Constant Water Supply</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={[styles.amenityCard, filters.essentialInternet && styles.amenityCardActive]}
-                onPress={() => toggleAmenity('Internet')}
-              >
-                <View style={styles.amenityIconWrap}>
-                  <Feather name="wifi" size={20} color={filters.essentialInternet ? '#FFF' : KiraColors.primary} />
-                </View>
-                <Text style={[styles.amenityCardText, filters.essentialInternet && styles.amenityTextActive]}>Fiber Optic Internet</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Electricity Setup */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Electricity Setup</Text>
-            <View style={styles.electricityCard}>
-              <View style={styles.electricityIconWrap}>
-                <Ionicons name="flash" size={20} color={KiraColors.primary} />
-              </View>
-              <View style={styles.electricityTextWrap}>
-                <Text style={styles.electricityTitle}>Private Electric Meter</Text>
-                <Text style={styles.electricitySub}>Exclude shared utility listings</Text>
-              </View>
-              <Switch
-                value={filters.privateMeter}
-                onValueChange={(val) => updateFilters({ privateMeter: val })}
-                trackColor={{ true: KiraColors.primary, false: '#D1D5DB' }}
-                thumbColor="#FFF"
+            
+            <View style={styles.sliderWrap}>
+              <MultiSlider
+                values={[filters.minPrice, filters.maxPrice]}
+                sliderLength={width - 80}
+                onValuesChange={onValuesChange}
+                min={0}
+                max={150000}
+                step={500}
+                allowOverlap={false}
+                snapped
+                selectedStyle={{ backgroundColor: KiraColors.primary }}
+                trackStyle={{ height: 4, backgroundColor: '#E2E8F0' }}
+                markerStyle={{
+                  height: 24, width: 24, borderRadius: 12,
+                  backgroundColor: '#FFF', borderWidth: 2, borderColor: KiraColors.primary,
+                  shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1, shadowRadius: 4, elevation: 3
+                }}
               />
             </View>
           </View>
 
-          {/* Verified Listings */}
-          <View style={styles.section}>
-            <View style={styles.verifyCard}>
-              <View style={styles.verifyIconWrap}>
-                <MaterialIcons name="verified" size={22} color="#B8860B" />
-              </View>
-              <View style={styles.verifyTextWrap}>
-                <Text style={styles.verifyTitle}>Verified Listings</Text>
-                <Text style={styles.verifySubtitle}>Physically inspected by Kira-Net</Text>
-              </View>
-              <Switch
-                value={filters.isVerified}
-                onValueChange={(val) => updateFilters({ isVerified: val })}
-                trackColor={{ true: KiraColors.primary, false: '#D1D5DB' }}
-                thumbColor="#FFF"
+          <Text style={styles.sectionTitle}>NEIGHBORHOOD</Text>
+          <TouchableOpacity style={styles.locationSelector} onPress={() => setShowLocationModal(true)}>
+            <View style={styles.locLeft}>
+                <Feather name="map-pin" size={18} color={KiraColors.primary} />
+                <Text style={styles.locText}>{filters.neighborhood || 'Any Neighborhood'}</Text>
+            </View>
+            <Feather name="chevron-right" size={20} color="#94A3B8" />
+          </TouchableOpacity>
+
+          <Text style={styles.sectionTitle}>ESSENTIAL AMENITIES</Text>
+          <View style={styles.amenitiesGrid}>
+              <AmenityToggle 
+                name="Water" 
+                icon="droplet" 
+                isActive={filters.essentialWater} 
+                onToggle={() => toggleAmenity('Water')} 
               />
-            </View>
+              <AmenityToggle 
+                name="Internet" 
+                icon="wifi" 
+                isActive={filters.essentialInternet} 
+                onToggle={() => toggleAmenity('Internet')} 
+              />
           </View>
-
-          {/* Map Preview */}
-          <View style={styles.mapContainer}>
-            <Image
-              source="https://images.unsplash.com/photo-1524661135-423995f22d0b?q=80&w=800&auto=format&fit=crop"
-              style={styles.mapImage}
-            />
-            <View style={styles.mapOverlay}>
-              <TouchableOpacity style={styles.mapBtn} onPress={() => Alert.alert('Interactive Map', 'This will open the fullscreen map view.')}>
-                <Feather name="map" size={14} color={KiraColors.primary} />
-                <Text style={styles.mapBtnText}>PREVIEW IN MAP</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
         </ScrollView>
-      </Animated.View>
 
-        {/* Footer */}
         <View style={styles.footer}>
-          <TouchableOpacity style={styles.applyButton} onPress={() => router.back()}>
-            <Text style={styles.applyButtonText}>
-              Show {
-                PROPERTIES.filter(p => {
-                  const numericPrice = parseInt(p.price.replace(',', ''));
-                  if (numericPrice < filters.minPrice || numericPrice > filters.maxPrice) return false;
-                  if (filters.neighborhood && !p.location.includes(filters.neighborhood)) return false;
-                  if (filters.essentialWater && !p.utils.includes('Constant Water')) return false;
-                  if (filters.essentialInternet && !p.utils.includes('Fiber Optic') && !p.utils.includes('High Speed')) return false;
-                  if (filters.isVerified && p.badge !== 'verified') return false;
-                  if (filters.privateMeter && !p.utils.includes('Private Meter') && !p.utils.includes('Prepaid')) return false;
-                  return true;
-                }).length
-              } Properties
-            </Text>
+          <TouchableOpacity style={styles.applyBtn} onPress={() => router.back()}>
+            <Text style={styles.applyBtnText}>Show {matchCount} Results</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Location Selector Modal */}
-        <Modal visible={showLocationModal} animationType="fade" transparent={true}>
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>Neighborhood</Text>
-                <TouchableOpacity onPress={() => setShowLocationModal(false)}>
-                  <Feather name="x" size={24} color="#1A1A1A" />
-                </TouchableOpacity>
-              </View>
-              <FlatList
-                data={NEIGHBORHOODS}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity 
-                    style={styles.locationItem}
-                    onPress={() => {
-                      updateFilters({ neighborhood: item });
-                      setShowLocationModal(false);
-                    }}
-                  >
-                    <Text style={styles.locationItemText}>{item}</Text>
-                    {filters.neighborhood === item && <Feather name="check" size={20} color={KiraColors.primary} />}
-                  </TouchableOpacity>
-                )}
-              />
-            </View>
-          </View>
-        </Modal>
-
       </View>
+
+      <Modal visible={showLocationModal} animationType="fade" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Neighborhoods</Text>
+              <TouchableOpacity onPress={() => setShowLocationModal(false)}>
+                <Feather name="x" size={20} color="#000" />
+              </TouchableOpacity>
+            </View>
+            <FlatList 
+              data={['Any Neighborhood', ...NEIGHBORHOODS]}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={styles.neighborhoodItem}
+                  onPress={() => {
+                    updateFilters({ neighborhood: item === 'Any Neighborhood' ? '' : item });
+                    setShowLocationModal(false);
+                  }}
+                >
+                  <Text style={[styles.neighborhoodText, (filters.neighborhood === item || (!filters.neighborhood && item === 'Any Neighborhood')) && styles.neighborhoodActive]}>
+                    {item}
+                  </Text>
+                  {(filters.neighborhood === item || (!filters.neighborhood && item === 'Any Neighborhood')) && (
+                    <Feather name="check" size={18} color={KiraColors.primary} />
+                  )}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
 
+function AmenityToggle({ name, icon, isActive, onToggle }: any) {
+  return (
+    <TouchableOpacity 
+      style={[styles.amenityBox, isActive && styles.amenityActive]} 
+      onPress={onToggle}
+    >
+      <Feather name={icon} size={20} color={isActive ? '#FFF' : '#64748B'} />
+      <Text style={[styles.amenityText, isActive && styles.amenityTextActive]}>{name}</Text>
+    </TouchableOpacity>
+  );
+}
+
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FAFBFB' },
+  safeArea: { flex: 1, backgroundColor: '#FFF' },
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-    backgroundColor: '#FFF',
+  header: { 
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', 
+    paddingHorizontal: 20, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' 
   },
-  headerTitle: { fontSize: 16, fontWeight: '700', color: KiraColors.primary },
-  resetText: { fontSize: 14, fontWeight: '700', color: KiraColors.primary },
-  scrollContent: { paddingHorizontal: 20, paddingVertical: 24, paddingBottom: 20 },
-  section: { marginBottom: 28 },
-  sectionOverline: {
-    fontSize: 10, fontWeight: '800', color: '#6B7280',
-    letterSpacing: 1, marginBottom: 4,
-  },
-  titleRow: {
-    flexDirection: 'row', alignItems: 'baseline',
-    justifyContent: 'space-between', marginBottom: 16,
-  },
-  sectionTitleGreen: {
-    fontSize: 24, fontWeight: '900', color: KiraColors.primary, letterSpacing: -0.5,
-  },
-  currencyText: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
-  sliderCard: { backgroundColor: '#F3F4F6', borderRadius: 20, padding: 24 },
-  sliderContainer: {
-    height: 30, justifyContent: 'center', marginBottom: 20, position: 'relative',
-  },
-  sliderTrackLine: {
-    height: 8, backgroundColor: '#E5E7EB', borderRadius: 4,
-    width: '100%', position: 'absolute',
-  },
-  sliderActiveLine: {
-    height: 8, backgroundColor: KiraColors.primary, borderRadius: 4,
-    width: '50%', position: 'absolute', left: '10%',
-  },
-  sliderThumb: {
-    width: 24, height: 24, borderRadius: 12,
-    backgroundColor: '#FFF', borderWidth: 3, borderColor: KiraColors.primary,
-    position: 'absolute', top: 3,
-  },
-  minMaxRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-  },
-  dash: { width: 16, height: 1, backgroundColor: '#D1D5DB', marginHorizontal: 4 },
-  minMaxBox: {
-    backgroundColor: '#FFF', borderRadius: 12,
-    paddingVertical: 12, paddingHorizontal: 16, flex: 1,
-  },
-  minMaxLabel: { fontSize: 10, color: '#6B7280', marginBottom: 4 },
-  minMaxValue: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
-  sectionTitle: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginBottom: 16 },
-  rowSpacing: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  depositPill: {
-    flex: 1, paddingVertical: 14, backgroundColor: '#FFF', borderRadius: 24,
-    marginHorizontal: 4, borderWidth: 1, borderColor: '#E5E7EB', alignItems: 'center',
-  },
-  depositPillActive: { backgroundColor: '#FBC02D', borderColor: '#FBC02D' },
-  depositPillText: { fontSize: 13, fontWeight: '600', color: '#4A5568' },
-  depositPillTextActive: { color: '#1A1A1A', fontWeight: '700' },
-  dropdownInput: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F3F4F6', borderRadius: 12,
-    paddingHorizontal: 16, paddingVertical: 16, marginBottom: 14,
-  },
-  dropdownText: { fontSize: 15, fontWeight: '500', color: '#1A1A1A', marginLeft: 10 },
-  chipsRow: { flexDirection: 'row', alignItems: 'center' },
-  chip: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F3F4F6', paddingHorizontal: 14,
-    paddingVertical: 8, borderRadius: 8, marginRight: 8,
-  },
-  chipActive: { backgroundColor: '#E8F5E9' },
-  chipText: { fontSize: 12, fontWeight: '600', color: '#6B7280' },
-  chipTextActive: { color: KiraColors.primary, fontWeight: '700' },
-  amenitiesGrid: { flexDirection: 'row', justifyContent: 'space-between' },
-  amenityCard: {
-    flex: 1, backgroundColor: '#FFF', borderRadius: 16,
-    padding: 16, marginHorizontal: 6, borderWidth: 1, borderColor: '#F3F4F6',
-  },
-  amenityCardActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
-  amenityIconWrap: { marginBottom: 12 },
-  amenityCardText: { fontSize: 13, fontWeight: '700', color: '#1A1A1A', lineHeight: 18 },
+  headerTitle: { fontSize: 16, fontWeight: '900', color: '#1A1A1A' },
+  resetText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
+  scrollContent: { paddingBottom: 40 },
+  sectionTitle: { fontSize: 11, fontWeight: '800', color: '#94A3B8', letterSpacing: 1, marginHorizontal: 24, marginTop: 32, marginBottom: 16 },
+  
+  priceContainer: { marginHorizontal: 20, backgroundColor: '#F8FAFC', borderRadius: 24, padding: 24, borderWidth: 1, borderColor: '#F1F5F9' },
+  priceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 },
+  priceInput: { flex: 1, height: 50, backgroundColor: '#FFF', borderRadius: 14, borderWidth: 1, borderColor: '#E2E8F0', justifyContent: 'center', paddingHorizontal: 16 },
+  currency: { fontSize: 10, fontWeight: '800', color: '#94A3B8', marginBottom: 2 },
+  priceText: { fontSize: 14, fontWeight: '800', color: '#1A1A1A' },
+  priceDivider: { width: 12, height: 1, backgroundColor: '#CBD5E1', marginHorizontal: 12 },
+  sliderWrap: { alignItems: 'center', paddingHorizontal: 10 },
+
+  locationSelector: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 20, backgroundColor: '#F8FAFC', padding: 18, borderRadius: 20, borderWidth: 1, borderColor: '#F1F5F9' },
+  locLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  locText: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
+
+  amenitiesGrid: { flexDirection: 'row', gap: 12, marginHorizontal: 20 },
+  amenityBox: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 16, backgroundColor: '#F8FAFC', borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' },
+  amenityActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
+  amenityText: { fontSize: 13, fontWeight: '700', color: '#64748B' },
   amenityTextActive: { color: '#FFF' },
-  locationItem: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
-  },
-  locationItemText: { fontSize: 15, color: '#1A1A1A', fontWeight: '500' },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: {
-    backgroundColor: '#FFF', borderTopLeftRadius: 24, borderTopRightRadius: 24,
-    padding: 24, paddingBottom: 40, maxHeight: '70%',
-  },
-  modalHeader: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20,
-  },
+
+  footer: { padding: 20, borderTopWidth: 1, borderTopColor: '#F1F5F9' },
+  applyBtn: { backgroundColor: KiraColors.primary, borderRadius: 30, paddingVertical: 18, alignItems: 'center', shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 15, elevation: 6 },
+  applyBtnText: { color: '#FFF', fontSize: 15, fontWeight: '900' },
+
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', padding: 30 },
+  modalContent: { backgroundColor: '#FFF', borderRadius: 24, padding: 24 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   modalTitle: { fontSize: 18, fontWeight: '800', color: '#1A1A1A' },
-  electricityCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F8F9FA', borderRadius: 20, padding: 16,
-  },
-  electricityIconWrap: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center',
-    marginRight: 16,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05, shadowRadius: 6, elevation: 2,
-  },
-  electricityTextWrap: { flex: 1 },
-  electricityTitle: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginBottom: 2 },
-  electricitySub: { fontSize: 10, color: '#6B7280' },
-  verifyCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFF8E7', borderRadius: 24, padding: 20,
-    borderWidth: 1, borderColor: '#FBE8C1',
-  },
-  verifyIconWrap: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#F5C048', justifyContent: 'center', alignItems: 'center', marginRight: 16,
-  },
-  verifyTextWrap: { flex: 1 },
-  verifyTitle: { fontSize: 14, fontWeight: '800', color: '#92400E', marginBottom: 2 },
-  verifySubtitle: { fontSize: 10, color: '#B45309' },
-  mapContainer: {
-    width: '100%', height: 180, borderRadius: 24,
-    overflow: 'hidden', position: 'relative', marginBottom: 10,
-  },
-  mapImage: { width: '100%', height: '100%', opacity: 0.65 },
-  mapOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.08)',
-    justifyContent: 'center', alignItems: 'center',
-  },
-  mapBtn: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#FFF', paddingHorizontal: 18, paddingVertical: 10,
-    borderRadius: 20,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12, shadowRadius: 8, elevation: 3,
-  },
-  mapBtnText: {
-    fontSize: 11, fontWeight: '800', color: KiraColors.primary,
-    marginLeft: 6, letterSpacing: 0.5,
-  },
-  footer: {
-    padding: 20, backgroundColor: '#FFF',
-    borderTopWidth: 1, borderTopColor: '#F3F4F6',
-  },
-  applyButton: {
-    backgroundColor: KiraColors.primary, borderRadius: 30, paddingVertical: 18, alignItems: 'center',
-    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
-  },
-  applyButtonText: { color: '#FFF', fontSize: 15, fontWeight: '800' },
+  neighborhoodItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  neighborhoodText: { fontSize: 15, color: '#4A5568', fontWeight: '600' },
+  neighborhoodActive: { color: KiraColors.primary, fontWeight: '800' },
+
+  supportCard: { backgroundColor: '#F8FAFC', borderRadius: 24, padding: 24, borderWidth: 1, borderColor: '#F1F5F9' },
+  supportText: { fontSize: 14, color: '#4A5568', lineHeight: 22, fontWeight: '500' },
 });

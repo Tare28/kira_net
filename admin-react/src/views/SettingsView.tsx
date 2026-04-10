@@ -6,7 +6,8 @@ import {
   Save,
   MessageSquare,
   Zap,
-  Bell
+  Bell,
+  Check
 } from 'lucide-react';
 
 interface SettingsProps {
@@ -15,9 +16,21 @@ interface SettingsProps {
 
 const SettingsView: React.FC<SettingsProps> = () => {
   const [toggles, setToggles] = useState({ chat: true, lite: false, push: true });
+  const [lang, setLang] = useState('Eng');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   const toggle = (key: keyof typeof toggles) => {
     setToggles(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSave = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 2000);
+    }, 1500);
   };
 
   return (
@@ -27,8 +40,26 @@ const SettingsView: React.FC<SettingsProps> = () => {
                 <p style={{ fontWeight: 800, color: '#9CC942', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>System Configuration</p>
                 <h1>Kira Core.<br/><span style={{ opacity: 0.1 }}>Platform Parameters.</span></h1>
             </div>
-            <button style={{ background: '#9CC942', color: 'white', padding: '14px 40px', borderRadius: '14px', fontSize: '14px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.2)', width: 'fit-content' }}>
-                <Save size={18}/> Commit Changes
+            <button 
+              onClick={handleSave}
+              disabled={isSaving}
+              style={{ 
+                background: saveSuccess ? '#10B981' : '#9CC942', 
+                color: 'white', 
+                padding: '14px 40px', 
+                borderRadius: '14px', 
+                fontSize: '14px', 
+                fontWeight: 800, 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '8px', 
+                boxShadow: '0 10px 30px rgba(16, 185, 129, 0.2)', 
+                width: 'fit-content',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease'
+              }}
+            >
+                {isSaving ? 'Saving...' : saveSuccess ? <><Check size={18}/> Saved</> : <><Save size={18}/> Commit Changes</>}
             </button>
         </div>
 
@@ -38,9 +69,24 @@ const SettingsView: React.FC<SettingsProps> = () => {
                 <div style={{ marginBottom: '48px' }}>
                     <label style={{ display: 'block', fontSize: '11px', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '24px' }}>App Languages</label>
                     <div className="filter-tabs" style={{ display: 'flex', gap: '8px', background: 'white', padding: '4px', borderRadius: '12px', border: '1px solid #F1F5F9', width: 'fit-content', overflowX: 'auto', maxWidth: '100%' }}>
-                        <button style={{ padding: '12px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 800, color: '#64748B', whiteSpace: 'nowrap' }}>Amh</button>
-                        <button style={{ padding: '12px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 800, color: '#64748B', whiteSpace: 'nowrap' }}>Oro</button>
-                        <button style={{ padding: '12px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 800, background: '#F4F9EB', color: '#9CC942', whiteSpace: 'nowrap' }}>Eng</button>
+                        {['Amh', 'Oro', 'Eng'].map((l) => (
+                            <button 
+                                key={l}
+                                onClick={() => setLang(l)}
+                                style={{ 
+                                    padding: '12px 24px', 
+                                    borderRadius: '10px', 
+                                    fontSize: '14px', 
+                                    fontWeight: 800, 
+                                    background: lang === l ? '#F4F9EB' : 'transparent', 
+                                    color: lang === l ? '#9CC942' : '#64748B', 
+                                    whiteSpace: 'nowrap',
+                                    transition: 'all 0.2s ease'
+                                }}
+                            >
+                                {l}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
@@ -49,11 +95,11 @@ const SettingsView: React.FC<SettingsProps> = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                         <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
                             <label style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '12px' }}>BOOST PRICE (ETB)</label>
-                            <input type="text" value="250" readOnly style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%' }}/>
+                            <input type="text" defaultValue="250" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%' }}/>
                         </div>
                         <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
                             <label style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '12px' }}>VERIFY FEE (ETB)</label>
-                            <input type="text" value="500" readOnly style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%' }}/>
+                            <input type="text" defaultValue="500" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%' }}/>
                         </div>
                     </div>
                 </div>
@@ -111,7 +157,12 @@ const SettingsView: React.FC<SettingsProps> = () => {
                 <div style={{ marginBottom: '48px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
                         <label style={{ fontSize: '11px', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px' }}>Location Sovereignty</label>
-                        <button style={{ fontSize: '11px', fontWeight: 900, color: '#9CC942', textTransform: 'uppercase' }}>+ ADD NEW</button>
+                        <button 
+                          onClick={() => alert('New location form enabled.')}
+                          style={{ fontSize: '11px', fontWeight: 900, color: '#9CC942', textTransform: 'uppercase', cursor: 'pointer' }}
+                        >
+                          + ADD NEW
+                        </button>
                     </div>
                     <div style={{ background: 'white', padding: '32px', borderRadius: '24px', border: '1px solid #F1F5F9' }}>
                         <div style={{ borderLeft: '4px solid #9CC942', paddingLeft: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
@@ -148,7 +199,10 @@ const SettingsView: React.FC<SettingsProps> = () => {
                             // API_LIMIT: 150/hr<br/>
                             // DEBUG: FALSE
                         </div>
-                        <button style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid #EF4444', color: '#EF4444', fontWeight: 800, fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase' }}>
+                        <button 
+                          onClick={() => { if(window.confirm('WARNING: Irrevisible action. Wipe DB?')) alert('Database reset command sent to server.') }}
+                          style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid #EF4444', color: '#EF4444', fontWeight: 800, fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase', cursor: 'pointer' }}
+                        >
                             Reset Database
                         </button>
                     </div>

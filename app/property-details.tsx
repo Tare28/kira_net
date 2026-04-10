@@ -3,8 +3,10 @@ import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   Dimensions, Share, Alert, Linking,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
@@ -147,6 +149,129 @@ const PROPERTIES: Record<string, any> = {
   },
 };
 
+import { useUser } from '@/context/UserContext';
+
+// ─── Landlord View Component ────────────────────────────────────────────────
+function LandlordPropertyDetails({ property }: { property: any }) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={propertyStyles.root}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+          {/* ── Image/Banner Section ────────────────────────────────────────── */}
+          <View style={propertyStyles.heroImageWrap}>
+              <Image source={property.images[0]} style={propertyStyles.heroImage} />
+              <LinearGradient colors={['rgba(0,0,0,0.6)', 'transparent']} style={propertyStyles.imageOverlay} />
+              <TouchableOpacity style={propertyStyles.backBtn} onPress={() => router.back()}>
+                  <Feather name="arrow-left" size={22} color="#FFF" />
+              </TouchableOpacity>
+              <View style={propertyStyles.idBadge}>
+                  <Text style={propertyStyles.idBadgeText}>{property.id}</Text>
+              </View>
+          </View>
+
+          <View style={propertyStyles.content}>
+              <View style={propertyStyles.titleRow}>
+                  <View style={{ flex: 1 }}>
+                      <Text style={propertyStyles.h1}>{property.title}</Text>
+                      <Text style={propertyStyles.loc}>{property.location}</Text>
+                  </View>
+                  <View style={propertyStyles.priceTag}>
+                      <Text style={propertyStyles.priceVal}>{property.price}</Text>
+                      <Text style={propertyStyles.priceMonth}>/mo</Text>
+                  </View>
+              </View>
+
+              {/* ── Performance Glass Card ────────────────────────────────────── */}
+              <View style={propertyStyles.performanceRow}>
+                  <BlurView intensity={70} style={propertyStyles.glassCard}>
+                    <LinearGradient colors={['rgba(156, 201, 66, 0.1)', 'rgba(255, 255, 255, 0.05)']} style={StyleSheet.absoluteFill} />
+                    <View style={propertyStyles.glassContent}>
+                        <View style={propertyStyles.stat}>
+                            <Feather name="eye" size={16} color="#9CC942" />
+                            <Text style={propertyStyles.statValue}>1,245</Text>
+                            <Text style={propertyStyles.statLabel}>VIEWS</Text>
+                        </View>
+                        <View style={propertyStyles.divider} />
+                        <View style={propertyStyles.stat}>
+                            <Feather name="heart" size={16} color="#9CC942" />
+                            <Text style={propertyStyles.statValue}>48</Text>
+                            <Text style={propertyStyles.statLabel}>SAVES</Text>
+                        </View>
+                        <View style={propertyStyles.divider} />
+                        <View style={propertyStyles.stat}>
+                            <Feather name="message-circle" size={16} color="#9CC942" />
+                            <Text style={propertyStyles.statValue}>12</Text>
+                            <Text style={propertyStyles.statLabel}>INQS</Text>
+                        </View>
+                    </View>
+                  </BlurView>
+              </View>
+
+              {/* ── Management Actions ────────────────────────────────────────── */}
+              <View style={propertyStyles.actionsGrid}>
+                  <TouchableOpacity style={propertyStyles.actionCard} onPress={() => router.push('/boost-listing')}>
+                      <View style={propertyStyles.actionIconWrap}>
+                         <Feather name="zap" size={20} color="#9CC942" />
+                      </View>
+                      <Text style={propertyStyles.actionText}>Boost Now</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={propertyStyles.actionCard}>
+                      <View style={propertyStyles.actionIconWrap}>
+                         <Feather name="edit-3" size={20} color="#9CC942" />
+                      </View>
+                      <Text style={propertyStyles.actionText}>Edit Listing</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={propertyStyles.actionCard}>
+                      <View style={propertyStyles.actionIconWrap}>
+                         <Feather name="camera" size={20} color="#9CC942" />
+                      </View>
+                      <Text style={propertyStyles.actionText}>Add Photos</Text>
+                  </TouchableOpacity>
+              </View>
+
+              {/* ── Trust Improvement ─────────────────────────────────────────── */}
+              <View style={propertyStyles.trustPanel}>
+                  <View style={propertyStyles.trustHeader}>
+                     <Text style={propertyStyles.sectionTitle}>Listing Health</Text>
+                     <Text style={propertyStyles.trustPct}>{property.trust.score}%</Text>
+                  </View>
+                  <View style={propertyStyles.progressBg}>
+                      <View style={[propertyStyles.progressFill, { width: `${property.trust.score}%` }]} />
+                  </View>
+                  <View style={propertyStyles.tipBox}>
+                      <Feather name="info" size={16} color="#64748B" />
+                      <Text style={propertyStyles.tipText}>Tip: Adding property documentation or 3D tours can increase your Trust Score by up to 20%.</Text>
+                  </View>
+              </View>
+
+              {/* ── Listing Metadata ─────────────────────────────────────────── */}
+              <View style={propertyStyles.infoGroup}>
+                  <Text style={propertyStyles.sectionTitle}>Business Metadata</Text>
+                  <View style={propertyStyles.infoRow}>
+                      <Text style={propertyStyles.infoLabel}>Internal ID</Text>
+                      <Text style={propertyStyles.infoValue}>{property.id}</Text>
+                  </View>
+                  <View style={propertyStyles.infoRow}>
+                      <Text style={propertyStyles.infoLabel}>Category</Text>
+                      <Text style={propertyStyles.infoValue}>{property.category.toUpperCase()}</Text>
+                  </View>
+                  <View style={propertyStyles.infoRow}>
+                      <Text style={propertyStyles.infoLabel}>Assigned Agent</Text>
+                      <Text style={propertyStyles.infoValue}>{property.agent}</Text>
+                  </View>
+                  <View style={propertyStyles.infoRow}>
+                      <Text style={propertyStyles.infoLabel}>Created</Text>
+                      <Text style={propertyStyles.infoValue}>2 weeks ago</Text>
+                  </View>
+              </View>
+
+          </View>
+          <View style={{ height: 100 }} />
+      </ScrollView>
+    </View>
+  );
+}
+
 // ─── Trust Score helpers ───────────────────────────────────────────────────────
 function getTrustColor(score: number) {
   if (score >= 85) return KiraColors.success;
@@ -168,6 +293,7 @@ function noiseLabel(level: number) {
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function PropertyDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { role } = useUser();
   const property = PROPERTIES[id ?? '#KN-001'] ?? PROPERTIES['#KN-001'];
   const isCommercial = ['shop', 'cafe', 'restaurant'].includes(property.category);
   const [activeImage, setActiveImage] = useState(0);
@@ -178,6 +304,12 @@ export default function PropertyDetailsScreen() {
   const { saveProperty, unsaveProperty, isSaved } = useSaved();
   const inPlan = isInPlan(id ?? '#KN-001');
   const saved = isSaved(id ?? '#KN-001');
+
+  const scale = useSharedValue(1);
+
+  if (role === 'landlord') {
+    return <LandlordPropertyDetails property={property} />;
+  }
 
   const handleSave = () => {
     if (saved) {
@@ -194,7 +326,6 @@ export default function PropertyDetailsScreen() {
     }
   };
 
-  const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withSpring(scale.value) }],
   }));
@@ -1155,13 +1286,6 @@ const insightStyles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
   },
-  trendText: { fontSize: 11, fontWeight: '800' },
-  statsRow: {
-    flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 14,
-    paddingVertical: 14, paddingHorizontal: 12, marginBottom: 16,
-    alignItems: 'center',
-  },
-  statBox: { flex: 1, alignItems: 'center' },
   statLabel: { fontSize: 9, color: '#6B7280', fontWeight: '600', marginBottom: 4, textAlign: 'center' },
   statValue: { fontSize: 14, fontWeight: '900', color: '#1A1A1A', textAlign: 'center' },
   statDivider: { width: 1, height: 32, backgroundColor: '#E5E7EB' },
@@ -1178,4 +1302,45 @@ const insightStyles = StyleSheet.create({
   barLabelRight: { fontSize: 10, color: '#6B7280' },
   trendRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   trendFullText: { fontSize: 12, fontWeight: '700' },
+  saveBtnText: { color: '#FFF', fontSize: 13, fontWeight: '800' },
+});
+
+const propertyStyles = StyleSheet.create({
+    root: { flex: 1, backgroundColor: '#F8FAFC' },
+    heroImageWrap: { height: 340, position: 'relative' },
+    heroImage: { width: '100%', height: '100%' },
+    imageOverlay: { position: 'absolute', width: '100%', height: 100, top: 0 },
+    backBtn: { position: 'absolute', top: 50, left: 20, width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center' },
+    idBadge: { position: 'absolute', bottom: 20, right: 20, backgroundColor: 'rgba(255,255,255,0.9)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12 },
+    idBadgeText: { fontSize: 12, fontWeight: '900', color: '#1A1A1A' },
+    content: { padding: 24, marginTop: -20, backgroundColor: '#F8FAFC', borderTopLeftRadius: 32, borderTopRightRadius: 32, flex: 1 },
+    titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+    h1: { fontSize: 24, fontWeight: '900', color: '#1A1A1A' },
+    loc: { fontSize: 14, color: '#64748B', marginTop: 4 },
+    priceTag: { alignItems: 'flex-end', backgroundColor: '#FFF', padding: 12, borderRadius: 16, borderWidth: 1, borderColor: '#F1F5F9' },
+    priceVal: { fontSize: 20, fontWeight: '900', color: KiraColors.primary },
+    priceMonth: { fontSize: 10, fontWeight: '700', color: '#94A3B8' },
+    performanceRow: { marginBottom: 32 },
+    glassCard: { height: 100, borderRadius: 24, overflow: 'hidden' },
+    glassContent: { flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20 },
+    stat: { flex: 1, alignItems: 'center' },
+    statValue: { fontSize: 20, fontWeight: '900', color: '#1A1A1A', marginTop: 4 },
+    statLabel: { fontSize: 8, fontWeight: '800', color: '#64748B', letterSpacing: 1, marginTop: 2 },
+    divider: { width: 1, height: 30, backgroundColor: 'rgba(0,0,0,0.05)' },
+    actionsGrid: { flexDirection: 'row', gap: 12, marginBottom: 32 },
+    actionCard: { flex: 1, backgroundColor: '#FFF', padding: 16, borderRadius: 20, alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+    actionIconWrap: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#F4F9EB', justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
+    actionText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
+    trustPanel: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, marginBottom: 32, borderWidth: 1, borderColor: '#F1F5F9' },
+    trustHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    sectionTitle: { fontSize: 16, fontWeight: '900', color: '#1A1A1A' },
+    trustPct: { fontSize: 18, fontWeight: '900', color: '#9CC942' },
+    progressBg: { height: 8, backgroundColor: '#F1F5F9', borderRadius: 4, marginBottom: 16 },
+    progressFill: { height: 8, backgroundColor: '#9CC942', borderRadius: 4 },
+    tipBox: { flexDirection: 'row', gap: 12, backgroundColor: '#F8FAFC', padding: 14, borderRadius: 16 },
+    tipText: { flex: 1, fontSize: 11, color: '#64748B', lineHeight: 18 },
+    infoGroup: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, borderWidth: 1, borderColor: '#F1F5F9' },
+    infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F8FAFC' },
+    infoLabel: { fontSize: 13, color: '#64748B', fontWeight: '500' },
+    infoValue: { fontSize: 13, color: '#1A1A1A', fontWeight: '700' },
 });

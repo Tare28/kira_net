@@ -8,9 +8,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
 import { KiraColors } from '@/constants/colors';
 import { useAlerts } from '@/context/AlertsContext';
+import { useUser } from '@/context/UserContext';
 
 export default function ProfileScreen() {
   const { unreadCount } = useAlerts();
+  const { role, logout } = useUser();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userName, setUserName] = useState('Cityzens User');
   const [userEmail, setUserEmail] = useState('user@kiranet.com');
@@ -58,46 +60,57 @@ export default function ProfileScreen() {
     setIsEditModalVisible(false);
     Alert.alert('Success', 'Profile updated successfully!');
   };
+
   const menuSections = [
-    {
+    ...(role === 'landlord' || role === 'agent' ? [{
       title: 'Account Settings',
       items: [
-        { name: 'Personal Information', icon: 'user', action: () => setIsEditModalVisible(true) },
         { name: 'Payment Methods', icon: 'credit-card', action: () => Alert.alert('Secure Payments', 'You can manage your Telebirr and Credit Card links here in the next update.') },
         { name: 'Notification Preferences', icon: 'bell', action: () => Alert.alert('Notifications', 'Push notifications for new listings are currently active.') },
       ]
-    },
-    {
+    }] : []),
+    ...(role === 'agent' || role === 'landlord' ? [{
       title: 'Field Operations',
       items: [
         { name: 'Agent Terminal', icon: 'briefcase', action: () => router.push('/agent-dashboard') },
       ]
-    },
-    {
+    }] : []),
+    ...(role === 'landlord' ? [{
       title: 'Hosting & Landlord',
       items: [
         { name: 'My Properties', icon: 'home', action: () => router.push('/landlord-dashboard') },
         { name: 'Payment History', icon: 'pie-chart', action: () => Alert.alert('History', 'No payment history yet.') },
       ]
-    },
+    }] : []),
     {
       title: 'Support & Legal',
       items: [
-        { name: 'Help Center', icon: 'help-circle', action: () => Alert.alert('Support', 'Contacting support @ support@kiranet.com') },
-        { name: 'Safety Center', icon: 'shield', action: () => Alert.alert('Safety', 'Safety guidelines and verification processes.') },
-        { name: 'Terms of Service', icon: 'file-text', action: () => Alert.alert('Legal', 'Kira-Net Terms and Conditions.') },
+        { name: 'Help Center', icon: 'help-circle', action: () => router.push('/modal?type=help') },
+        { name: 'Safety Center', icon: 'shield', action: () => router.push('/modal?type=safety') },
+        { name: 'Terms of Service', icon: 'file-text', action: () => router.push('/modal?type=terms') },
       ]
     },
     {
       title: 'Community',
       items: [
-        { name: '🤝 Roommate Finder', icon: 'users', action: () => router.push('/roommate-match') },
-        { name: '🔔 Smart Alerts', icon: 'bell', action: () => router.push('/(tabs)/alerts') },
+        ...(role === 'tenant' ? [
+          { name: '🤝 Roommate Finder', icon: 'users', action: () => router.push('/roommate-match') },
+        ] : []),
         { name: '🧾 Rental Agreement', icon: 'file-text', action: () => router.push('/rental-agreement') },
         { name: '🚛 Moving Services', icon: 'truck', action: () => router.push('/moving-services') },
       ]
     }
   ];
+
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to sign out?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: async () => {
+          await logout();
+          router.replace('/login');
+      }}
+    ]);
+  };
 
   const handleItemPress = (item: any) => {
     if (item.action) {
@@ -111,9 +124,11 @@ export default function ProfileScreen() {
         <View style={{ width: 24 }} />
         <Text style={styles.headerTitle}>User Profile</Text>
         <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => router.push('/boost-listing')} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-            <Feather name="zap" size={24} color={KiraColors.warning} />
-          </TouchableOpacity>
+          {(role === 'landlord' || role === 'agent') && (
+            <TouchableOpacity onPress={() => router.push('/boost-listing')} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
+              <Feather name="zap" size={24} color={KiraColors.warning} />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
             onPress={() => router.push('/(tabs)/alerts')}
@@ -148,9 +163,6 @@ export default function ProfileScreen() {
             <Text style={styles.userName}>{userName}</Text>
             <Text style={styles.userEmail}>{userEmail}</Text>
           </View>
-          <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditModalVisible(true)}>
-            <Text style={styles.editBtnText}>Edit</Text>
-          </TouchableOpacity>
         </View>
 
         {menuSections.map((section, idx) => (
@@ -159,29 +171,24 @@ export default function ProfileScreen() {
             <View style={styles.sectionCard}>
               {section.items.map((item, itemIdx) => (
                 <TouchableOpacity 
-                  key={itemIdx} 
-                  style={[styles.menuItem, itemIdx === section.items.length - 1 && styles.menuItemLast]}
-                  onPress={() => handleItemPress(item)}
+                   key={itemIdx} 
+                   style={[styles.menuItem, itemIdx === section.items.length - 1 && styles.menuItemLast]}
+                   onPress={() => handleItemPress(item)}
                 >
-                  <View style={styles.menuIconBox}>
-                    <Feather name={item.icon as any} size={18} color="#4A5568" />
-                  </View>
-                  <Text style={styles.menuItemText}>{item.name}</Text>
-                  <Feather name="chevron-right" size={18} color="#D1D5DB" />
+                   <View style={styles.menuIconBox}>
+                     <Feather name={item.icon as any} size={18} color="#4A5568" />
+                   </View>
+                   <Text style={styles.menuItemText}>{item.name}</Text>
+                   <Feather name="chevron-right" size={18} color="#D1D5DB" />
                 </TouchableOpacity>
               ))}
             </View>
           </View>
         ))}
 
-        <TouchableOpacity style={styles.listPropertyBtn} onPress={() => router.push('/list-property')}>
-          <MaterialIcons name="add-business" size={20} color="#FFF" />
-          <Text style={styles.listPropertyText}>Post a New Property</Text>
-        </TouchableOpacity>
-
         <TouchableOpacity 
           style={styles.logoutBtn} 
-          onPress={() => router.replace('/login')}
+          onPress={handleLogout}
         >
           <Feather name="log-out" size={16} color={KiraColors.danger} />
           <Text style={styles.logoutBtnText}>Log Out</Text>
@@ -251,141 +258,123 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     backgroundColor: '#FFF',
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#F1F5F9',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     color: '#1A1A1A',
-    flex: 1,
-    textAlign: 'center',
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 16,
   },
-  bellWrap: { position: 'relative' },
+  bellWrap: {
+    position: 'relative',
+  },
   notifBadge: {
     position: 'absolute',
     top: -4,
-    right: -6,
+    right: -4,
     backgroundColor: KiraColors.danger,
-    width: 14,
-    height: 14,
-    borderRadius: 7,
-    justifyContent: 'center',
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
     alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
     borderWidth: 1.5,
     borderColor: '#FFF',
   },
-  notifBadgeText: { fontSize: 8, fontWeight: '900', color: '#FFF' },
+  notifBadgeText: {
+    color: '#FFF',
+    fontSize: 8,
+    fontWeight: '900',
+  },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    paddingBottom: 60,
+    paddingBottom: 120, // Increased to avoid footer tab overlap
   },
   userCard: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 24,
     backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 16,
-    marginBottom: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 3,
+    marginBottom: 12,
   },
   userAvatar: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
-    backgroundColor: '#F3F4F6',
-    justifyContent: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: KiraColors.primary,
     alignItems: 'center',
-    marginRight: 16,
-    borderWidth: 2,
-    borderColor: KiraColors.primary,
+    justifyContent: 'center',
     position: 'relative',
-    overflow: 'visible',
   },
   avatarImg: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 32.5,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
   },
   avatarInitials: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '800',
-    color: KiraColors.primary,
+    color: '#1A1A1A',
   },
   cameraBadge: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
-    backgroundColor: KiraColors.primary,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#1A1A1A',
     width: 20,
     height: 20,
     borderRadius: 10,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 2,
     borderColor: '#FFF',
   },
   userInfo: {
     flex: 1,
+    marginLeft: 16,
   },
   userName: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
     color: '#1A1A1A',
-    marginBottom: 4,
   },
   userEmail: {
     fontSize: 13,
-    color: '#6B7280',
+    color: '#64748B',
+    marginTop: 2,
     fontWeight: '500',
   },
-  editBtn: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-  },
-  editBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#1A1A1A',
-  },
   sectionContainer: {
-    marginBottom: 24,
+    marginTop: 12,
+    paddingHorizontal: 20,
   },
   sectionTitle: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#6B7280',
+    color: '#94A3B8',
+    marginBottom: 8,
+    textTransform: 'uppercase',
     letterSpacing: 1,
-    marginBottom: 12,
     marginLeft: 4,
   },
   sectionCard: {
     backgroundColor: '#FFF',
     borderRadius: 20,
-    paddingHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02,
-    shadowRadius: 6,
-    elevation: 1,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
+    borderBottomColor: '#F1F5F9',
   },
   menuItemLast: {
     borderBottomWidth: 0,
@@ -393,55 +382,35 @@ const styles = StyleSheet.create({
   menuIconBox: {
     width: 36,
     height: 36,
-    borderRadius: 10,
-    backgroundColor: '#F9FAFB',
-    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: '#F8FAFC',
     alignItems: 'center',
-    marginRight: 16,
+    justifyContent: 'center',
+    marginRight: 12,
   },
   menuItemText: {
     flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1A1A1A',
-  },
-  listPropertyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: KiraColors.primary,
-    borderRadius: 16,
-    paddingVertical: 18,
-    marginTop: 10,
-    marginBottom: 20,
-    shadowColor: KiraColors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  listPropertyText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#FFF',
-    marginLeft: 10,
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1E293B',
   },
   logoutBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#FEF2F2',
-    paddingVertical: 16,
+    gap: 8,
+    marginTop: 40,
+    marginHorizontal: 20,
+    padding: 16,
     borderRadius: 16,
+    backgroundColor: '#FFF',
     borderWidth: 1,
-    borderColor: '#FCA5A5',
-    marginBottom: 20,
+    borderColor: '#FEE2E2',
   },
   logoutBtnText: {
-    color: KiraColors.danger,
     fontSize: 14,
-    fontWeight: '700',
-    marginLeft: 8,
+    fontWeight: '800',
+    color: KiraColors.danger,
   },
   modalOverlay: {
     flex: 1,
@@ -450,8 +419,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#FFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
     padding: 24,
     paddingBottom: 40,
   },
@@ -459,42 +428,48 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 32,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '800',
+    fontSize: 20,
+    fontWeight: '900',
     color: '#1A1A1A',
   },
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   inputLabel: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#6B7280',
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#94A3B8',
     marginBottom: 8,
     textTransform: 'uppercase',
   },
   textInput: {
-    backgroundColor: '#F3F4F6',
+    backgroundColor: '#F8FAFC',
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: '#1A1A1A',
+    padding: 16,
+    fontSize: 14,
     fontWeight: '600',
+    color: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   saveBtn: {
     backgroundColor: KiraColors.primary,
-    borderRadius: 16,
-    paddingVertical: 18,
+    padding: 18,
+    borderRadius: 30,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
+    shadowColor: KiraColors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   saveBtnText: {
-    color: '#FFF',
     fontSize: 15,
-    fontWeight: '800',
+    fontWeight: '900',
+    color: '#FFF',
   },
 });
