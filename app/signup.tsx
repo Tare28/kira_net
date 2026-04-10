@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 export default function SignupScreen() {
   const [role, setRole] = useState<'tenant' | 'landlord'>('tenant');
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
   
   rolePicker: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   roleBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 12, backgroundColor: '#FFF', borderWidth: 1, borderColor: '#E2E8F0' },
-  roleBtnActive: { backgroundColor: '#1A1A1A', borderColor: '#1A1A1A' },
+  roleBtnActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   roleBtnText: { fontSize: 12, fontWeight: '800', color: '#64748B' },
   roleBtnTextActive: { color: '#FFF' },
 
@@ -166,10 +167,10 @@ const styles = StyleSheet.create({
   label: { fontSize: 11, fontWeight: '800', color: '#1A1A1A', letterSpacing: 0.5, marginBottom: 8 },
   inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 },
   textInput: { flex: 1, fontSize: 14, color: '#1A1A1A', padding: 0 },
-  signupBtn: { flexDirection: 'row', backgroundColor: '#000000', borderRadius: 30, paddingVertical: 18, justifyContent: 'center', alignItems: 'center', marginTop: 32, marginBottom: 20, shadowColor: '#000000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  signupBtn: { flexDirection: 'row', backgroundColor: KiraColors.primary, borderRadius: 30, paddingVertical: 18, justifyContent: 'center', alignItems: 'center', marginTop: 32, marginBottom: 20, shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
   signupBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
   termsText: { fontSize: 11, color: '#9CA3AF', textAlign: 'center', lineHeight: 16 },
-  termsLink: { color: '#000', fontWeight: '700' },
+  termsLink: { color: KiraColors.primary, fontWeight: '700' },
   
   landlordExtra: { marginTop: 24, paddingVertical: 12 },
   landlordDivider: { flexDirection: 'row', alignItems: 'center', marginBottom: 24 },
@@ -178,5 +179,5 @@ const styles = StyleSheet.create({
 
   loginWrap: { flexDirection: 'row', justifyContent: 'center', marginTop: 32, paddingBottom: 20 },
   loginText: { fontSize: 13, color: '#4A5568' },
-  loginLink: { fontSize: 13, fontWeight: '800', color: '#000' },
+  loginLink: { fontSize: 13, fontWeight: '800', color: KiraColors.primary },
 });

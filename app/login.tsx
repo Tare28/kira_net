@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingVi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, FontAwesome5 } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 export default function LoginScreen() {
   return (
@@ -88,25 +89,25 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
+  safeArea: { flex: 1, backgroundColor: '#FAFBFB' },
   container: { flex: 1 },
   scrollContent: { flexGrow: 1, paddingHorizontal: 30, paddingVertical: 40, justifyContent: 'center' },
   
   topSection: { marginBottom: 48 },
-  logoCircle: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F8F9FA', alignItems: 'center', justifyContent: 'center', marginBottom: 24, borderWidth: 1, borderColor: '#F1F3F5' },
-  welcomeText: { fontSize: 42, fontWeight: '900', color: '#000', letterSpacing: -2, lineHeight: 46 },
+  logoCircle: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center', marginBottom: 24, borderWidth: 1, borderColor: '#C8E6C9' },
+  welcomeText: { fontSize: 42, fontWeight: '900', color: KiraColors.primary, letterSpacing: -2, lineHeight: 46 },
   subWelcome: { fontSize: 15, color: '#64748B', fontWeight: '500', marginTop: 8 },
 
   card: { backgroundColor: '#FFF', borderRadius: 0 },
   inputGroup: { marginBottom: 24 },
-  fieldLabel: { fontSize: 10, fontWeight: '900', color: '#000', letterSpacing: 1.5, marginBottom: 12 },
+  fieldLabel: { fontSize: 10, fontWeight: '900', color: KiraColors.primary, letterSpacing: 1.5, marginBottom: 12 },
   passwordLabelRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   forgotText: { fontSize: 10, fontWeight: '800', color: '#64748B', marginBottom: 10 },
   
-  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F8F9FA', borderRadius: 16, paddingHorizontal: 20, paddingVertical: 18, borderWidth: 1, borderColor: '#F1F3F5' },
+  inputWrapper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 16, paddingHorizontal: 20, paddingVertical: 18, borderWidth: 1, borderColor: '#E2E8F0' },
   textInput: { flex: 1, fontSize: 14, color: '#000', fontWeight: '600', marginLeft: 12 },
 
-  primaryBtn: { flexDirection: 'row', backgroundColor: '#000', borderRadius: 18, paddingVertical: 20, alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 16, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
+  primaryBtn: { flexDirection: 'row', backgroundColor: KiraColors.primary, borderRadius: 18, paddingVertical: 20, alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 16, shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
   primaryBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
 
   divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 32 },

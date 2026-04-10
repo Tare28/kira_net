@@ -1,10 +1,13 @@
 import React, { useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  Dimensions, Share, Alert, Animated, Linking,
+  Dimensions, Share, Alert, Linking,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 import { Feather, Ionicons, MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useVisitPlan } from '@/context/VisitPlanContext';
@@ -164,6 +167,7 @@ function noiseLabel(level: number) {
 export default function PropertyDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const property = PROPERTIES[id ?? '1'] ?? PROPERTIES['1'];
+  const isCommercial = ['shop', 'cafe', 'restaurant'].includes(property.category);
   const [activeImage, setActiveImage] = useState(0);
   const [saved, setSaved] = useState(false);
   const [offlineMapSaved, setOfflineMapSaved] = useState(false);
@@ -172,7 +176,10 @@ export default function PropertyDetailsScreen() {
   const { addVisit, removeVisit, isInPlan } = useVisitPlan();
   const inPlan = isInPlan(id ?? '1');
 
-  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const scale = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withSpring(scale.value) }],
+  }));
 
   const handleShare = async () => {
     await Share.share({
@@ -181,10 +188,8 @@ export default function PropertyDetailsScreen() {
   };
 
   const handleVisitToggle = () => {
-    Animated.sequence([
-      Animated.spring(scaleAnim, { toValue: 0.93, useNativeDriver: true }),
-      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }),
-    ]).start();
+    scale.value = 0.93;
+    setTimeout(() => { scale.value = 1; }, 100);
 
     if (inPlan) {
       removeVisit(id ?? '1');
@@ -215,7 +220,12 @@ export default function PropertyDetailsScreen() {
           }}
         >
           {property.images.map((img: string, i: number) => (
-            <Image key={i} source={img} style={styles.carouselImage} />
+            <AnimatedImage 
+              key={i} 
+              source={img} 
+              style={styles.carouselImage} 
+              sharedTransitionTag={i === 0 ? `image-${id}` : undefined}
+            />
           ))}
         </ScrollView>
 
@@ -293,6 +303,9 @@ export default function PropertyDetailsScreen() {
             <Text style={styles.priceDesc}> / month</Text>
           </View>
         </View>
+
+        {/* ── Content Specific Spotlight ─────────────────────────── */}
+        <ContentSpotlight property={property} isCommercial={isCommercial} />
 
         {/* ── RENT PRICE INSIGHTS ─────────────────────────────────── */}
         <RentInsightsCard location={property.location} price={property.price} />
@@ -493,10 +506,12 @@ export default function PropertyDetailsScreen() {
       {/* ── CTA Footer ─────────────────────────────────────────────────────── */}
       <View style={styles.footer}>
         {/* Visit Plan Toggle */}
-        <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+        <Animated.View style={animatedStyle}>
           <TouchableOpacity
             style={[styles.visitPlanBtn, inPlan && styles.visitPlanBtnActive]}
             onPress={handleVisitToggle}
+            onPressIn={() => { scale.value = 0.93; }}
+            onPressOut={() => { scale.value = 1; }}
           >
             <MaterialCommunityIcons
               name={inPlan ? 'calendar-check' : 'calendar-plus'}
@@ -528,6 +543,70 @@ export default function PropertyDetailsScreen() {
     </View>
   );
 }
+
+// ─── Content Specific Spotlight Component ─────────────────────────────────────
+function ContentSpotlight({ property, isCommercial }: { property: any; isCommercial: boolean }) {
+  if (isCommercial) {
+    return (
+      <View style={[spotStyles.card, { borderColor: '#EEF2FF', backgroundColor: '#F8FAFF' }]}>
+        <View style={spotStyles.header}>
+          <MaterialIcons name="business-center" size={18} color="#4F46E5" />
+          <Text style={[spotStyles.title, { color: '#4F46E5' }]}>Business Suitability</Text>
+        </View>
+        <View style={spotStyles.grid}>
+          <View style={spotStyles.item}>
+            <MaterialCommunityIcons name="walk" size={20} color="#4F46E5" />
+            <Text style={spotStyles.label}>Foot Traffic</Text>
+            <Text style={spotStyles.value}>{property.hood.tags.includes('High Foot Traffic') ? 'Very High' : 'High'}</Text>
+          </View>
+          <View style={spotStyles.divider} />
+          <View style={spotStyles.item}>
+             <MaterialCommunityIcons name="power-plug" size={20} color="#4F46E5" />
+             <Text style={spotStyles.label}>Energy Status</Text>
+             <Text style={spotStyles.value}>{property.utilities.some((u:any) => u.label === 'Generator') ? 'Generator Backup' : 'Stable Grid'}</Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[spotStyles.card, { borderColor: '#ECFDF5', backgroundColor: '#F0FDF4' }]}>
+      <View style={spotStyles.header}>
+        <MaterialIcons name="home-work" size={18} color="#059669" />
+        <Text style={[spotStyles.title, { color: '#059669' }]}>Sanctuary Quality</Text>
+      </View>
+      <View style={spotStyles.grid}>
+        <View style={spotStyles.item}>
+          <Ionicons name="water" size={20} color="#059669" />
+          <Text style={spotStyles.label}>Water Supply</Text>
+          <Text style={spotStyles.value}>
+            {property.utilities.some((u:any) => u.label === 'Constant Water') ? '24/7 Supply' : 'High Capacity Tank'}
+          </Text>
+        </View>
+        <View style={spotStyles.divider} />
+        <View style={spotStyles.item}>
+           <Ionicons name="volume-low" size={20} color="#059669" />
+           <Text style={spotStyles.label}>Noise Serenity</Text>
+           <Text style={spotStyles.value}>{property.hood.noise <= 2 ? 'Very Peaceful' : 'Urban Vibes'}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const spotStyles = StyleSheet.create({
+  card: {
+    marginVertical: 10, padding: 16, borderRadius: 24, borderWidth: 1,
+  },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
+  title: { fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  grid: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  item: { flex: 1, alignItems: 'center' },
+  divider: { width: 1, height: 40, backgroundColor: 'rgba(0,0,0,0.05)' },
+  label: { fontSize: 10, fontWeight: '600', color: '#6B7280', marginTop: 4 },
+  value: { fontSize: 12, fontWeight: '800', color: '#1A1A1A', marginTop: 2 },
+});
 
 // ─── Rent Price Insights Card ─────────────────────────────────────────────────
 function RentInsightsCard({ location, price }: { location: string; price: string }) {

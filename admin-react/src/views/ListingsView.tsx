@@ -12,9 +12,11 @@ import {
 } from 'lucide-react';
 
 const listings = [
-  { id: '#KN-001', name: 'The Summit Residency', type: 'High-Rise Apartment', location: 'Bole, Addis Ababa', sub: 'Near Edna Mall', price: '25,000', deposit: '50,000', status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=700&auto=format&fit=crop' },
-  { id: '#KN-002', name: 'Modern Garden Villa', type: 'G+2 Villa', location: 'Old Airport, Addis Ababa', sub: 'Bisrate Gabriel', price: '45,000', deposit: '90,000', status: 'PENDING', agent: 'Abebe B.', initial: 'AB', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=700&auto=format&fit=crop' },
-  { id: '#KN-003', name: 'Kazanchis Studio', type: 'Condominium Studio', location: 'Kazanchis, Addis Ababa', sub: 'Near UN Hub', price: '18,500', deposit: '37,000', status: 'VERIFIED', agent: 'Sara H.', initial: 'SH', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-001', name: 'The Summit Residency', type: '1 Bed Room', location: 'Bole, Addis Ababa', sub: 'Near Edna Mall', price: '25,000', deposit: '50,000', status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-002', name: 'Modern Garden Villa', type: '2 Bed Room', location: 'Old Airport, Addis Ababa', sub: 'Bisrate Gabriel', price: '45,000', deposit: '90,000', status: 'PENDING', agent: 'Abebe B.', initial: 'AB', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-003', name: 'Kazanchis Studio', type: 'Studio', location: 'Kazanchis, Addis Ababa', sub: 'Near UN Hub', price: '18,500', deposit: '37,000', status: 'VERIFIED', agent: 'Sara H.', initial: 'SH', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-004', name: 'Bole Road Shop', type: 'Shop', location: 'Bole Road, Addis Ababa', sub: 'Main Street', price: '85,000', deposit: '170,000', status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-005', name: 'Artisan Cafe Spot', type: 'Cafe', location: 'Sarbet, Addis Ababa', sub: 'Vibe Square', price: '35,000', deposit: '70,000', status: 'PENDING', agent: 'Sara H.', initial: 'SH', image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=700&auto=format&fit=crop' },
 ];
 
 

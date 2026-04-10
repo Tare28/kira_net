@@ -18,6 +18,20 @@ export default function ListPropertyScreen() {
   const [location, setLocation] = useState('Select Location');
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
+  const [propertyCategory, setPropertyCategory] = useState('studios');
+  const [noiseLevel, setNoiseLevel] = useState(2);
+  const [footTraffic, setFootTraffic] = useState('Medium');
+  const [parkingAvailable, setParkingAvailable] = useState('Yes');
+
+  const CATEGORIES = [
+    { key: 'studios', label: 'Studio' },
+    { key: '1bed', label: '1 Bed Room' },
+    { key: '2bed', label: '2 Bed Room' },
+    { key: 'shop', label: 'Shop' },
+    { key: 'cafe', label: 'Cafe' },
+    { key: 'restaurant', label: 'Restaurant' },
+    { key: 'other', label: 'Other' },
+  ];
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -78,6 +92,26 @@ export default function ListPropertyScreen() {
             )}
           </ScrollView>
 
+          {/* Property Category */}
+          <Text style={[styles.sectionTitle, { marginTop: 32 }]}>Property Category</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+            {CATEGORIES.map(cat => (
+              <TouchableOpacity
+                key={cat.key}
+                style={[
+                  styles.categoryOption,
+                  propertyCategory === cat.key && styles.categoryOptionActive
+                ]}
+                onPress={() => setPropertyCategory(cat.key)}
+              >
+                <Text style={[
+                  styles.categoryOptionText,
+                  propertyCategory === cat.key && styles.categoryOptionTextActive
+                ]}>{cat.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
           {/* Basic Information */}
           <Text style={[styles.sectionTitle, { marginTop: 32 }]}>Basic Information</Text>
           
@@ -114,35 +148,134 @@ export default function ListPropertyScreen() {
           </View>
 
           {/* New Structural Info Grid */}
-          <View style={styles.gridRow}>
-            <View style={styles.gridItem}>
-              <Text style={styles.inputLabel}>Bedrooms</Text>
-              <View style={styles.inputContainer}>
-                <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+          {/* Conditional Structural Info Grid */}
+          {['shop', 'cafe', 'restaurant'].includes(propertyCategory) ? (
+            <>
+              <View style={styles.gridRow}>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Frontage Width (m)</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="e.g. 5.5" keyboardType="numeric" />
+                  </View>
+                </View>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Ceiling Height (m)</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="e.g. 3.2" keyboardType="numeric" />
+                  </View>
+                </View>
               </View>
-            </View>
-            <View style={styles.gridItem}>
-              <Text style={styles.inputLabel}>Bathrooms</Text>
-              <View style={styles.inputContainer}>
-                <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
-              </View>
-            </View>
-          </View>
 
-          <View style={styles.gridRow}>
-            <View style={styles.gridItem}>
-              <Text style={styles.inputLabel}>Sq. Meters</Text>
-              <View style={styles.inputContainer}>
-                <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+              <View style={styles.gridRow}>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Total Area (sq.m)</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+                  </View>
+                </View>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Level / Floor</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="e.g. Ground" />
+                  </View>
+                </View>
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.gridRow}>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Bedrooms</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+                  </View>
+                </View>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Bathrooms</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+                  </View>
+                </View>
+              </View>
+
+              <View style={styles.gridRow}>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Sq. Meters</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="0" keyboardType="numeric" />
+                  </View>
+                </View>
+                <View style={styles.gridItem}>
+                  <Text style={styles.inputLabel}>Floor</Text>
+                  <View style={styles.inputContainer}>
+                    <TextInput style={styles.textInput} placeholder="G+1" />
+                  </View>
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* ── Content-Specific Metrics (Dynamic) ────────────────────────── */}
+          {['shop', 'cafe', 'restaurant'].includes(propertyCategory) ? (
+            <View style={styles.dynamicSection}>
+              <Text style={styles.inputLabel}>Business Suitability Spotlight</Text>
+              
+              <Text style={[styles.inputLabel, { marginTop: 8, fontSize: 11, color: '#6B7280' }]}>Customer Foot Traffic Intensity</Text>
+              <View style={styles.pillToggleFull}>
+                {['Low', 'Medium', 'High'].map(level => (
+                  <TouchableOpacity 
+                    key={level}
+                    style={[styles.pillOption, footTraffic === level && styles.pillOptionActive]}
+                    onPress={() => setFootTraffic(level)}
+                  >
+                    <Text style={[styles.pillText, footTraffic === level && styles.pillTextActive]}>{level}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={[styles.inputLabel, { marginTop: 16, fontSize: 11, color: '#6B7280' }]}>Commercial Features</Text>
+              <View style={styles.utilityCard}>
+                <View style={[styles.utilityIconWrap, { backgroundColor: '#EEF2FF' }]}>
+                  <MaterialIcons name="local-parking" size={16} color="#4F46E5" />
+                </View>
+                <View style={styles.utilityTextWrap}>
+                  <Text style={styles.utilityTitle}>On-Site Customer Parking</Text>
+                  <Text style={styles.utilitySubtitle}>Dedicated parking for business clients</Text>
+                </View>
+                <View style={styles.pillToggle}>
+                  <TouchableOpacity 
+                    style={[styles.pillOption, parkingAvailable === 'Yes' && styles.pillOptionActive]}
+                    onPress={() => setParkingAvailable('Yes')}
+                  >
+                    <Text style={[styles.pillText, parkingAvailable === 'Yes' && styles.pillTextActive]}>Yes</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={[styles.pillOption, parkingAvailable === 'No' && styles.pillOptionActive]}
+                    onPress={() => setParkingAvailable('No')}
+                  >
+                    <Text style={[styles.pillText, parkingAvailable === 'No' && styles.pillTextActive]}>No</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-            <View style={styles.gridItem}>
-              <Text style={styles.inputLabel}>Floor</Text>
-              <View style={styles.inputContainer}>
-                <TextInput style={styles.textInput} placeholder="G+1" />
+          ) : (
+            <View style={styles.dynamicSection}>
+              <Text style={styles.inputLabel}>Sanctuary Quality Spotlight</Text>
+              
+              <Text style={[styles.inputLabel, { marginTop: 8, fontSize: 11, color: '#6B7280' }]}>Neighborhood Noise Level (1 = Serene, 5 = Busy)</Text>
+              <View style={styles.pillToggleFull}>
+                {[1, 2, 3, 4, 5].map(level => (
+                  <TouchableOpacity 
+                    key={level}
+                    style={[styles.pillOption, noiseLevel === level && styles.pillOptionActive]}
+                    onPress={() => setNoiseLevel(level)}
+                  >
+                    <Text style={[styles.pillText, noiseLevel === level && styles.pillTextActive]}>{level}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
-          </View>
+          )}
 
           <Text style={styles.inputLabel}>Road Access</Text>
           <View style={styles.pillToggleFull}>
@@ -407,6 +540,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginTop: 16,
   },
+  dynamicSection: {
+    backgroundColor: '#F7F8F9',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -652,5 +793,30 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '800',
     color: '#1A1A1A',
+  },
+  categoryScroll: {
+    paddingRight: 20,
+    paddingBottom: 4,
+  },
+  categoryOption: {
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: '#FFF',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    marginRight: 10,
+  },
+  categoryOptionActive: {
+    backgroundColor: '#005C3A',
+    borderColor: '#005C3A',
+  },
+  categoryOptionText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#4A5568',
+  },
+  categoryOptionTextActive: {
+    color: '#FFF',
   },
 });

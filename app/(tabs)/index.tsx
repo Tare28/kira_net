@@ -1,13 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   StyleSheet, Dimensions, ScrollView, View, Text,
-  TextInput, TouchableOpacity, Animated,
+  TextInput, TouchableOpacity,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVisitPlan } from '@/context/VisitPlanContext';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withSpring, 
+  withRepeat,
+  withTiming,
+  interpolateColor 
+} from 'react-native-reanimated';
+
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 import { KiraColors } from '@/constants/colors';
 import { Typography } from '@/constants/typography';
@@ -26,8 +39,12 @@ import { PROPERTIES } from '@/data/properties';
 const CATEGORIES = [
   { key: 'all', label: 'All Homes' },
   { key: 'studios', label: 'Studio' },
-  { key: 'apartments', label: '1 Bedroom' },
-  { key: 'villas', label: '2 Bedrooms' },
+  { key: '1bed', label: '1 Bed Room' },
+  { key: '2bed', label: '2 Bed Room' },
+  { key: 'shop', label: 'Shop' },
+  { key: 'cafe', label: 'Cafe' },
+  { key: 'restaurant', label: 'Restaurant' },
+  { key: 'other', label: 'Other' },
 ];
 
 import { useFilters } from '@/context/FilterContext';
@@ -38,14 +55,27 @@ export default function ExploreScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const { visits } = useVisitPlan();
   const { filters, updateFilters } = useFilters();
-  const { neighborhood } = useLocalSearchParams<{ neighborhood?: string }>();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+     const timer = setTimeout(() => setIsLoading(false), 1500);
+     return () => clearTimeout(timer);
+  }, []);
+  const { neighborhood: navNeighborhood } = useLocalSearchParams<{ neighborhood?: string }>();
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const SUGGESTIONS = [
+    { label: 'Trending in Bole', icon: 'trending-up' },
+    { label: 'Quiet in Sarbet', icon: 'volume-mute' },
+    { label: 'Hot in Kazanchis', icon: 'flame' },
+  ];
 
   // Sync neighborhood from navigation params (e.g. from Areas tab)
   useEffect(() => {
-    if (neighborhood) {
-      updateFilters({ neighborhood });
+    if (navNeighborhood) {
+      updateFilters({ neighborhood: navNeighborhood });
     }
-  }, [neighborhood]);
+  }, [navNeighborhood]);
 
   const filtered = PROPERTIES.filter(p => {
     // 1. Category filter
@@ -82,48 +112,59 @@ export default function ExploreScreen() {
   });
 
   return (
-    <View style={[styles.container, { paddingTop: Math.max(insets.top, 20) }]}>
-
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          onPress={() => router.push('/boost-listing')}
-        >
-          <Feather name="zap" size={24} color={KiraColors.warning} />
-        </TouchableOpacity>
-
-        <Text style={styles.logoText}>Kira-Net</Text>
-
-        <View style={styles.headerRight}>
-          {/* Visit Planner shortcut */}
-          <TouchableOpacity
-            style={styles.plannerHeaderBtn}
-            onPress={() => router.push('/visit-planner')}
-          >
-            <MaterialCommunityIcons name="calendar-check" size={20} color={KiraColors.primary} />
-            {visits.length > 0 && (
-              <View style={styles.plannerBadge}>
-                <Text style={styles.plannerBadgeText}>{visits.length}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-
-          {/* Bell */}
+    <View style={styles.container}>
+      {/* ── Sticky Frosted Header ────────────────────────────────────────── */}
+      <BlurView intensity={80} tint="light" style={[styles.headerContainer, { paddingTop: Math.max(insets.top, 20) }]}>
+        <View style={styles.header}>
           <TouchableOpacity
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            onPress={() => router.push('/(tabs)/alerts')}
-            style={styles.bellWrap}
+            onPress={() => router.push('/boost-listing')}
           >
-            <Feather name="bell" size={24} color={KiraColors.primary} />
-            <View style={styles.notifBadge}>
-              <Text style={styles.notifBadgeText}>3</Text>
-            </View>
+            <Feather name="zap" size={24} color={KiraColors.warning} />
           </TouchableOpacity>
+
+          <Text style={styles.logoText}>Kira-Net</Text>
+
+          <View style={styles.headerRight}>
+            <TouchableOpacity
+              style={styles.plannerHeaderBtn}
+              onPress={() => router.push('/visit-planner')}
+            >
+              <MaterialCommunityIcons name="calendar-check" size={20} color={KiraColors.primary} />
+              {visits.length > 0 && (
+                <View style={styles.plannerBadge}>
+                  <Text style={styles.plannerBadgeText}>{visits.length}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              onPress={() => router.push('/(tabs)/alerts')}
+              style={styles.bellWrap}
+            >
+              <Feather name="bell" size={24} color={KiraColors.primary} />
+              <View style={styles.notifBadge}>
+                <Text style={styles.notifBadgeText}>3</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      </BlurView>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+        
+        {/* ── Mesh Gradient Background ─────────────────────────────────────── */}
+        <View style={styles.meshContainer}>
+          <LinearGradient
+            colors={['rgba(0, 92, 58, 0.05)', 'rgba(255, 255, 255, 0)']}
+            style={styles.meshBubble1}
+          />
+          <LinearGradient
+            colors={['rgba(251, 192, 45, 0.08)', 'rgba(255, 255, 255, 0)']}
+            style={styles.meshBubble2}
+          />
+        </View>
 
         {/* ── Hero ─────────────────────────────────────────────────────────── */}
         <View style={styles.titleSection}>
@@ -142,8 +183,32 @@ export default function ExploreScreen() {
               style={styles.searchInput}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
             />
           </View>
+
+          {/* Smart Suggestions */}
+          {(isSearchFocused || searchQuery.length > 0) && (
+            <View style={styles.suggestionsContainer}>
+               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                 {SUGGESTIONS.map((s, idx) => (
+                   <TouchableOpacity 
+                     key={idx} 
+                     style={styles.suggestionBadge}
+                     onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setSearchQuery(s.label.split('in ')[1]);
+                     }}
+                   >
+                     <Ionicons name={s.icon as any} size={12} color="#005C3A" style={{ marginRight: 4 }} />
+                     <Text style={styles.suggestionText}>{s.label}</Text>
+                   </TouchableOpacity>
+                 ))}
+               </ScrollView>
+            </View>
+          )}
+
           <TouchableOpacity style={styles.filterButton} onPress={() => router.push('/modal')}>
             <Feather name="sliders" size={16} color="#1A1A1A" />
             <Text style={styles.filterText}>Filter</Text>
@@ -174,7 +239,10 @@ export default function ExploreScreen() {
             <TouchableOpacity
               key={cat.key}
               style={[styles.categoryPill, activeCategory === cat.key && styles.categoryPillActive]}
-              onPress={() => setActiveCategory(cat.key)}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setActiveCategory(cat.key);
+              }}
             >
               <Text style={activeCategory === cat.key ? styles.categoryPillTextActive : styles.categoryPillText}>
                 {cat.label}
@@ -185,14 +253,23 @@ export default function ExploreScreen() {
 
         {/* ── Listings ─────────────────────────────────────────────────────── */}
         <View style={styles.listingsContainer}>
-          {filtered.map(p => (
-            <PropertyCard key={p.id} property={p} />
-          ))}
-          {filtered.length === 0 && (
-            <View style={styles.emptyState}>
-              <Feather name="home" size={40} color="#D1D5DB" />
-              <Text style={styles.emptyStateText}>No listings in this category yet.</Text>
-            </View>
+          {isLoading ? (
+             <>
+               <SkeletonCard />
+               <SkeletonCard />
+             </>
+          ) : (
+            <>
+              {filtered.map(p => (
+                <PropertyCard key={p.id} property={p} />
+              ))}
+              {filtered.length === 0 && (
+                <View style={styles.emptyState}>
+                  <Feather name="home" size={40} color="#D1D5DB" />
+                  <Text style={styles.emptyStateText}>No listings in this category yet.</Text>
+                </View>
+              )}
+            </>
           )}
         </View>
       </ScrollView>
@@ -205,15 +282,22 @@ export default function ExploreScreen() {
 function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
   const { addVisit, removeVisit, isInPlan } = useVisitPlan();
   const inPlan = isInPlan(property.id);
-  const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const color = trustColor(property.trust);
+  const isCommercial = ['shop', 'cafe', 'restaurant'].includes(property.category);
+
+  // Magnetic Button Animation
+  const isPressed = useSharedValue(1);
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withSpring(isPressed.value) }],
+  }));
 
   const handleVisit = () => {
-    Animated.sequence([
-      Animated.spring(scaleAnim, { toValue: 0.9, useNativeDriver: true }),
-      Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true }),
-    ]).start();
+    isPressed.value = 1.05;
+    setTimeout(() => { isPressed.value = 1; }, 100);
+    
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    
     if (inPlan) {
       removeVisit(property.id);
     } else {
@@ -235,7 +319,11 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
         onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
       >
         <View style={styles.imageContainer}>
-          <Image source={property.image} style={styles.cardImage} />
+          <AnimatedImage 
+            sharedTransitionTag={`image-${property.id}`}
+            source={property.image} 
+            style={styles.cardImage} 
+          />
 
           {property.badge === 'verified' && (
             <View style={styles.verifiedBadge}>
@@ -286,7 +374,42 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
           </View>
         </TouchableOpacity>
 
-        {/* Utilities */}
+        {/* Highlights Row (Content Specific) */}
+        <View style={styles.highlightsRow}>
+          {isCommercial ? (
+            <>
+              <View style={[styles.highlightItem, { backgroundColor: '#EEF2FF' }]}>
+                <MaterialCommunityIcons name="walk" size={14} color="#4F46E5" />
+                <Text style={[styles.highlightText, { color: '#4F46E5' }]}>
+                  {property.hood.tags.includes('High Foot Traffic') ? 'High Foot Traffic' : 'Moderate Traffic'}
+                </Text>
+              </View>
+              {property.utils.includes('Parking') && (
+                <View style={[styles.highlightItem, { backgroundColor: '#FFF7ED' }]}>
+                  <MaterialIcons name="local-parking" size={14} color="#EA580C" />
+                  <Text style={[styles.highlightText, { color: '#EA580C' }]}>Customer Parking</Text>
+                </View>
+              )}
+            </>
+          ) : (
+            <>
+              <View style={[styles.highlightItem, { backgroundColor: '#F0F9FF' }]}>
+                <Ionicons name="water" size={12} color="#0284C7" />
+                <Text style={[styles.highlightText, { color: '#0284C7' }]}>
+                  {property.utils.includes('Constant Water') ? '24/7 Water' : 'Storage Tank'}
+                </Text>
+              </View>
+              <View style={[styles.highlightItem, { backgroundColor: '#FDF2F8' }]}>
+                <Ionicons name="volume-low" size={12} color="#DB2777" />
+                <Text style={[styles.highlightText, { color: '#DB2777' }]}>
+                  {property.hood.noise <= 2 ? 'Serene & Quiet' : 'Lively Area'}
+                </Text>
+              </View>
+            </>
+          )}
+        </View>
+
+        {/* Utilities Row - Secondary */}
         <View style={styles.utilsRow}>
           <View style={styles.utilItem}>
             <Ionicons name="water" size={12} color={KiraColors.primary} />
@@ -348,10 +471,12 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
             <Feather name="arrow-right" size={14} color="#FFF" />
           </TouchableOpacity>
 
-          <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+          <Animated.View style={animatedStyle}>
             <TouchableOpacity
               style={[styles.planBtn, inPlan && styles.planBtnActive]}
               onPress={handleVisit}
+              onPressIn={() => { isPressed.value = 1.05; }}
+              onPressOut={() => { isPressed.value = 1; }}
             >
               <MaterialCommunityIcons
                 name={inPlan ? 'calendar-check' : 'calendar-plus'}
@@ -366,6 +491,33 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
         </View>
       </View>
     </View>
+  );
+}
+
+// ─── Skeleton Card ─────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  const opacity = useSharedValue(0.3);
+  
+  useEffect(() => {
+    opacity.value = withRepeat(withTiming(0.7, { duration: 800 }), -1, true);
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  return (
+    <Animated.View style={[styles.card, animatedStyle]}>
+      <View style={[styles.imageContainer, { backgroundColor: '#E5E7EB' }]} />
+      <View style={[styles.cardInfo, { height: 120 }]}>
+        <View style={{ height: 20, width: '70%', backgroundColor: '#E5E7EB', borderRadius: 4, marginBottom: 10 }} />
+        <View style={{ height: 14, width: '40%', backgroundColor: '#E5E7EB', borderRadius: 4, marginBottom: 20 }} />
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <View style={{ height: 32, width: 100, backgroundColor: '#E5E7EB', borderRadius: 10 }} />
+          <View style={{ height: 32, flex: 1, backgroundColor: '#E5E7EB', borderRadius: 10 }} />
+        </View>
+      </View>
+    </Animated.View>
   );
 }
 
@@ -397,7 +549,21 @@ const styles = StyleSheet.create({
   },
   notifBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
 
-  scrollContent: { paddingBottom: 90 },
+  headerContainer: {
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.03)',
+  },
+  meshContainer: {
+    position: 'absolute', top: 0, left: 0, right: 0, height: 400, overflow: 'hidden', zIndex: -1,
+  },
+  meshBubble1: {
+    position: 'absolute', top: -100, left: -50, width: 300, height: 300, borderRadius: 150,
+  },
+  meshBubble2: {
+    position: 'absolute', top: 50, right: -80, width: 350, height: 350, borderRadius: 175,
+  },
+
+  scrollContent: { paddingBottom: 100, paddingTop: 100 },
 
   // Hero
   titleSection: { paddingHorizontal: 20, marginBottom: 24 },
@@ -439,6 +605,15 @@ const styles = StyleSheet.create({
   },
   plannerStripText: { flex: 1, fontSize: 13, fontWeight: '700', color: '#FFF' },
 
+  // Smart Suggestions
+  suggestionsContainer: { marginBottom: 16, paddingLeft: 4 },
+  suggestionBadge: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9',
+    paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, marginRight: 8,
+    borderWidth: 1, borderColor: '#C8E6C9',
+  },
+  suggestionText: { fontSize: 11, fontWeight: '700', color: '#005C3A' },
+
   // Categories
   categoriesRow: { paddingHorizontal: 20, marginBottom: 24 },
   categoryPill: {
@@ -452,9 +627,9 @@ const styles = StyleSheet.create({
   // Listings
   listingsContainer: { paddingHorizontal: 20 },
   card: {
-    marginBottom: 32, backgroundColor: KiraColors.surface, borderRadius: 24,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06, shadowRadius: 16, elevation: 3,
+    marginBottom: 32, backgroundColor: KiraColors.surface, borderRadius: 32,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.04, shadowRadius: 24, elevation: 4,
     overflow: 'hidden',
   },
 
@@ -504,6 +679,14 @@ const styles = StyleSheet.create({
   utilsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   utilItem: { flexDirection: 'row', alignItems: 'center', marginRight: 14 },
   utilText: { fontSize: 11, color: '#4A5568', fontWeight: '500', marginLeft: 4 },
+
+  // Highlights
+  highlightsRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  highlightItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
+  },
+  highlightText: { fontSize: 10, fontWeight: '700' },
 
   // Neighborhood Tags
   hoodTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 14 },
