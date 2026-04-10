@@ -92,7 +92,7 @@ export default function RootLayout() {
                         style={StyleSheet.absoluteFill}
                         contentFit="cover"
                       />
-                      <BlurView intensity={20} tint="dark" style={StyleSheet.absoluteFill} />
+                      <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.4)' }]} />
                       
                       <View style={styles.splashContent}>
                          <Animated.View entering={SlideInDown.delay(300).springify()}>

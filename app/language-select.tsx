@@ -156,7 +156,7 @@ function LanguageCircle({ lang, isSelected, onSelect, index }: any) {
 
         <Animated.View style={[styles.circle, containerStyle]}>
           {isSelected && (
-            <BlurView intensity={30} tint="light" style={StyleSheet.absoluteFill} />
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
           )}
           <Text style={styles.flagIcon}>{lang.flag}</Text>
           <Text style={[styles.nativeLabel, isSelected && { color: '#FFF' }]}>{lang.native}</Text>
