@@ -9,6 +9,7 @@ import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useVisitPlan } from '@/context/VisitPlanContext';
+import { KiraColors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -398,7 +399,7 @@ const styles = StyleSheet.create({
   mapHeaderSub: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   
   customMarker: {
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     width: 28, height: 28,
     borderRadius: 14,
     borderWidth: 3, borderColor: '#FFF',
@@ -406,7 +407,7 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2, shadowRadius: 4,
   },
-  markerText: { color: '#FFF', fontSize: 12, fontWeight: '900' },
+  markerText: { color: '#1A1A1A', fontSize: 12, fontWeight: '900' },
 
   mapFooter: {
     position: 'absolute',
@@ -425,13 +426,13 @@ const styles = StyleSheet.create({
   footerSep: { width: 1, height: 30, backgroundColor: '#E5E7EB' },
   startNavBtn: {
     flexDirection: 'row',
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     paddingVertical: 16,
     borderRadius: 16,
     justifyContent: 'center', alignItems: 'center',
     gap: 10,
   },
-  startNavText: { color: '#FFF', fontSize: 14, fontWeight: '800' },
+  startNavText: { color: '#1A1A1A', fontSize: 14, fontWeight: '800' },
 
   summaryBanner: {
     flexDirection: 'row', alignItems: 'center',
@@ -464,9 +465,9 @@ const styles = StyleSheet.create({
   stepCol: { width: 36, alignItems: 'center', paddingTop: 16 },
   stepCircle: {
     width: 28, height: 28, borderRadius: 14,
-    backgroundColor: '#005C3A', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: KiraColors.primary, justifyContent: 'center', alignItems: 'center',
   },
-  stepNum: { fontSize: 12, fontWeight: '900', color: '#FFF' },
+  stepNum: { fontSize: 12, fontWeight: '900', color: '#1A1A1A' },
   stepLine: { width: 2, flex: 1, backgroundColor: '#D1FAE5', marginTop: 6, marginBottom: -8 },
 
   card: {
@@ -511,9 +512,9 @@ const styles = StyleSheet.create({
     borderRadius: 20, borderWidth: 1, borderColor: '#E5E7EB',
     marginRight: 8, backgroundColor: '#F7F8F9',
   },
-  timeSlotActive: { backgroundColor: '#005C3A', borderColor: '#005C3A' },
+  timeSlotActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   timeSlotText: { fontSize: 12, fontWeight: '700', color: '#1A1A1A' },
-  timeSlotTextActive: { color: '#FFF' },
+  timeSlotTextActive: { color: '#1A1A1A' },
 
   // Map CTA
   mapBtn: {
@@ -555,7 +556,7 @@ const styles = StyleSheet.create({
   emptyBody: { fontSize: 14, color: '#4A5568', lineHeight: 22, textAlign: 'center', marginBottom: 32 },
   exploreCta: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    backgroundColor: '#005C3A', paddingVertical: 14, paddingHorizontal: 28, borderRadius: 20,
+    backgroundColor: KiraColors.primary, paddingVertical: 14, paddingHorizontal: 28, borderRadius: 20,
   },
-  exploreCtaText: { fontSize: 14, fontWeight: '800', color: '#FFF' },
+  exploreCtaText: { fontSize: 14, fontWeight: '800', color: '#1A1A1A' },
 });

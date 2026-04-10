@@ -14,7 +14,9 @@ import {
   Menu,
   X,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Layers,
+  Zap
 } from 'lucide-react';
 
 // Import Views
@@ -25,6 +27,8 @@ import PaymentsView from './views/PaymentsView';
 import AgentsView from './views/AgentsView';
 import SettingsView from './views/SettingsView';
 import ReportsView from './views/ReportsView';
+import SystemMetadataView from './views/SystemMetadataView';
+import BoostView from './views/BoostView';
 
 const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -42,13 +46,15 @@ const App: React.FC = () => {
     const renderView = () => {
         switch (activeTab) {
             case 'dashboard': return <DashboardView onNavigate={setActiveTab} />;
-            case 'listings': return <ListingsView onNavigate={setActiveTab} />;
-            case 'users': return <UsersView onNavigate={setActiveTab} />;
-            case 'payments': return <PaymentsView onNavigate={setActiveTab} />;
-            case 'agents': return <AgentsView onNavigate={setActiveTab} />;
-            case 'settings': return <SettingsView onNavigate={setActiveTab} />;
-            case 'reports': return <ReportsView onNavigate={setActiveTab} />;
-            default: return <DashboardView onNavigate={setActiveTab} />;
+            case 'listings':  return <ListingsView onNavigate={setActiveTab} />;
+            case 'users':     return <UsersView onNavigate={setActiveTab} />;
+            case 'payments':  return <PaymentsView onNavigate={setActiveTab} />;
+            case 'agents':    return <AgentsView onNavigate={setActiveTab} />;
+            case 'settings':  return <SettingsView onNavigate={setActiveTab} />;
+            case 'reports':   return <ReportsView onNavigate={setActiveTab} />;
+            case 'metadata':  return <SystemMetadataView />;
+            case 'boost':     return <BoostView />;
+            default:          return <DashboardView onNavigate={setActiveTab} />;
         }
     };
 
@@ -97,6 +103,14 @@ const App: React.FC = () => {
                     <button className={`nav-link ${activeTab === 'agents' ? 'active' : ''}`} onClick={() => handleTabChange('agents')}>
                         <ShieldCheck size={20} />
                         <span>Agents</span>
+                    </button>
+                    <button className={`nav-link ${activeTab === 'metadata' ? 'active' : ''}`} onClick={() => handleTabChange('metadata')}>
+                        <Layers size={20} />
+                        <span>Metadata</span>
+                    </button>
+                    <button className={`nav-link ${activeTab === 'boost' ? 'active' : ''}`} onClick={() => handleTabChange('boost')}>
+                        <Zap size={20} />
+                        <span>Boost Mgmt</span>
                     </button>
                     <button className={`nav-link ${activeTab === 'settings' ? 'active' : ''}`} style={{ marginTop: 'auto' }} onClick={() => handleTabChange('settings')}>
                         <Settings size={20} />

@@ -8,35 +8,39 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KiraColors } from '@/constants/colors';
+import { PROPERTIES } from '@/data/properties';
 
 const { width } = Dimensions.get('window');
+
+const getCount = (name: string) => 
+  PROPERTIES.filter(p => p.location.toLowerCase().includes(name.toLowerCase())).length;
 
 const FEATURED = [
   { 
     id: 'bole', 
     name: 'Bole Hub', 
-    listings: 452, 
+    listings: getCount('Bole'), 
     image: 'https://images.unsplash.com/photo-1548345680-f54753509161?q=80&w=700&auto=format&fit=crop', 
     vibe: 'Premium',
-    color: '#005C3A'
+    color: '#9CC942'
   },
   { 
     id: 'kazanchis', 
     name: 'Kazanchis Hub', 
-    listings: 284, 
+    listings: getCount('Kazanchis'), 
     image: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?q=80&w=700&auto=format&fit=crop', 
     vibe: 'Diplomatic',
-    color: '#005C3A'
+    color: '#9CC942'
   },
 ];
 
 const LOCATIONS = [
-  { id: 'old-airport', name: 'Old Airport', listings: 156, icon: 'shield-checkmark', color: '#3B82F6' },
-  { id: 'megenagna', name: 'Megenagna', listings: 320, icon: 'bus', color: '#F59E0B' },
-  { id: 'sarbet', name: 'Sarbet', listings: 198, icon: 'leaf', color: '#10B981' },
-  { id: 'piazza', name: 'Piazza', listings: 215, icon: 'brush', color: '#8B5CF6' },
-  { id: 'cmc', name: 'CMC', listings: 182, icon: 'home', color: '#EF4444' },
-  { id: 'ayat', name: 'Ayat', listings: 145, icon: 'business', color: '#EC4899' },
+  { id: 'old-airport', name: 'Old Airport', listings: getCount('Old Airport'), icon: 'shield-checkmark', color: '#3B82F6' },
+  { id: 'megenagna', name: 'Megenagna', listings: getCount('Megenagna'), icon: 'bus', color: '#F59E0B' },
+  { id: 'sarbet', name: 'Sarbet', listings: getCount('Sarbet'), icon: 'leaf', color: '#10B981' },
+  { id: 'piazza', name: 'Piazza', listings: getCount('Piazza'), icon: 'brush', color: '#8B5CF6' },
+  { id: 'cmc', name: 'CMC', listings: getCount('CMC'), icon: 'home', color: '#EF4444' },
+  { id: 'ayat', name: 'Ayat', listings: getCount('Ayat'), icon: 'business', color: '#EC4899' },
 ];
 
 export default function LocationsScreen() {
@@ -111,7 +115,7 @@ export default function LocationsScreen() {
                 </TouchableOpacity>
             ))}
             {/* Added a few more for better scroll demo */}
-            <TouchableOpacity style={styles.circleHub} onPress={() => router.push({ pathname: '/(tabs)', params: { neighborhood: 'Piazza' } })}>
+            <TouchableOpacity style={styles.circleHub} onPress={() => router.push({ pathname: '/(tabs)', params: { neighborhood: '' } })}>
                 <View style={[styles.circleImageContainer, { backgroundColor: '#F3F4F6' }]}>
                     <Ionicons name="add" size={24} color="#CBD5E1" />
                 </View>
@@ -145,7 +149,10 @@ export default function LocationsScreen() {
         </View>
 
         {/* Promotional Banner */}
-        <TouchableOpacity style={styles.promoBanner}>
+        <TouchableOpacity 
+          style={styles.promoBanner}
+          onPress={() => router.push('/list-property')}
+        >
             <View style={styles.promoContent}>
                 <Text style={styles.promoTitle}>Can't find your area?</Text>
                 <Text style={styles.promoSub}>Request a neighborhood expansion from our fleet team.</Text>

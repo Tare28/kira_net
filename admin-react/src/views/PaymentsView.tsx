@@ -23,7 +23,7 @@ const PaymentsView: React.FC<PaymentsProps> = () => {
     <section>
         <div className="view-header">
             <div className="view-title">
-                <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Fiscal Ledger</p>
+                <p style={{ fontWeight: 800, color: '#9CC942', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Fiscal Ledger</p>
                 <h1>Revenue Center.<br/><span style={{ opacity: 0.1 }}>Platform Economics.</span></h1>
             </div>
             <div style={{ background: 'white', padding: '12px 24px', borderRadius: '16px', border: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', gap: '12px', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
@@ -36,7 +36,7 @@ const PaymentsView: React.FC<PaymentsProps> = () => {
             <div className="stat-card-white">
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div className="stat-icon"><BarChart3 size={24}/></div>
-                    <span style={{ fontSize: '11px', fontWeight: 900, color: '#10B981', background: '#D1FAE5', padding: '4px 10px', borderRadius: '100px', height: 'fit-content' }}>+12%</span>
+                    <span style={{ fontSize: '11px', fontWeight: 900, color: '#9CC942', background: '#F4F9EB', padding: '4px 10px', borderRadius: '100px', height: 'fit-content' }}>+12%</span>
                 </div>
                 <div className="stat-info">
                     <h5>TOTAL REVENUE</h5>
@@ -81,7 +81,7 @@ const PaymentsView: React.FC<PaymentsProps> = () => {
                 <tbody>
                     {transactions.map((trx, idx) => (
                         <tr key={idx}>
-                            <td style={{ fontWeight: 800, color: '#10B981', fontSize: '13px' }}>{trx.id}</td>
+                            <td style={{ fontWeight: 800, color: '#9CC942', fontSize: '13px' }}>{trx.id}</td>
                             <td>
                                 <strong style={{ display: 'block', fontSize: '14px', marginBottom: '2px' }}>{trx.user}</strong>
                                 <span style={{ fontSize: '11px', fontWeight: 700, color: '#64748B', textTransform: 'uppercase' }}>{trx.role}</span>
@@ -100,7 +100,7 @@ const PaymentsView: React.FC<PaymentsProps> = () => {
                             <td>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <strong style={{ fontSize: '15px', color: '#0F172A' }}>ETB {trx.amount}</strong>
-                                    {trx.status === 'SUCCESS' ? <ArrowUpRight size={14} color="#10B981"/> : <ArrowDownRight size={14} color={trx.status === 'FAILED' ? '#EF4444' : '#F59E0B'}/>}
+                                    {trx.status === 'SUCCESS' ? <ArrowUpRight size={14} color="#9CC942"/> : <ArrowDownRight size={14} color={trx.status === 'FAILED' ? '#EF4444' : '#F59E0B'}/>}
                                 </div>
                             </td>
                             <td style={{ fontSize: '13px', fontWeight: 800, color: '#64748B' }}>{trx.method}</td>
@@ -111,9 +111,9 @@ const PaymentsView: React.FC<PaymentsProps> = () => {
                                     gap: '8px', 
                                     fontSize: '11px', 
                                     fontWeight: 900,
-                                    color: trx.status === 'SUCCESS' ? '#10B981' : trx.status === 'FAILED' ? '#EF4444' : '#F59E0B'
+                                    color: trx.status === 'SUCCESS' ? '#9CC942' : trx.status === 'FAILED' ? '#EF4444' : '#F59E0B'
                                 }}>
-                                    <div style={{ width: '8px', height: '8px', background: trx.status === 'SUCCESS' ? '#10B981' : trx.status === 'FAILED' ? '#EF4444' : '#F59E0B', borderRadius: '50%' }}></div>
+                                    <div style={{ width: '8px', height: '8px', background: trx.status === 'SUCCESS' ? '#9CC942' : trx.status === 'FAILED' ? '#EF4444' : '#F59E0B', borderRadius: '50%' }}></div>
                                     {trx.status}
                                 </span>
                             </td>

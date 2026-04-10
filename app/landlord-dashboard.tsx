@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 const MY_PROPERTIES = [
   {
@@ -13,7 +14,7 @@ const MY_PROPERTIES = [
     price: '25,000',
     image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=400&auto=format&fit=crop',
     status: 'Boosted',
-    statusColor: '#005C3A',
+    statusColor: '#9CC942',
     statusBg: '#E8F5E9',
     views: 248,
     inquiries: 12,
@@ -82,19 +83,19 @@ export default function LandlordDashboardScreen() {
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Feather name="eye" size={18} color="#005C3A" />
+            <Feather name="eye" size={18} color="#9CC942" />
             <Text style={styles.statValue}>{totalViews}</Text>
             <Text style={styles.statLabel}>Total Views</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCard}>
-            <Feather name="message-circle" size={18} color="#005C3A" />
+            <Feather name="message-circle" size={18} color="#9CC942" />
             <Text style={styles.statValue}>{totalInquiries}</Text>
             <Text style={styles.statLabel}>Inquiries</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statCard}>
-            <Feather name="home" size={18} color="#005C3A" />
+            <Feather name="home" size={18} color="#9CC942" />
             <Text style={styles.statValue}>{MY_PROPERTIES.length}</Text>
             <Text style={styles.statLabel}>Listings</Text>
           </View>
@@ -152,8 +153,8 @@ export default function LandlordDashboardScreen() {
                 </View>
                 {property.daysLeft && (
                   <View style={styles.metric}>
-                    <Feather name="zap" size={12} color="#005C3A" />
-                    <Text style={[styles.metricText, { color: '#005C3A', fontWeight: '700' }]}>
+                    <Feather name="zap" size={12} color="#9CC942" />
+                    <Text style={[styles.metricText, { color: '#9CC942', fontWeight: '700' }]}>
                       {property.daysLeft}d boost left
                     </Text>
                   </View>
@@ -166,21 +167,21 @@ export default function LandlordDashboardScreen() {
                   style={styles.actionBtnOutline}
                   onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
                 >
-                  <Feather name="eye" size={14} color="#005C3A" />
+                  <Feather name="eye" size={14} color="#9CC942" />
                   <Text style={styles.actionBtnOutlineText}>View</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnOutline}
                   onPress={() => router.push('/boost-listing')}
                 >
-                  <Feather name="zap" size={14} color="#005C3A" />
+                  <Feather name="zap" size={14} color="#9CC942" />
                   <Text style={styles.actionBtnOutlineText}>Boost</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.actionBtnOutline}
                   onPress={() => router.push('/chat')}
                 >
-                  <Feather name="message-circle" size={14} color="#005C3A" />
+                  <Feather name="message-circle" size={14} color="#9CC942" />
                   <Text style={styles.actionBtnOutlineText}>Chat</Text>
                 </TouchableOpacity>
               </View>
@@ -191,10 +192,10 @@ export default function LandlordDashboardScreen() {
         {/* Add New CTA */}
         <TouchableOpacity style={styles.addPropertyCard} onPress={() => router.push('/list-property')}>
           <View style={styles.addPropertyIcon}>
-            <Feather name="plus" size={24} color="#005C3A" />
+            <Feather name="plus" size={24} color="#9CC942" />
           </View>
           <Text style={styles.addPropertyText}>Post a New Property</Text>
-          <Feather name="chevron-right" size={18} color="#005C3A" />
+          <Feather name="chevron-right" size={18} color="#9CC942" />
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
@@ -213,7 +214,7 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 16, fontWeight: '800', color: '#1A1A1A' },
   addBtn: {
     width: 34, height: 34, borderRadius: 17,
-    backgroundColor: '#005C3A', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: KiraColors.primary, justifyContent: 'center', alignItems: 'center',
   },
   scrollContent: { padding: 20 },
   statsRow: {
@@ -231,9 +232,9 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: 10, alignItems: 'center',
     backgroundColor: '#F3F4F6', borderRadius: 12, marginHorizontal: 4,
   },
-  tabActive: { backgroundColor: '#005C3A' },
+  tabActive: { backgroundColor: KiraColors.primary },
   tabText: { fontSize: 13, fontWeight: '600', color: '#4A5568' },
-  tabTextActive: { color: '#FFF', fontWeight: '800' },
+  tabTextActive: { color: '#1A1A1A', fontWeight: '800' },
   sectionLabel: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginBottom: 16 },
   propertyCard: {
     backgroundColor: '#FFF', borderRadius: 20, marginBottom: 16,
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
   locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   cardLocation: { fontSize: 12, color: '#4A5568', marginLeft: 3 },
-  cardPrice: { fontSize: 16, fontWeight: '900', color: '#005C3A', marginBottom: 12 },
+  cardPrice: { fontSize: 16, fontWeight: '900', color: '#9CC942', marginBottom: 12 },
   cardPriceMonth: { fontSize: 11, fontWeight: '500', color: '#6B7280' },
   metricsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 14 },
   metric: { flexDirection: 'row', alignItems: 'center', marginRight: 16 },
@@ -262,10 +263,10 @@ const styles = StyleSheet.create({
   actionsRow: { flexDirection: 'row' },
   actionBtnOutline: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: '#005C3A', borderRadius: 10,
+    borderWidth: 1.5, borderColor: '#9CC942', borderRadius: 10,
     paddingVertical: 10, marginHorizontal: 3,
   },
-  actionBtnOutlineText: { fontSize: 12, fontWeight: '700', color: '#005C3A', marginLeft: 5 },
+  actionBtnOutlineText: { fontSize: 12, fontWeight: '700', color: '#9CC942', marginLeft: 5 },
   addPropertyCard: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#E8F5E9', borderRadius: 20, padding: 20,
@@ -276,5 +277,5 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 22,
     backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', marginRight: 14,
   },
-  addPropertyText: { flex: 1, fontSize: 14, fontWeight: '700', color: '#005C3A' },
+  addPropertyText: { flex: 1, fontSize: 14, fontWeight: '700', color: '#9CC942' },
 });

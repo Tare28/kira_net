@@ -1,0 +1,105 @@
+{
+  "common": {
+    "appName": "ኪራ-ኔት",
+    "tagline": "ቤቶች በአዲስ አበባ",
+    "search": "ፈልግ",
+    "filter": "አጣራ",
+    "save": "አስቀምጥ",
+    "saved": "የተቀመጡ",
+    "cancel": "ሰርዝ",
+    "confirm": "አረጋግጥ",
+    "back": "ተመለስ",
+    "loading": "በመጫን ላይ...",
+    "noResults": "በዚህ ምድብ ምንም ቤቶች አልተገኙም።",
+    "perMonth": "በወር",
+    "etb": "ብር",
+    "verified": "የተረጋገጠ",
+    "hotDeal": "ትልቅ ቅናሽ"
+  },
+  "tabs": {
+    "home": "ዋና ገፅ",
+    "areas": "አካባቢዎች",
+    "saved": "የተቀመጡ",
+    "profile": "መለያ"
+  },
+  "explore": {
+    "headline1": "ቤትህን",
+    "headline2": "ፈልግ",
+    "headline3": "በአዲስ አበባ።",
+    "searchPlaceholder": "በአካባቢ ወይም ስም ፈልግ",
+    "viewDetails": "ዝርዝር ይመልከቱ",
+    "planVisit": "ጉብኝት አቅድ",
+    "inPlan": "በዕቅድ ውስጥ",
+    "boost": "ሁን ላይ",
+    "getMoreLeads": "10 እጥፍ ደምበኞች ያግኙ",
+    "boostSubtitle": "ዝርዝርዎን ወደ ላይ ይላኩ"
+  },
+  "categories": {
+    "all": "ሁሉም ቤቶች",
+    "studios": "ስቱዲዮ",
+    "1bed": "1 መኝታ ቤት",
+    "2bed": "2 መኝታ ቤቶች",
+    "shop": "ሱቅ",
+    "cafe": "ካፌ",
+    "restaurant": "ሬስቶራንት",
+    "other": "ሌላ"
+  },
+  "saved": {
+    "title": "ተወዳጆቼ",
+    "emptyTitle": "የተቀመጡ ቤቶች የሉም",
+    "emptySubtitle": "♡ ን ጠቅ አድርጉ ቤቶችን ለማስቀመጥ።",
+    "exploreBtn": "ቤቶችን ይፈልጉ",
+    "findMoreTitle": "ሌሎች ቤቶች ያግኙ",
+    "findMoreSubtitle": "ከዓይነቶቼ ጋር የሚጣጥሙ ሌሎች ቤቶችን ይፈልጉ።",
+    "seeRecommendations": "ምክሮችን ይመልከቱ"
+  },
+  "visitPlanner": {
+    "title": "የጉብኝት ዕቅድ",
+    "subtitle": "ዛሬ ሊጎበኟቸው ያሰቡትን ቤቶች አቅዱ",
+    "mapView": "ካርታ",
+    "listView": "ዝርዝር"
+  },
+  "propertyDetails": {
+    "keyInfo": "ዋና መረጃ",
+    "utilities": "አገልግሎቶች",
+    "neighborhood": "አካባቢ",
+    "trustScore": "የአመኔታ ደረጃ",
+    "agent": "ወኪል",
+    "bookVisit": "ጉብኝት ያቅዱ",
+    "chat": "ከወኪሉ ጋር ይነጋገሩ",
+    "reportListing": "ሪፖርት አድርጉ",
+    "signAgreement": "ውል ይፈርሙ"
+  },
+  "onboarding": {
+    "slide1Title": "ቤትዎን ያግኙ",
+    "slide1Subtitle": "በአዲስ አበባ ምርጥ አካባቢዎች የተረጋገጡ ቤቶችን ይፈልጉ።",
+    "slide2Title": "የአካባቢ ደረጃ",
+    "slide2Subtitle": "ከመጎብኘትዎ በፊት የደህንነት፣ ጫጫታ እና አገልግሎት ደረጃዎችን ይመልከቱ።",
+    "slide3Title": "ዲጂታልባቸው ያቅዱ",
+    "slide3Subtitle": "ጉብኝቶች ያቅዱ፣ ውሎችን ይፈርሙ፣ ሁሉንም ነገር ከዚሁ ፍጃቹ ያስተዳድሩ።",
+    "getStarted": "ጀምር",
+    "next": "ቀጥል",
+    "skip": "ዝለል"
+  },
+  "auth": {
+    "login": "ግባ",
+    "signup": "ተመዝገቡ",
+    "email": "ኢሜይል",
+    "password": "የይለፍ ቃል",
+    "phone": "ስልክ ቁጥር",
+    "forgotPassword": "የይለፍ ቃል ረሳህ?",
+    "noAccount": "መለያ የለህም?",
+    "haveAccount": "መለያ አለህ?"
+  },
+  "listProperty": {
+    "title": "ቤት ለኪራ ለጥፍ",
+    "subtitle": "ዝርዝሩን ሞላ ቤቱን ለማስታወቅ",
+    "propertyTitle": "የቤቱ ስም",
+    "location": "አካባቢ / ሰፈር",
+    "price": "ወርሃዊ ኪራይ (ብር)",
+    "deposit": "የዋስ ብር (ብር)",
+    "category": "የቤቱ አይነት",
+    "utilities": "አገልግሎቶች",
+    "submit": "ለጥፍ"
+  }
+}

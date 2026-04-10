@@ -1,0 +1,105 @@
+{
+  "common": {
+    "appName": "Kira-Net",
+    "tagline": "Properties in Addis",
+    "search": "Search",
+    "filter": "Filter",
+    "save": "Save",
+    "saved": "Saved",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "back": "Back",
+    "loading": "Loading...",
+    "noResults": "No listings in this category yet.",
+    "perMonth": "Per Month",
+    "etb": "ETB",
+    "verified": "VERIFIED",
+    "hotDeal": "HOT DEAL"
+  },
+  "tabs": {
+    "home": "Home",
+    "areas": "Areas",
+    "saved": "Saved",
+    "profile": "Profile"
+  },
+  "explore": {
+    "headline1": "Find your",
+    "headline2": "sanctuary",
+    "headline3": "in Addis.",
+    "searchPlaceholder": "Search by location or name",
+    "viewDetails": "View Details",
+    "planVisit": "Plan Visit",
+    "inPlan": "In Plan",
+    "boost": "Boost",
+    "getMoreLeads": "Get 10x More Leads",
+    "boostSubtitle": "Push your listing to the top of results"
+  },
+  "categories": {
+    "all": "All Homes",
+    "studios": "Studio",
+    "1bed": "1 Bed Room",
+    "2bed": "2 Bed Room",
+    "shop": "Shop",
+    "cafe": "Cafe",
+    "restaurant": "Restaurant",
+    "other": "Other"
+  },
+  "saved": {
+    "title": "Your Favorites",
+    "emptyTitle": "No saved properties yet",
+    "emptySubtitle": "Tap the ♡ on any listing to save it here for later.",
+    "exploreBtn": "Explore Listings",
+    "findMoreTitle": "Find more gems",
+    "findMoreSubtitle": "Based on your favorites, explore more listings that match your style.",
+    "seeRecommendations": "See Recommendations"
+  },
+  "visitPlanner": {
+    "title": "Visit Planner",
+    "subtitle": "Plan your property visits for the day",
+    "mapView": "Map View",
+    "listView": "List View"
+  },
+  "propertyDetails": {
+    "keyInfo": "Key Information",
+    "utilities": "Utilities",
+    "neighborhood": "Neighborhood",
+    "trustScore": "Trust Score",
+    "agent": "Agent",
+    "bookVisit": "Book a Visit",
+    "chat": "Chat with Agent",
+    "reportListing": "Report Listing",
+    "signAgreement": "Sign Agreement"
+  },
+  "onboarding": {
+    "slide1Title": "Find Your Perfect Home",
+    "slide1Subtitle": "Browse verified rentals across Addis Ababa's best neighborhoods.",
+    "slide2Title": "Smart Neighborhood Scores",
+    "slide2Subtitle": "See safety, noise, and utility ratings before you visit.",
+    "slide3Title": "Plan & Sign Digitally",
+    "slide3Subtitle": "Schedule visits, sign rental agreements, and manage everything in-app.",
+    "getStarted": "Get Started",
+    "next": "Next",
+    "skip": "Skip"
+  },
+  "auth": {
+    "login": "Log In",
+    "signup": "Sign Up",
+    "email": "Email Address",
+    "password": "Password",
+    "phone": "Phone Number",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?"
+  },
+  "listProperty": {
+    "title": "List a Property",
+    "subtitle": "Fill in the details to post your rental",
+    "propertyTitle": "Property Title",
+    "location": "Location / Area",
+    "price": "Monthly Rent (ETB)",
+    "deposit": "Security Deposit (ETB)",
+    "category": "Property Category",
+    "utilities": "Utilities Included",
+    "submit": "Submit Listing"
+  }
+}

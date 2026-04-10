@@ -8,6 +8,7 @@ import {
   Feather, Ionicons, MaterialIcons, MaterialCommunityIcons,
 } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -416,7 +417,7 @@ function StoredAgreements({ agreements }: { agreements: typeof PAST_AGREEMENTS }
         <TouchableOpacity key={ag.id} style={styles.storedCard} activeOpacity={0.88}>
           <View style={styles.storedTop}>
             <View style={styles.storedIconBox}>
-              <MaterialCommunityIcons name="file-document" size={22} color="#005C3A" />
+              <MaterialCommunityIcons name="file-document" size={22} color="#9CC942" />
             </View>
             <View style={{ flex: 1, marginLeft: 14 }}>
               <Text style={styles.storedProperty}>{ag.property}</Text>
@@ -433,7 +434,7 @@ function StoredAgreements({ agreements }: { agreements: typeof PAST_AGREEMENTS }
             <Text style={styles.storedRent}>{ag.rent} ETB/mo</Text>
             <Text style={styles.storedDate}>Created {ag.date}</Text>
             <TouchableOpacity style={styles.downloadBtn}>
-              <Feather name="download" size={13} color="#005C3A" />
+              <Feather name="download" size={13} color="#9CC942" />
               <Text style={styles.downloadText}>PDF</Text>
             </TouchableOpacity>
           </View>
@@ -474,7 +475,7 @@ const styles = StyleSheet.create({
   },
   tabActive: { backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
   tabText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
-  tabTextActive: { color: '#005C3A', fontWeight: '800' },
+  tabTextActive: { color: '#9CC942', fontWeight: '800' },
 
   scrollContent: { paddingHorizontal: 20, paddingTop: 4 },
 
@@ -500,7 +501,7 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18,
     backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center',
   },
-  partyRole: { fontSize: 9, fontWeight: '800', color: '#005C3A', letterSpacing: 0.8, marginBottom: 4 },
+  partyRole: { fontSize: 9, fontWeight: '800', color: '#9CC942', letterSpacing: 0.8, marginBottom: 4 },
   partyInput: { fontSize: 15, fontWeight: '700', color: '#1A1A1A', padding: 0 },
   partySep: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 14 },
 
@@ -514,7 +515,7 @@ const styles = StyleSheet.create({
     width: 24, height: 24, borderRadius: 12, backgroundColor: '#E8F5E9',
     justifyContent: 'center', alignItems: 'center', marginRight: 10,
   },
-  clauseNum: { fontSize: 11, fontWeight: '900', color: '#005C3A' },
+  clauseNum: { fontSize: 11, fontWeight: '900', color: '#9CC942' },
   clauseTitle: { fontSize: 13, fontWeight: '800', color: '#1A1A1A', flex: 1 },
   editChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
@@ -537,9 +538,9 @@ const styles = StyleSheet.create({
   // Signed Banner
   signedBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 14,
-    backgroundColor: '#005C3A', borderRadius: 18, padding: 18, marginBottom: 16,
+    backgroundColor: KiraColors.primary, borderRadius: 18, padding: 18, marginBottom: 16,
   },
-  signedTitle: { fontSize: 13, fontWeight: '900', color: '#FFF', letterSpacing: 1 },
+  signedTitle: { fontSize: 13, fontWeight: '900', color: '#1A1A1A', letterSpacing: 1 },
   signedSub: { fontSize: 9, color: 'rgba(255,255,255,0.6)', marginTop: 2, fontWeight: '700' },
 
   fingerprintBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 24, paddingVertical: 12, backgroundColor: '#F8F9FA', borderRadius: 12 },
@@ -548,10 +549,10 @@ const styles = StyleSheet.create({
   // Sign Button
   signBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#005C3A', borderRadius: 18, paddingVertical: 18,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 12, elevation: 6,
+    backgroundColor: KiraColors.primary, borderRadius: 18, paddingVertical: 18,
+    shadowColor: '#9CC942', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.25, shadowRadius: 12, elevation: 6,
   },
-  signBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  signBtnText: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
 
   // Sign Modal
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
@@ -568,14 +569,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 10,
     backgroundColor: '#F8F9FA', borderRadius: 12, padding: 12, marginBottom: 20,
   },
-  signDocTitle: { fontSize: 13, fontWeight: '700', color: '#005C3A', flex: 1 },
+  signDocTitle: { fontSize: 13, fontWeight: '700', color: '#9CC942', flex: 1 },
   signInputLabel: { fontSize: 10, fontWeight: '800', color: '#6B7280', letterSpacing: 1, marginBottom: 10 },
   signInput: {
     backgroundColor: '#F3F4F6', borderRadius: 14, paddingHorizontal: 16,
     paddingVertical: 14, fontSize: 16, color: '#1A1A1A', fontWeight: '600', marginBottom: 16,
   },
   signPreview: {
-    backgroundColor: '#005C3A', borderRadius: 14, padding: 32, marginBottom: 20,
+    backgroundColor: KiraColors.primary, borderRadius: 14, padding: 32, marginBottom: 20,
     alignItems: 'center', justifyContent: 'center', minHeight: 120,
     borderWidth: 1, borderColor: '#004A2F'
   },
@@ -583,9 +584,9 @@ const styles = StyleSheet.create({
   signPreviewDate: { fontSize: 10, color: 'rgba(255,255,255,0.4)', fontWeight: '700' },
   confirmSignBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#005C3A', borderRadius: 16, paddingVertical: 18, marginBottom: 12,
+    backgroundColor: KiraColors.primary, borderRadius: 16, paddingVertical: 18, marginBottom: 12,
   },
-  confirmSignBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  confirmSignBtnText: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
   cancelSignBtn: { alignItems: 'center', paddingVertical: 12 },
   cancelSignText: { fontSize: 14, color: '#6B7280', fontWeight: '600' },
 
@@ -638,7 +639,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: '#E5E7EB',
   },
   sigSlotSigned: {
-    backgroundColor: '#005C3A', borderColor: '#005C3A',
+    backgroundColor: KiraColors.primary, borderColor: '#9CC942',
   },
   sigSlotHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   sigSlotIconBox: {
@@ -658,9 +659,9 @@ const styles = StyleSheet.create({
 
   sigSignBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    backgroundColor: '#005C3A', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
+    backgroundColor: KiraColors.primary, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20,
   },
-  sigSignBtnText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
+  sigSignBtnText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
 
   sigPreviewRow: {
     flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',

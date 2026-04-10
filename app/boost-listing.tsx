@@ -184,7 +184,7 @@ export default function BoostListingScreen() {
 
           {selectedPlan && (
             <View style={styles.summaryBox}>
-              <Feather name="zap" size={16} color="#005C3A" />
+              <Feather name="zap" size={16} color={KiraColors.primary} />
               <Text style={styles.summaryText}>
                 Boost for <Text style={styles.summaryBold}>{selectedPlan.days} days</Text> — Total:
                 <Text style={styles.summaryBold}> {selectedPlan.price} ETB</Text>
@@ -288,7 +288,7 @@ export default function BoostListingScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.centeredFull}>
           <View style={styles.processingCard}>
-            <ActivityIndicator size="large" color="#005C3A" style={{ marginBottom: 24 }} />
+            <ActivityIndicator size="large" color={KiraColors.primary} style={{ marginBottom: 24 }} />
             <Text style={styles.processingTitle}>Processing Payment…</Text>
             <Text style={styles.processingSubtitle}>
               Please wait while we verify your {selectedPayment?.name} transaction. Do not close the app.
@@ -311,7 +311,7 @@ export default function BoostListingScreen() {
       <View style={styles.centeredFull}>
         <ScrollView contentContainerStyle={styles.successScroll}>
           <View style={styles.successIconWrap}>
-            <MaterialIcons name="verified" size={64} color="#005C3A" />
+            <MaterialIcons name="verified" size={64} color={KiraColors.primary} />
           </View>
           <Text style={styles.successTitle}>Payment Successful! 🎉</Text>
           <Text style={styles.successSubtitle}>
@@ -393,7 +393,7 @@ const styles = StyleSheet.create({
     width: 32, height: 5, borderRadius: 3,
     backgroundColor: '#E5E7EB', marginRight: 6,
   },
-  stepDotActive: { backgroundColor: '#005C3A', width: 48 },
+  stepDotActive: { backgroundColor: KiraColors.primary, width: 48 },
   stepDotDone: { backgroundColor: '#BBD8C9' },
   stepCount: { fontSize: 11, color: '#6B7280', fontWeight: '600', marginLeft: 'auto' },
   scrollContent: { padding: 20, paddingBottom: 40 },
@@ -407,19 +407,19 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
-  propertyCardSelected: { borderColor: '#005C3A', backgroundColor: '#F0FBF4' },
+  propertyCardSelected: { borderColor: KiraColors.primary, backgroundColor: '#F0FBF4' },
   propertyThumb: { width: 72, height: 72, borderRadius: 14, marginRight: 14 },
   propertyInfo: { flex: 1 },
   propertyCardTitle: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
   locationRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
   propertyLocation: { fontSize: 11, color: '#4A5568', marginLeft: 3 },
-  propertyCardPrice: { fontSize: 13, fontWeight: '700', color: '#005C3A', marginBottom: 6 },
+  propertyCardPrice: { fontSize: 13, fontWeight: '700', color: KiraColors.primary, marginBottom: 6 },
   statusPill: { flexDirection: 'row', alignItems: 'center' },
   statusDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E', marginRight: 4 },
   statusText: { fontSize: 10, fontWeight: '700', color: '#22C55E' },
   selectedCheck: {
     width: 24, height: 24, borderRadius: 12,
-    backgroundColor: '#005C3A', justifyContent: 'center', alignItems: 'center', marginLeft: 8,
+    backgroundColor: KiraColors.primary, justifyContent: 'center', alignItems: 'center', marginLeft: 8,
   },
   // Mini Property
   miniPropertyCard: {
@@ -429,14 +429,14 @@ const styles = StyleSheet.create({
   miniPropertyThumb: { width: 48, height: 48, borderRadius: 10, marginRight: 12 },
   miniPropertyTitle: { fontSize: 13, fontWeight: '700', color: '#1A1A1A' },
   miniPropertyLocation: { fontSize: 11, color: '#6B7280', marginTop: 2 },
-  changeText: { fontSize: 12, fontWeight: '700', color: '#005C3A' },
+  changeText: { fontSize: 12, fontWeight: '700', color: KiraColors.primary },
   // Plans
   planCard: {
     backgroundColor: '#FFF', borderRadius: 20, padding: 20, marginBottom: 14,
     borderWidth: 2, borderColor: '#F3F4F6',
   },
   planCardHighlighted: { borderColor: '#FBC02D', backgroundColor: '#FFFDF0' },
-  planCardSelected: { borderColor: '#005C3A', backgroundColor: '#F0FBF4' },
+  planCardSelected: { borderColor: KiraColors.primary, backgroundColor: '#F0FBF4' },
   popularBadge: {
     alignSelf: 'flex-start', backgroundColor: '#FBC02D',
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginBottom: 12,
@@ -447,13 +447,13 @@ const styles = StyleSheet.create({
   planLabelHighlighted: { color: '#92400E' },
   planDesc: { fontSize: 12, color: '#6B7280' },
   planPriceBox: { alignItems: 'flex-end' },
-  planPrice: { fontSize: 16, fontWeight: '900', color: '#005C3A', marginBottom: 8 },
+  planPrice: { fontSize: 16, fontWeight: '900', color: KiraColors.primary, marginBottom: 8 },
   summaryBox: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#E8F5E9', borderRadius: 14, padding: 14, marginTop: 8,
   },
   summaryText: { fontSize: 13, color: '#1A1A1A', marginLeft: 10 },
-  summaryBold: { fontWeight: '800', color: '#005C3A' },
+  summaryBold: { fontWeight: '800', color: KiraColors.primary },
   // Order
   orderCard: {
     backgroundColor: '#FFF', borderRadius: 20, padding: 20,
@@ -467,14 +467,14 @@ const styles = StyleSheet.create({
   orderVal: { fontSize: 13, fontWeight: '700', color: '#1A1A1A', maxWidth: width * 0.45, textAlign: 'right' },
   orderRowTotal: { borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingTop: 12, marginTop: 4 },
   orderTotalKey: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
-  orderTotalVal: { fontSize: 18, fontWeight: '900', color: '#005C3A' },
+  orderTotalVal: { fontSize: 18, fontWeight: '900', color: KiraColors.primary },
   // Payment Methods
   paymentCard: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#FFF', borderRadius: 20, padding: 16, marginBottom: 14,
     borderWidth: 2, borderColor: '#F3F4F6',
   },
-  paymentCardSelected: { borderColor: '#005C3A', backgroundColor: '#F0FBF4' },
+  paymentCardSelected: { borderColor: KiraColors.primary, backgroundColor: '#F0FBF4' },
   paymentIconBox: {
     width: 44, height: 44, borderRadius: 12,
     justifyContent: 'center', alignItems: 'center', marginRight: 14,
@@ -487,7 +487,7 @@ const styles = StyleSheet.create({
     borderWidth: 2, borderColor: '#D1D5DB',
     justifyContent: 'center', alignItems: 'center',
   },
-  selectCircleFilled: { backgroundColor: '#005C3A', borderColor: '#005C3A' },
+  selectCircleFilled: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   // Processing
   centeredFull: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   processingCard: {
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     width: 100, height: 100, borderRadius: 50,
     backgroundColor: '#E8F5E9', justifyContent: 'center', alignItems: 'center',
     marginBottom: 24, marginTop: 20,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 },
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15, shadowRadius: 10, elevation: 4,
   },
   successTitle: { fontSize: 26, fontWeight: '900', color: '#1A1A1A', textAlign: 'center', marginBottom: 10 },
@@ -525,8 +525,8 @@ const styles = StyleSheet.create({
   successDetailVal: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
   returnBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#005C3A', borderRadius: 20, paddingVertical: 18, width: '100%',
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 },
+    backgroundColor: KiraColors.primary, borderRadius: 20, paddingVertical: 18, width: '100%',
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
   returnBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
@@ -537,8 +537,8 @@ const styles = StyleSheet.create({
   },
   primaryBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    backgroundColor: '#005C3A', borderRadius: 16, paddingVertical: 18,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 },
+    backgroundColor: KiraColors.primary, borderRadius: 16, paddingVertical: 18,
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
   primaryBtnDisabled: { backgroundColor: '#D1D5DB', shadowOpacity: 0 },

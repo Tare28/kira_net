@@ -24,7 +24,7 @@ const AgentsView: React.FC<AgentsProps> = () => {
     <section>
         <div className="view-header">
             <div className="view-title">
-                <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Curator Oversight</p>
+                <p style={{ fontWeight: 800, color: '#9CC942', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Curator Oversight</p>
                 <h1>Agent Network.<br/><span style={{ opacity: 0.1 }}>Elite Facilitation.</span></h1>
             </div>
         </div>
@@ -40,12 +40,12 @@ const AgentsView: React.FC<AgentsProps> = () => {
                     position: 'relative',
                     overflow: 'hidden'
                 }}>
-                    <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: agent.status === 'VERIFIED' ? '#10B981' : agent.status === 'PENDING' ? '#8B5CF6' : '#EF4444' }}></div>
+                    <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', background: agent.status === 'VERIFIED' ? '#9CC942' : agent.status === 'PENDING' ? '#8B5CF6' : '#EF4444' }}></div>
                     
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
                         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                             <div style={{ width: '56px', height: '56px', background: '#F8FAFC', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #F1F5F9' }}>
-                                <User size={24} color={agent.status === 'VERIFIED' ? '#10B981' : agent.status === 'PENDING' ? '#8B5CF6' : '#EF4444'}/>
+                                <User size={24} color={agent.status === 'VERIFIED' ? '#9CC942' : agent.status === 'PENDING' ? '#8B5CF6' : '#EF4444'}/>
                             </div>
                             <div>
                                 <h3 style={{ fontSize: '18px', fontWeight: 800 }}>{agent.name}</h3>
@@ -58,8 +58,8 @@ const AgentsView: React.FC<AgentsProps> = () => {
                             fontSize: '9px', 
                             fontWeight: 900,
                             letterSpacing: '1px',
-                            background: agent.status === 'VERIFIED' ? '#D1FAE5' : agent.status === 'PENDING' ? '#F5F3FF' : '#FEE2E2',
-                            color: agent.status === 'VERIFIED' ? '#10B981' : agent.status === 'PENDING' ? '#8B5CF6' : '#EF4444'
+                            background: agent.status === 'VERIFIED' ? '#F4F9EB' : agent.status === 'PENDING' ? '#F5F3FF' : '#FEE2E2',
+                            color: agent.status === 'VERIFIED' ? '#9CC942' : agent.status === 'PENDING' ? '#8B5CF6' : '#EF4444'
                         }}>{agent.status}</span>
                     </div>
 
@@ -68,7 +68,7 @@ const AgentsView: React.FC<AgentsProps> = () => {
                             <label style={{ display: 'block', fontSize: '9px', fontWeight: 900, color: '#64748B', textTransform: 'uppercase', marginBottom: '4px' }}>CONTACT</label>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <p style={{ fontSize: '13px', fontWeight: 800 }}>{agent.phone}</p>
-                                {agent.status === 'VERIFIED' && <CheckCircle2 size={12} color="#10B981"/>}
+                                {agent.status === 'VERIFIED' && <CheckCircle2 size={12} color="#9CC942"/>}
                             </div>
                         </div>
                         <div>
@@ -93,7 +93,7 @@ const AgentsView: React.FC<AgentsProps> = () => {
                         
                         <div style={{ display: 'flex', gap: '8px' }}>
                             {agent.status === 'PENDING' ? (
-                                <button style={{ background: '#10B981', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <button style={{ background: '#9CC942', color: 'white', padding: '10px 20px', borderRadius: '12px', fontSize: '12px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     Approve <ArrowRight size={14}/>
                                 </button>
                             ) : agent.status === 'SUSPENDED' ? (

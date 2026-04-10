@@ -8,9 +8,11 @@ import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useVisitPlan } from '@/context/VisitPlanContext';
+import { useSaved } from '@/context/SavedContext';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
+import { useAlerts } from '@/context/AlertsContext';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -24,6 +26,7 @@ const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 import { KiraColors } from '@/constants/colors';
 import { Typography } from '@/constants/typography';
+import { Skeleton } from '@/components/Skeleton';
 
 const { width } = Dimensions.get('window');
 
@@ -55,6 +58,7 @@ export default function ExploreScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const { visits } = useVisitPlan();
   const { filters, updateFilters } = useFilters();
+  const { unreadCount } = useAlerts();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -63,6 +67,17 @@ export default function ExploreScreen() {
   }, []);
   const { neighborhood: navNeighborhood } = useLocalSearchParams<{ neighborhood?: string }>();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const scrollY = useSharedValue(0);
+
+  const headerAnim = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateY: withSpring(scrollY.value > 50 ? -10 : 0) },
+        { scale: withSpring(scrollY.value > 50 ? 0.95 : 1) }
+      ],
+      opacity: withSpring(scrollY.value > 150 ? 0.9 : 1)
+    };
+  });
 
   const SUGGESTIONS = [
     { label: 'Trending in Bole', icon: 'trending-up' },
@@ -113,51 +128,63 @@ export default function ExploreScreen() {
 
   return (
     <View style={styles.container}>
-      {/* ── Sticky Frosted Header ────────────────────────────────────────── */}
-      <BlurView intensity={80} tint="light" style={[styles.headerContainer, { paddingTop: Math.max(insets.top, 20) }]}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            onPress={() => router.push('/boost-listing')}
-          >
-            <Feather name="zap" size={24} color={KiraColors.warning} />
-          </TouchableOpacity>
+      {/* ── Floating Studio Header ────────────────────────────────────────── */}
+      <Animated.View style={[styles.headerFloatingContainer, { paddingTop: Math.max(insets.top, 12) }, headerAnim]}>
+        <View style={styles.headerPill}>
+          <View style={styles.headerContent}>
+            {/* Left: Quick Profile/Account */}
+            <View style={styles.headerAvatar}>
+              <Text style={styles.avatarInitial}>K</Text>
+            </View>
 
-          <Text style={styles.logoText}>Kira-Net</Text>
-
-          <View style={styles.headerRight}>
-            <TouchableOpacity
-              style={styles.plannerHeaderBtn}
-              onPress={() => router.push('/visit-planner')}
-            >
-              <MaterialCommunityIcons name="calendar-check" size={20} color={KiraColors.primary} />
-              {visits.length > 0 && (
-                <View style={styles.plannerBadge}>
-                  <Text style={styles.plannerBadgeText}>{visits.length}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              onPress={() => router.push('/(tabs)/alerts')}
-              style={styles.bellWrap}
-            >
-              <Feather name="bell" size={24} color={KiraColors.primary} />
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>3</Text>
+            {/* Center: Brand Identity */}
+            <View style={styles.headerCenter}>
+              <Text style={styles.logoText}>Kira-Net</Text>
+              <View style={styles.locationChip}>
+                <Ionicons name="location-sharp" size={10} color={KiraColors.primary} />
+                <Text style={styles.locationChipText}>{filters.neighborhood || 'Addis Ababa'}</Text>
               </View>
-            </TouchableOpacity>
+            </View>
+
+            {/* Right: Actions Cluster */}
+            <View style={styles.headerRightCluster}>
+              <TouchableOpacity
+                style={styles.headerActionBtn}
+                onPress={() => router.push('/visit-planner')}
+              >
+                <MaterialCommunityIcons name="calendar-check" size={20} color={KiraColors.primary} />
+                {visits.length > 0 && <View style={styles.dotBadge} />}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.headerActionBtn}
+                onPress={() => router.push('/(tabs)/alerts')}
+              >
+                <Feather name="bell" size={20} color={KiraColors.primary} />
+                {unreadCount > 0 && (
+                  <View style={styles.badgeContainer}>
+                    <Text style={styles.badgeText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </BlurView>
+      </Animated.View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={styles.scrollContent}
+        onScroll={(e) => {
+          scrollY.value = e.nativeEvent.contentOffset.y;
+        }}
+        scrollEventThrottle={16}
+      >
         
         {/* ── Mesh Gradient Background ─────────────────────────────────────── */}
         <View style={styles.meshContainer}>
           <LinearGradient
-            colors={['rgba(0, 92, 58, 0.05)', 'rgba(255, 255, 255, 0)']}
+            colors={['rgba(156, 201, 66, 0.05)', 'rgba(255, 255, 255, 0)']}
             style={styles.meshBubble1}
           />
           <LinearGradient
@@ -201,7 +228,7 @@ export default function ExploreScreen() {
                         setSearchQuery(s.label.split('in ')[1]);
                      }}
                    >
-                     <Ionicons name={s.icon as any} size={12} color="#005C3A" style={{ marginRight: 4 }} />
+                     <Ionicons name={s.icon as any} size={12} color="#9CC942" style={{ marginRight: 4 }} />
                      <Text style={styles.suggestionText}>{s.label}</Text>
                    </TouchableOpacity>
                  ))}
@@ -222,11 +249,11 @@ export default function ExploreScreen() {
             activeOpacity={0.88}
             onPress={() => router.push('/visit-planner')}
           >
-            <MaterialCommunityIcons name="map-marker-path" size={18} color="#FFF" />
+            <MaterialCommunityIcons name="map-marker-path" size={18} color="#1A1A1A" />
             <Text style={styles.plannerStripText}>
               {visits.length} propert{visits.length === 1 ? 'y' : 'ies'} in your Visit Plan — tap to view route
             </Text>
-            <Feather name="chevron-right" size={16} color="rgba(255,255,255,0.7)" />
+            <Feather name="chevron-right" size={16} color="rgba(0,0,0,0.5)" />
           </TouchableOpacity>
         )}
 
@@ -269,10 +296,42 @@ export default function ExploreScreen() {
                   <Text style={styles.emptyStateText}>No listings in this category yet.</Text>
                 </View>
               )}
+
+              {/* ── Boost Promo In-Line ─────────────────────────────────── */}
+              <TouchableOpacity 
+                style={styles.boostBanner}
+                onPress={() => router.push('/boost-listing')}
+                activeOpacity={0.9}
+              >
+                <View style={styles.boostBannerLeft}>
+                  <View style={styles.boostIconRound}>
+                    <Feather name="zap" size={20} color="#FFF" />
+                  </View>
+                  <View>
+                    <Text style={styles.boostBannerTitle}>Get 10x More Leads</Text>
+                    <Text style={styles.boostBannerSub}>Push your listing to the top of results</Text>
+                  </View>
+                </View>
+                <Feather name="chevron-right" size={20} color={KiraColors.primary} />
+              </TouchableOpacity>
             </>
           )}
         </View>
       </ScrollView>
+
+      {/* ── Floating Boost FAB ────────────────────────────────────────── */}
+      <View style={styles.fabContainer}>
+        <TouchableOpacity 
+          style={styles.fabInner}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+            router.push('/boost-listing');
+          }}
+        >
+          <Feather name="zap" size={20} color="#1A1A1A" />
+          <Text style={styles.fabText}>Boost</Text>
+        </TouchableOpacity>
+      </View>
 
     </View>
   );
@@ -281,16 +340,42 @@ export default function ExploreScreen() {
 // ─── Property Card ─────────────────────────────────────────────────────────────
 function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
   const { addVisit, removeVisit, isInPlan } = useVisitPlan();
+  const { saveProperty, unsaveProperty, isSaved } = useSaved();
   const inPlan = isInPlan(property.id);
+  const saved = isSaved(property.id);
 
   const color = trustColor(property.trust);
   const isCommercial = ['shop', 'cafe', 'restaurant'].includes(property.category);
 
-  // Magnetic Button Animation
+  // Plan Visit — Magnetic Button Animation
   const isPressed = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withSpring(isPressed.value) }],
   }));
+
+  // Heart / Save — bounce animation
+  const heartScale = useSharedValue(1);
+  const heartAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: withSpring(heartScale.value, { damping: 4, stiffness: 180 }) }],
+  }));
+
+  const handleSave = () => {
+    heartScale.value = 1.4;
+    setTimeout(() => { heartScale.value = 1; }, 150);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    if (saved) {
+      unsaveProperty(property.id);
+    } else {
+      saveProperty({
+        id: property.id,
+        title: property.title,
+        location: property.location,
+        price: property.price,
+        image: property.image as string,
+        badge: property.badge as 'verified' | 'hot_deal',
+      });
+    }
+  };
 
   const handleVisit = () => {
     isPressed.value = 1.05;
@@ -344,9 +429,15 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
           </View>
 
           {/* Heart / Saved */}
-          <TouchableOpacity style={styles.heartBtn}>
-            <Ionicons name="heart-outline" size={20} color="#FFF" />
-          </TouchableOpacity>
+          <Animated.View style={[styles.heartBtn, heartAnimatedStyle]}>
+            <TouchableOpacity onPress={handleSave} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Ionicons
+                name={saved ? 'heart' : 'heart-outline'}
+                size={20}
+                color={saved ? KiraColors.danger : '#FFF'}
+              />
+            </TouchableOpacity>
+          </Animated.View>
         </View>
       </TouchableOpacity>
 
@@ -496,28 +587,18 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
 
 // ─── Skeleton Card ─────────────────────────────────────────────────────────────
 function SkeletonCard() {
-  const opacity = useSharedValue(0.3);
-  
-  useEffect(() => {
-    opacity.value = withRepeat(withTiming(0.7, { duration: 800 }), -1, true);
-  }, []);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
   return (
-    <Animated.View style={[styles.card, animatedStyle]}>
-      <View style={[styles.imageContainer, { backgroundColor: '#E5E7EB' }]} />
-      <View style={[styles.cardInfo, { height: 120 }]}>
-        <View style={{ height: 20, width: '70%', backgroundColor: '#E5E7EB', borderRadius: 4, marginBottom: 10 }} />
-        <View style={{ height: 14, width: '40%', backgroundColor: '#E5E7EB', borderRadius: 4, marginBottom: 20 }} />
-        <View style={{ flexDirection: 'row', gap: 10 }}>
-          <View style={{ height: 32, width: 100, backgroundColor: '#E5E7EB', borderRadius: 10 }} />
-          <View style={{ height: 32, flex: 1, backgroundColor: '#E5E7EB', borderRadius: 10 }} />
+    <View style={[styles.card, { marginBottom: 24, paddingBottom: 16 }]}>
+      <Skeleton width="100%" height={240} borderRadius={28} />
+      <View style={{ padding: 16 }}>
+        <Skeleton width="70%" height={24} borderRadius={4} style={{ marginBottom: 12 }} />
+        <Skeleton width="45%" height={16} borderRadius={4} style={{ marginBottom: 20 }} />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+          <Skeleton width={110} height={20} borderRadius={4} />
+          <Skeleton width={120} height={48} borderRadius={16} />
         </View>
       </View>
-    </Animated.View>
+    </View>
   );
 }
 
@@ -525,34 +606,84 @@ function SkeletonCard() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F7F8F9' },
 
-  // Header
-  header: {
+  // Experimental Floating Header
+  headerFloatingContainer: {
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000,
+    paddingHorizontal: 16,
+  },
+  headerPill: {
+    backgroundColor: '#FFF',
+    borderRadius: 40,
+    borderWidth: 1.5, borderColor: '#F1F3F5',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 }, shadowOpacity: 0.12, shadowRadius: 24,
+    elevation: 12,
+  },
+  headerContent: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 20, marginBottom: 20,
+    paddingHorizontal: 16, paddingVertical: 10,
   },
-  logoText: { fontSize: 18, fontWeight: '900', color: KiraColors.primary, letterSpacing: -0.5 },
-  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  plannerHeaderBtn: { position: 'relative', padding: 4 },
-  plannerBadge: {
-    position: 'absolute', top: -2, right: -2,
-    width: 16, height: 16, borderRadius: 8,
-    backgroundColor: KiraColors.danger, justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#F7F8F9',
+  headerAvatar: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: KiraColors.primary, justifyContent: 'center', alignItems: 'center',
   },
-  plannerBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
-  bellWrap: { position: 'relative' },
-  notifBadge: {
-    position: 'absolute', top: -4, right: -6,
-    backgroundColor: KiraColors.danger, width: 16, height: 16, borderRadius: 8,
-    justifyContent: 'center', alignItems: 'center',
-    borderWidth: 1.5, borderColor: '#F7F8F9',
+  avatarInitial: { color: '#1A1A1A', fontSize: 13, fontWeight: '900' },
+  headerCenter: { alignItems: 'center' },
+  logoText: { fontSize: 16, fontWeight: '900', color: KiraColors.primary, letterSpacing: -0.5 },
+  locationChip: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 1 },
+  locationChipText: { fontSize: 10, fontWeight: '800', color: KiraColors.muted },
+  headerRightCluster: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerActionBtn: {
+    position: 'relative',
+    padding: 6,
+    backgroundColor: '#F7F8F9',
+    borderRadius: 12,
   },
-  notifBadgeText: { fontSize: 9, fontWeight: '900', color: '#FFF' },
+  badgeContainer: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: KiraColors.danger,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+    borderWidth: 1.5,
+    borderColor: '#FFF',
+    zIndex: 1,
+  },
+  badgeText: {
+    color: '#FFF',
+    fontSize: 8,
+    fontWeight: '900',
+  },
+  dotBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: KiraColors.primary,
+    borderWidth: 1.5, borderColor: '#FFF',
+  },
 
-  headerContainer: {
-    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
-    borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.03)',
+  // FAB
+  fab: {
+    position: 'absolute', bottom: 40, right: 20,
+    zIndex: 999,
   },
+  fabInner: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: KiraColors.primary, paddingHorizontal: 20, paddingVertical: 14,
+    borderRadius: 30,
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4, shadowRadius: 12, elevation: 12,
+  },
+  fabText: { color: '#FFF', fontSize: 13, fontWeight: '900', letterSpacing: 0.5 },
+
   meshContainer: {
     position: 'absolute', top: 0, left: 0, right: 0, height: 400, overflow: 'hidden', zIndex: -1,
   },
@@ -608,11 +739,11 @@ const styles = StyleSheet.create({
   // Smart Suggestions
   suggestionsContainer: { marginBottom: 16, paddingLeft: 4 },
   suggestionBadge: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8F5E9',
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F9EB',
     paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, marginRight: 8,
-    borderWidth: 1, borderColor: '#C8E6C9',
+    borderWidth: 1, borderColor: '#C8E27A',
   },
-  suggestionText: { fontSize: 11, fontWeight: '700', color: '#005C3A' },
+  suggestionText: { fontSize: 11, fontWeight: '700', color: '#82B136' },
 
   // Categories
   categoriesRow: { paddingHorizontal: 20, marginBottom: 24 },
@@ -621,8 +752,8 @@ const styles = StyleSheet.create({
     borderRadius: 24, marginRight: 12,
   },
   categoryPillActive: { backgroundColor: KiraColors.primary },
-  categoryPillText: { fontSize: 13, fontWeight: '600', color: KiraColors.primary },
-  categoryPillTextActive: { fontSize: 13, fontWeight: '600', color: '#FFF' },
+  categoryPillText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
+  categoryPillTextActive: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
 
   // Listings
   listingsContainer: { paddingHorizontal: 20 },
@@ -642,7 +773,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: KiraColors.surface, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
-  verifiedText: { fontSize: 9, fontWeight: '800', color: KiraColors.primary, marginLeft: 4, letterSpacing: 0.5 },
+  verifiedText: { fontSize: 9, fontWeight: '800', color: '#1A1A1A', marginLeft: 4, letterSpacing: 0.5 },
   hotDealBadge: {
     position: 'absolute', top: 16, left: 16,
     backgroundColor: KiraColors.danger, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
@@ -653,11 +784,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 4,
     paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
   },
-  trustChipText: { fontSize: 10, fontWeight: '800', color: '#FFF' },
+  trustChipText: { fontSize: 10, fontWeight: '800', color: '#1A1A1A' },
   heartBtn: {
     position: 'absolute', top: 16, right: 16,
     width: 36, height: 36, borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.3)', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.92)', justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 3,
   },
 
   // Card Info
@@ -708,7 +840,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12, borderRadius: 14,
     backgroundColor: KiraColors.primary,
   },
-  detailBtnText: { fontSize: 13, fontWeight: '700', color: '#FFF' },
+  detailBtnText: { fontSize: 13, fontWeight: '700', color: '#1A1A1A' },
   planBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     paddingVertical: 12, paddingHorizontal: 16, borderRadius: 14,
@@ -716,18 +848,40 @@ const styles = StyleSheet.create({
   },
   planBtnActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   planBtnText: { fontSize: 13, fontWeight: '700', color: KiraColors.primary },
-  planBtnTextActive: { color: '#FFF' },
+  planBtnTextActive: { color: '#1A1A1A' },
 
   // FAB
-  fab: {
-    position: 'absolute', bottom: 100, right: 20,
-    width: 56, height: 56, borderRadius: 28,
-    backgroundColor: KiraColors.primary, justifyContent: 'center', alignItems: 'center',
-    elevation: 5, shadowColor: KiraColors.primary,
-    shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
+  fabContainer: {
+    position: 'absolute', bottom: 90, right: 20, zIndex: 999,
   },
+  fabInner: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: KiraColors.primary, paddingHorizontal: 16, paddingVertical: 10,
+    borderRadius: 25,
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3, shadowRadius: 10, elevation: 10,
+  },
+  fabText: { color: '#1A1A1A', fontSize: 12, fontWeight: '900', letterSpacing: 0.5 },
 
   // Empty
-  emptyState: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
   emptyStateText: { fontSize: 14, color: '#9CA3AF', marginTop: 12, fontWeight: '500' },
+
+  // Boost Banner
+  boostBanner: {
+    backgroundColor: '#FAFDF4', // Light Fresh Green
+    borderRadius: 24, padding: 12,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    borderWidth: 1.5, borderColor: '#E8F5E9',
+    marginTop: 8, marginBottom: 100,
+  },
+  boostBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  boostIconRound: {
+    width: 34, height: 34, borderRadius: 17,
+    backgroundColor: KiraColors.primary,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2, shadowRadius: 6,
+  },
+  boostBannerTitle: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
+  boostBannerSub: { fontSize: 9, color: '#6B7280', fontWeight: '500', marginTop: 1 },
 });

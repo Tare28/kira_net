@@ -9,6 +9,7 @@ import {
   Feather, Ionicons, MaterialIcons, MaterialCommunityIcons,
 } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -183,7 +184,7 @@ export default function MovingServicesScreen() {
           style={[styles.tab, activeTab === 'movers' && styles.tabActive]}
           onPress={() => setActiveTab('movers')}
         >
-          <MaterialCommunityIcons name="account-hard-hat" size={16} color={activeTab === 'movers' ? '#005C3A' : '#6B7280'} />
+          <MaterialCommunityIcons name="account-hard-hat" size={16} color={activeTab === 'movers' ? '#9CC942' : '#6B7280'} />
           <Text style={[styles.tabText, activeTab === 'movers' && styles.tabTextActive]}>Find Movers</Text>
         </TouchableOpacity>
       </View>
@@ -242,7 +243,7 @@ export default function MovingServicesScreen() {
                   style={[styles.extraChip, extra.selected && styles.extraChipActive]}
                   onPress={() => toggleExtra(extra.id)}
                 >
-                  <Feather name={extra.icon as any} size={14} color={extra.selected ? '#005C3A' : '#6B7280'} />
+                  <Feather name={extra.icon as any} size={14} color={extra.selected ? '#9CC942' : '#6B7280'} />
                   <Text style={[styles.extraLabel, extra.selected && styles.extraLabelActive]}>{extra.label}</Text>
                   <Text style={[styles.extraPrice, extra.selected && styles.extraPriceActive]}>+{extra.price} ETB</Text>
                 </TouchableOpacity>
@@ -379,9 +380,9 @@ const styles = StyleSheet.create({
   liveText: { fontSize: 11, fontWeight: '700', color: '#16A34A' },
   heroBanner: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: '#005C3A', marginHorizontal: 20, borderRadius: 20,
+    backgroundColor: KiraColors.primary, marginHorizontal: 20, borderRadius: 20,
     padding: 18, marginBottom: 16,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.22, shadowRadius: 12, elevation: 6,
+    shadowColor: '#9CC942', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.22, shadowRadius: 12, elevation: 6,
   },
   heroLeft: { flexDirection: 'row', alignItems: 'center', gap: 14, flex: 1 },
   heroEmoji: { fontSize: 36 },
@@ -401,14 +402,14 @@ const styles = StyleSheet.create({
   tabActive: { backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 2 },
   tabEmoji: { fontSize: 16 },
   tabText: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
-  tabTextActive: { color: '#005C3A', fontWeight: '800' },
+  tabTextActive: { color: '#9CC942', fontWeight: '800' },
   scrollContent: { paddingHorizontal: 20, paddingTop: 4 },
   sectionLabel: { fontSize: 10, fontWeight: '800', color: '#6B7280', letterSpacing: 1.2, marginBottom: 12 },
   truckCard: {
     borderRadius: 20, padding: 16, marginBottom: 14, borderWidth: 1.5,
   },
   truckCardSelected: {
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4,
+    shadowColor: '#9CC942', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12, elevation: 4,
   },
   truckTop: { flexDirection: 'row', alignItems: 'center' },
   truckIcon: { fontSize: 40 },
@@ -419,30 +420,30 @@ const styles = StyleSheet.create({
   truckDot: { color: '#9CA3AF' },
   truckEta: { fontSize: 12, color: '#4A5568' },
   truckPriceBox: { alignItems: 'flex-end' },
-  truckPrice: { fontSize: 20, fontWeight: '900', color: '#005C3A' },
+  truckPrice: { fontSize: 20, fontWeight: '900', color: '#9CC942' },
   truckPriceUnit: { fontSize: 10, color: '#6B7280' },
   bookTruckBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: '#005C3A', borderRadius: 14, paddingVertical: 12, marginTop: 14,
+    backgroundColor: KiraColors.primary, borderRadius: 14, paddingVertical: 12, marginTop: 14,
   },
-  bookTruckBtnText: { fontSize: 14, fontWeight: '800', color: '#FFF' },
+  bookTruckBtnText: { fontSize: 14, fontWeight: '800', color: '#1A1A1A' },
   extrasGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 14 },
   extraChip: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: '#F3F4F6', borderRadius: 14, paddingVertical: 10, paddingHorizontal: 12,
     borderWidth: 1, borderColor: '#E5E7EB',
   },
-  extraChipActive: { backgroundColor: '#E8F5E9', borderColor: '#005C3A' },
+  extraChipActive: { backgroundColor: '#E8F5E9', borderColor: '#9CC942' },
   extraLabel: { fontSize: 12, fontWeight: '600', color: '#4A5568' },
-  extraLabelActive: { color: '#005C3A' },
+  extraLabelActive: { color: '#9CC942' },
   extraPrice: { fontSize: 11, fontWeight: '700', color: '#9CA3AF' },
-  extraPriceActive: { color: '#005C3A' },
+  extraPriceActive: { color: '#9CC942' },
   extraTotal: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     backgroundColor: '#E8F5E9', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 20,
   },
-  extraTotalLabel: { fontSize: 13, fontWeight: '700', color: '#005C3A' },
-  extraTotalValue: { fontSize: 16, fontWeight: '900', color: '#005C3A' },
+  extraTotalLabel: { fontSize: 13, fontWeight: '700', color: '#9CC942' },
+  extraTotalValue: { fontSize: 16, fontWeight: '900', color: '#9CC942' },
   moverCard: {
     backgroundColor: '#FFF', borderRadius: 20, padding: 16, marginBottom: 14,
     shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 8, elevation: 2,
@@ -471,12 +472,12 @@ const styles = StyleSheet.create({
   },
   moverLocRow: { flexDirection: 'row', alignItems: 'center', gap: 3, flex: 1 },
   moverLoc: { fontSize: 11, color: '#4A5568' },
-  moverPrice: { fontSize: 14, fontWeight: '900', color: '#005C3A', marginRight: 12 },
+  moverPrice: { fontSize: 14, fontWeight: '900', color: '#9CC942', marginRight: 12 },
   moverPriceUnit: { fontSize: 10, color: '#6B7280', fontWeight: '500' },
   bookMoverBtn: {
-    backgroundColor: '#005C3A', paddingHorizontal: 18, paddingVertical: 9, borderRadius: 14,
+    backgroundColor: KiraColors.primary, paddingHorizontal: 18, paddingVertical: 9, borderRadius: 14,
   },
-  bookMoverBtnText: { fontSize: 13, fontWeight: '800', color: '#FFF' },
+  bookMoverBtnText: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
   safetyNote: {
     flexDirection: 'row', alignItems: 'flex-start', gap: 10,
     backgroundColor: '#EFF6FF', borderRadius: 14, padding: 14, marginTop: 8,
@@ -499,8 +500,8 @@ const styles = StyleSheet.create({
   },
   confirmBookBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#005C3A', borderRadius: 16, paddingVertical: 18, marginTop: 4, marginBottom: 12,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5,
+    backgroundColor: KiraColors.primary, borderRadius: 16, paddingVertical: 18, marginTop: 4, marginBottom: 12,
+    shadowColor: '#9CC942', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 10, elevation: 5,
   },
   confirmBookText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
   cancelBookBtn: { alignItems: 'center', paddingVertical: 10 },

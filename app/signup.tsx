@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   inputContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14 },
   textInput: { flex: 1, fontSize: 14, color: '#1A1A1A', padding: 0 },
   signupBtn: { flexDirection: 'row', backgroundColor: KiraColors.primary, borderRadius: 30, paddingVertical: 18, justifyContent: 'center', alignItems: 'center', marginTop: 32, marginBottom: 20, shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
-  signupBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  signupBtnText: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
   termsText: { fontSize: 11, color: '#9CA3AF', textAlign: 'center', lineHeight: 16 },
   termsLink: { color: KiraColors.primary, fontWeight: '700' },
   

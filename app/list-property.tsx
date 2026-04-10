@@ -5,6 +5,7 @@ import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 const LOCATIONS = ['Bole', 'Kazanchis', 'Piazza', 'CMC', 'Megenagna', 'Sarbet', 'Ayat'];
 
@@ -60,7 +61,7 @@ export default function ListPropertyScreen() {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-            <Feather name="arrow-left" size={20} color="#005C3A" />
+            <Feather name="arrow-left" size={20} color="#9CC942" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>List Your Property</Text>
         </View>
@@ -70,7 +71,7 @@ export default function ListPropertyScreen() {
           <Text style={styles.sectionTitle}>Property Media</Text>
           <TouchableOpacity style={styles.uploadArea} onPress={pickImage}>
             <View style={styles.uploadIconWrap}>
-              <MaterialIcons name="camera-alt" size={24} color="#005C3A" />
+              <MaterialIcons name="camera-alt" size={24} color="#9CC942" />
               <View style={styles.plusOverlay}>
                 <Feather name="plus" size={10} color="#FFF" />
               </View>
@@ -368,7 +369,7 @@ export default function ListPropertyScreen() {
           {/* Request Verification */}
           <View style={styles.verificationCard}>
             <View style={styles.verifyHeader}>
-              <MaterialIcons name="verified" size={18} color="#005C3A" />
+              <MaterialIcons name="verified" size={18} color="#9CC942" />
               <Text style={styles.verifyTitle}>Request Verification</Text>
             </View>
             <Text style={styles.verifySubtitle}>
@@ -378,7 +379,7 @@ export default function ListPropertyScreen() {
               <Switch 
                 value={isVerified} 
                 onValueChange={setIsVerified}
-                trackColor={{ false: '#E2E8F0', true: '#005C3A' }}
+                trackColor={{ false: '#E2E8F0', true: '#9CC942' }}
                 thumbColor="#FFF"
               />
             </View>
@@ -390,7 +391,8 @@ export default function ListPropertyScreen() {
             <Ionicons name="send" size={14} color="#FFF" style={{ marginLeft: 6 }} />
           </TouchableOpacity>
           <Text style={styles.submitDisclaimer}>
-            By submitting, you agree to Kira-Net&apos;s Landlord{'\n'}Terms of Service and Privacy Policy.
+            By submitting, you agree to Kira-Net's Landlord{'\n'}
+            Terms of Service and Privacy Policy.
           </Text>
 
         </ScrollView>
@@ -428,7 +430,7 @@ export default function ListPropertyScreen() {
                     }}
                   >
                     <Text style={styles.locationItemText}>{item}</Text>
-                    {location === item && <Feather name="check" size={20} color="#005C3A" />}
+                    {location === item && <Feather name="check" size={20} color="#9CC942" />}
                   </TouchableOpacity>
                 )}
               />
@@ -458,7 +460,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#005C3A',
+    color: '#9CC942',
     marginLeft: 16,
   },
   scrollContent: {
@@ -495,7 +497,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 6,
     right: 4,
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     borderRadius: 8,
     width: 14,
     height: 14,
@@ -581,7 +583,7 @@ const styles = StyleSheet.create({
   inputAdornment: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#005C3A',
+    color: '#9CC942',
   },
   textAreaContainer: {
     backgroundColor: '#E2E8F0',
@@ -699,13 +701,13 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     flexDirection: 'row',
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
     borderRadius: 24,
     paddingVertical: 16,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: '#005C3A',
+    shadowColor: '#9CC942',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -714,7 +716,7 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#FFF',
+    color: '#1A1A1A',
   },
   submitDisclaimer: {
     fontSize: 10,
@@ -808,8 +810,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   categoryOptionActive: {
-    backgroundColor: '#005C3A',
-    borderColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
+    borderColor: '#9CC942',
   },
   categoryOptionText: {
     fontSize: 13,

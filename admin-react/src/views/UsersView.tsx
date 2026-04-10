@@ -24,14 +24,14 @@ const UsersView: React.FC<UsersProps> = () => {
     <section>
         <div className="view-header">
             <div className="view-title">
-                <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Directory Access</p>
+                <p style={{ fontWeight: 800, color: '#9CC942', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Directory Access</p>
                 <h1>Identity Core.<br/><span style={{ opacity: 0.1 }}>Member Oversight.</span></h1>
             </div>
         </div>
 
         <div className="users-actions-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <div className="filter-group" style={{ display: 'flex', gap: '8px', background: 'white', padding: '4px', borderRadius: '12px', border: '1px solid #F1F5F9', overflowX: 'auto' }}>
-                <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, background: '#10B981', color: 'white', whiteSpace: 'nowrap' }}>All Members</button>
+                <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, background: '#9CC942', color: 'white', whiteSpace: 'nowrap' }}>All Members</button>
                 <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, color: '#64748B', whiteSpace: 'nowrap' }}>Landlords</button>
                 <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, color: '#64748B', whiteSpace: 'nowrap' }}>Tenants</button>
                 <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, color: '#64748B', whiteSpace: 'nowrap' }}>Agents</button>
@@ -57,7 +57,7 @@ const UsersView: React.FC<UsersProps> = () => {
                 <tbody>
                     {users.map((user, idx) => (
                         <tr key={idx}>
-                            <td style={{ fontWeight: 800, color: '#10B981', fontSize: '13px' }}>{user.id}</td>
+                            <td style={{ fontWeight: 800, color: '#9CC942', fontSize: '13px' }}>{user.id}</td>
                             <td>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#F8FAFC', border: '1px solid #F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -65,7 +65,7 @@ const UsersView: React.FC<UsersProps> = () => {
                                     </div>
                                     <div>
                                         <strong style={{ display: 'block', fontSize: '14px', marginBottom: '2px' }}>{user.name}</strong>
-                                        {user.verified && <span style={{ fontSize: '10px', fontWeight: 800, color: '#10B981', display: 'flex', alignItems: 'center', gap: '4px' }}><UserCheck size={10}/> Verified Identity</span>}
+                                        {user.verified && <span style={{ fontSize: '10px', fontWeight: 800, color: '#9CC942', display: 'flex', alignItems: 'center', gap: '4px' }}><UserCheck size={10}/> Verified Identity</span>}
                                     </div>
                                 </div>
                             </td>
@@ -85,8 +85,8 @@ const UsersView: React.FC<UsersProps> = () => {
                             </td>
                             <td>
                                 {user.active ? (
-                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: '#10B981' }}>
-                                        <div style={{ width: '8px', height: '8px', background: '#10B981', borderRadius: '50%', display: 'inline-block', marginRight: '8px' }}></div>
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', fontWeight: 800, color: '#9CC942' }}>
+                                        <div style={{ width: '8px', height: '8px', background: '#9CC942', borderRadius: '50%', display: 'inline-block', marginRight: '8px' }}></div>
                                         Active Direct
                                     </span>
                                 ) : (

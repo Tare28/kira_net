@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'rea
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 const ASSIGNED_WORK = [
   { id: '1', title: 'Modern Garden Villa', location: 'Old Airport', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=400', deadline: 'Today', status: 'pending' },
@@ -101,29 +102,29 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: 'row', gap: 12, marginBottom: 32 },
   statBox: { flex: 1, backgroundColor: '#F8F9FA', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#F1F3F5' },
   statLabel: { fontSize: 10, fontWeight: '900', color: '#64748B', letterSpacing: 1, marginBottom: 4 },
-  statValue: { fontSize: 28, fontWeight: '900', color: '#000' },
+  statValue: { fontSize: 28, fontWeight: '900', color: '#1A1A1A' },
 
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#000', letterSpacing: -0.5 },
+  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#1A1A1A', letterSpacing: -0.5 },
   countText: { fontSize: 12, fontWeight: '700', color: '#ADB5BD' },
 
   taskCard: { flexDirection: 'row', backgroundColor: '#FFF', borderRadius: 20, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: '#F1F3F5', alignItems: 'center' },
   taskImg: { width: 80, height: 80, borderRadius: 16 },
   taskInfo: { flex: 1, marginLeft: 16 },
-  badge: { backgroundColor: '#F8F9FA', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start', marginBottom: 6 },
-  badgeText: { fontSize: 8, fontWeight: '900', color: '#000', letterSpacing: 0.5 },
-  taskTitle: { fontSize: 15, fontWeight: '800', color: '#000', marginBottom: 4 },
+  badge: { backgroundColor: '#F0F9FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start', marginBottom: 6 },
+  badgeText: { fontSize: 8, fontWeight: '900', color: '#0369A1', letterSpacing: 0.5 },
+  taskTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
   locRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   locText: { fontSize: 13, color: '#64748B', fontWeight: '500', marginLeft: 4 },
   deadlineRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  deadlineText: { fontSize: 11, fontWeight: '800', color: '#000' },
+  deadlineText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
   arrowBox: { padding: 8 },
 
-  metricCard: { backgroundColor: '#000', padding: 24, borderRadius: 24 },
+  metricCard: { backgroundColor: KiraColors.primary, padding: 24, borderRadius: 24 },
   metricRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  metricLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: '700' },
-  metricVal: { color: '#FFF', fontSize: 18, fontWeight: '900' },
-  barContainer: { height: 6, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 3, marginBottom: 16 },
-  bar: { height: 6, backgroundColor: '#FFF', borderRadius: 3 },
-  metricSub: { color: 'rgba(255,255,255,0.4)', fontSize: 11, lineHeight: 16, fontWeight: '500' },
+  metricLabel: { color: 'rgba(0,0,0,0.6)', fontSize: 13, fontWeight: '700' },
+  metricVal: { color: '#1A1A1A', fontSize: 18, fontWeight: '900' },
+  barContainer: { height: 6, backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: 3, marginBottom: 16 },
+  bar: { height: 6, backgroundColor: '#1A1A1A', borderRadius: 3 },
+  metricSub: { color: 'rgba(0,0,0,0.4)', fontSize: 11, lineHeight: 16, fontWeight: '500' },
 });

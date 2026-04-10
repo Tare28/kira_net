@@ -8,69 +8,154 @@ import {
   Globe,
   Camera,
   X,
-  ShieldCheck
+  ShieldCheck,
+  Shield
 } from 'lucide-react';
 
+// ── Synced with data/properties.ts from the mobile app ──────────────────────
 const listings = [
-  { id: '#KN-001', name: 'The Summit Residency', type: '1 Bed Room', location: 'Bole, Addis Ababa', sub: 'Near Edna Mall', price: '25,000', deposit: '50,000', status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=700&auto=format&fit=crop' },
-  { id: '#KN-002', name: 'Modern Garden Villa', type: '2 Bed Room', location: 'Old Airport, Addis Ababa', sub: 'Bisrate Gabriel', price: '45,000', deposit: '90,000', status: 'PENDING', agent: 'Abebe B.', initial: 'AB', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=700&auto=format&fit=crop' },
-  { id: '#KN-003', name: 'Kazanchis Studio', type: 'Studio', location: 'Kazanchis, Addis Ababa', sub: 'Near UN Hub', price: '18,500', deposit: '37,000', status: 'VERIFIED', agent: 'Sara H.', initial: 'SH', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=700&auto=format&fit=crop' },
-  { id: '#KN-004', name: 'Bole Road Shop', type: 'Shop', location: 'Bole Road, Addis Ababa', sub: 'Main Street', price: '85,000', deposit: '170,000', status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=700&auto=format&fit=crop' },
-  { id: '#KN-005', name: 'Artisan Cafe Spot', type: 'Cafe', location: 'Sarbet, Addis Ababa', sub: 'Vibe Square', price: '35,000', deposit: '70,000', status: 'PENDING', agent: 'Sara H.', initial: 'SH', image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-001', name: 'The Summit Residency',   type: '1 Bed Room',  location: 'Bole, Addis Ababa',        sub: 'Near Edna Mall',      price: '25,000',  deposit: '50,000',  trust: 91, badge: 'verified',  status: 'VERIFIED', agent: 'Desta M.',  initial: 'DM', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-002', name: 'Modern Garden Villa',    type: '2 Bed Room',  location: 'Old Airport, Addis Ababa', sub: 'Bisrate Gabriel',     price: '45,000',  deposit: '90,000',  trust: 64, badge: 'hot_deal',  status: 'PENDING',  agent: 'Abebe B.', initial: 'AB', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-003', name: 'Kazanchis Studio',       type: 'Studio',      location: 'Kazanchis, Addis Ababa',   sub: 'Near UN Hub',         price: '18,500',  deposit: '37,000',  trust: 97, badge: 'verified',  status: 'VERIFIED', agent: 'Sara H.',  initial: 'SH', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-004', name: 'Bole Road Shop Space',   type: 'Shop',        location: 'Bole Road, Addis Ababa',   sub: 'Main Street',         price: '85,000',  deposit: '170,000', trust: 88, badge: 'verified',  status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-005', name: 'Artisan Cafe Spot',      type: 'Cafe',        location: 'Sarbet, Addis Ababa',      sub: 'Vibe Square',         price: '35,000',  deposit: '70,000',  trust: 82, badge: 'hot_deal',  status: 'PENDING',  agent: 'Sara H.',  initial: 'SH', image: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-006', name: 'Gourmet Dining Hall',    type: 'Restaurant',  location: 'Piassa, Addis Ababa',      sub: 'Historic Center',     price: '120,000', deposit: '240,000', trust: 95, badge: 'verified',  status: 'VERIFIED', agent: 'Desta M.', initial: 'DM', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=700&auto=format&fit=crop' },
+  { id: '#KN-007', name: 'Shared Coworking Hub',   type: 'Other',       location: 'Haya Hulet, Addis Ababa',  sub: 'Startup Zone',        price: '12,000',  deposit: '24,000',  trust: 94, badge: 'verified',  status: 'VERIFIED', agent: 'Sara H.',  initial: 'SH', image: 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?q=80&w=700&auto=format&fit=crop' },
 ];
 
+const FILTER_TABS = ['All', 'Verified', 'Pending', 'Hot Deal', 'Studio', '1 Bed Room', '2 Bed Room', 'Shop', 'Cafe', 'Restaurant', 'Other'];
+
+function trustColor(score: number) {
+  if (score >= 85) return { bg: '#F4F9EB', color: '#9CC942' };
+  if (score >= 60) return { bg: '#FEF3C7', color: '#F59E0B' };
+  return { bg: '#FEE2E2', color: '#EF4444' };
+}
 
 export default function ListingsView() {
   const [reviewItem, setReviewItem] = useState<any>(null);
   const [data, setData] = useState(listings);
+  const [activeFilter, setActiveFilter] = useState('All');
 
   const handleUpdateStatus = (id: string, newStatus: string) => {
     setData(prev => prev.map(l => l.id === id ? { ...l, status: newStatus } : l));
     setReviewItem(null);
   };
+
+  const filtered = data.filter(item => {
+    if (activeFilter === 'All') return true;
+    if (activeFilter === 'Verified') return item.status === 'VERIFIED';
+    if (activeFilter === 'Pending') return item.status === 'PENDING';
+    if (activeFilter === 'Hot Deal') return item.badge === 'hot_deal';
+    return item.type === activeFilter;
+  });
+
+  const handleApproveAll = () => {
+    if (window.confirm('Are you sure you want to approve all pending listings?')) {
+        setData(prev => prev.map(l => l.status === 'PENDING' ? { ...l, status: 'VERIFIED' } : l));
+        alert('All pending listings have been approved.');
+    }
+  };
+
+  const handleRejectAll = () => {
+    if (window.confirm('Are you sure you want to reject all pending listings? This action is irreversible.')) {
+        setData(prev => prev.map(l => l.status === 'PENDING' ? { ...l, status: 'REJECTED' } : l));
+        alert('All pending listings have been rejected.');
+    }
+  };
+
+  const pendingCount = data.filter(d => d.status === 'PENDING').length;
+  const verifiedCount = data.filter(d => d.status === 'VERIFIED').length;
+
   return (
     <section>
         <div className="view-header">
             <div className="view-title">
-                <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Marketplace Inventory</p>
+                <p style={{ fontWeight: 800, color: '#9CC942', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Marketplace Inventory</p>
                 <h1>Verified Quality.<br/><span style={{ opacity: 0.1 }}>Asset Governance.</span></h1>
             </div>
             <div className="summary-cards hide-mobile" style={{ display: 'flex', gap: '20px' }}>
                 <div style={{ background: 'white', padding: '24px 32px', borderRadius: '20px', border: '1px solid #F1F5F9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>TOTAL ACTIVE</span>
-                    <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#10B981', margin: 0 }}>1,284</h2>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>TOTAL LISTINGS</span>
+                    <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#9CC942', margin: 0 }}>{data.length}</h2>
+                </div>
+                <div style={{ background: 'white', padding: '24px 32px', borderRadius: '20px', border: '1px solid #F1F5F9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>VERIFIED</span>
+                    <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#9CC942', margin: 0 }}>{verifiedCount}</h2>
                 </div>
                 <div style={{ background: 'white', padding: '24px 32px', borderRadius: '20px', border: '1px solid #F1F5F9', boxShadow: '0 4px 20px rgba(0,0,0,0.02)' }}>
                     <span style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', textTransform: 'uppercase' }}>PENDING REVIEW</span>
-                    <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#8B5CF6', margin: 0 }}>42</h2>
+                    <h2 style={{ fontSize: '32px', fontWeight: 900, color: '#8B5CF6', margin: 0 }}>{pendingCount}</h2>
                 </div>
             </div>
         </div>
 
         <div className="listings-actions" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '32px', alignItems: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <div className="filter-tabs" style={{ display: 'flex', gap: '8px', background: 'white', padding: '4px', borderRadius: '12px', border: '1px solid #F1F5F9', overflowX: 'auto' }}>
-                <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, background: '#10B981', color: 'white', whiteSpace: 'nowrap' }}>All</button>
-                <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, color: '#64748B', whiteSpace: 'nowrap' }}>Pending</button>
-                <button style={{ padding: '10px 24px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, color: '#64748B', whiteSpace: 'nowrap' }}>Verified</button>
+                {FILTER_TABS.map(tab => (
+                    <button 
+                        key={tab}
+                        onClick={() => setActiveFilter(tab)}
+                        style={{ 
+                            padding: '10px 20px', borderRadius: '9px', fontSize: '13px', fontWeight: 800, 
+                            whiteSpace: 'nowrap',
+                            background: activeFilter === tab ? '#9CC942' : 'transparent',
+                            color: activeFilter === tab ? 'white' : '#64748B'
+                        }}>
+                        {tab}
+                    </button>
+                ))}
             </div>
             <div className="bulk-actions" style={{ display: 'flex', gap: '12px' }}>
-                <button style={{ background: '#10B981', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '13px', fontWeight: 800 }}>
-                    <CheckCircle2 size={16}/> Approve All
+                <button 
+                  onClick={handleApproveAll}
+                  disabled={pendingCount === 0}
+                  style={{ 
+                    background: pendingCount === 0 ? '#E2E8F0' : '#9CC942', 
+                    color: 'white', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    padding: '12px 24px', 
+                    borderRadius: '12px', 
+                    fontSize: '13px', 
+                    fontWeight: 800,
+                    cursor: pendingCount === 0 ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                    <CheckCircle2 size={16}/> Approve All Pending
                 </button>
-                <button className="hide-mobile" style={{ border: '1px solid #F1F5F9', color: '#EF4444', display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 24px', borderRadius: '12px', fontSize: '13px', fontWeight: 800 }}>
+                <button 
+                  className="hide-mobile" 
+                  onClick={handleRejectAll}
+                  disabled={pendingCount === 0}
+                  style={{ 
+                    border: '1px solid #F1F5F9', 
+                    color: '#EF4444', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '8px', 
+                    padding: '12px 24px', 
+                    borderRadius: '12px', 
+                    fontSize: '13px', 
+                    fontWeight: 800,
+                    cursor: pendingCount === 0 ? 'not-allowed' : 'pointer',
+                    opacity: pendingCount === 0 ? 0.5 : 1
+                  }}
+                >
                     <XCircle size={16}/> Reject All
                 </button>
             </div>
         </div>
 
         <div className="table-scroll-container">
-            <table style={{ minWidth: '1000px' }}>
+            <table style={{ minWidth: '1100px' }}>
                 <thead>
                     <tr>
                         <th>ID</th>
                         <th>Property</th>
                         <th>Location</th>
-                        <th>Price</th>
+                        <th>Price / Deposit</th>
+                        <th>Trust Score</th>
                         <th>Utilities</th>
                         <th>Status</th>
                         <th>Agent</th>
@@ -78,15 +163,22 @@ export default function ListingsView() {
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((item, idx) => (
+                    {filtered.map((item, idx) => {
+                        const tc = trustColor(item.trust);
+                        return (
                         <tr key={idx}>
-                            <td style={{ fontWeight: 800, color: '#10B981', fontSize: '13px' }}>{item.id}</td>
+                            <td style={{ fontWeight: 800, color: '#9CC942', fontSize: '13px' }}>{item.id}</td>
                             <td>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                     <img src={item.image} alt="" style={{ width: '48px', height: '48px', borderRadius: '12px', objectFit: 'cover', border: '1px solid #F1F5F9' }} />
                                     <div>
                                         <strong style={{ display: 'block', fontSize: '14px', marginBottom: '2px' }}>{item.name}</strong>
-                                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>{item.type}</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                            <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>{item.type}</span>
+                                            {item.badge === 'hot_deal' && (
+                                                <span style={{ fontSize: '9px', fontWeight: 900, background: '#FEE2E2', color: '#EF4444', padding: '2px 8px', borderRadius: '100px' }}>HOT DEAL</span>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </td>
@@ -99,7 +191,17 @@ export default function ListingsView() {
                                 <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Deposit: {item.deposit}</span>
                             </td>
                             <td>
-                                <div style={{ display: 'flex', gap: '12px', color: '#10B981' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ width: '40px', height: '6px', borderRadius: '100px', background: '#F1F5F9', overflow: 'hidden' }}>
+                                        <div style={{ width: `${item.trust}%`, height: '100%', background: tc.color, borderRadius: '100px' }} />
+                                    </div>
+                                    <span style={{ fontSize: '11px', fontWeight: 900, color: tc.color, background: tc.bg, padding: '3px 10px', borderRadius: '100px' }}>
+                                        {item.trust}%
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style={{ display: 'flex', gap: '12px', color: '#9CC942' }}>
                                     <Droplets size={14}/>
                                     <Zap size={14}/>
                                     <Globe size={14}/>
@@ -111,8 +213,8 @@ export default function ListingsView() {
                                     borderRadius: '100px', 
                                     fontSize: '10px', 
                                     fontWeight: 900,
-                                    background: item.status === 'VERIFIED' ? '#D1FAE5' : item.status === 'REJECTED' ? '#FEE2E2' : '#FEF3C7',
-                                    color: item.status === 'VERIFIED' ? '#10B981' : item.status === 'REJECTED' ? '#EF4444' : '#F59E0B'
+                                    background: item.status === 'VERIFIED' ? '#F4F9EB' : item.status === 'REJECTED' ? '#FEE2E2' : '#FEF3C7',
+                                    color: item.status === 'VERIFIED' ? '#9CC942' : item.status === 'REJECTED' ? '#EF4444' : '#F59E0B'
                                 }}>{item.status}</span>
                             </td>
                             <td>
@@ -125,7 +227,7 @@ export default function ListingsView() {
                                 {item.status === 'PENDING' ? (
                                     <button 
                                         onClick={() => setReviewItem(item)}
-                                        style={{ background: '#10B981', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}
+                                        style={{ background: '#9CC942', color: 'white', padding: '8px 16px', borderRadius: '8px', fontSize: '11px', fontWeight: 800 }}
                                     >
                                         Review
                                     </button>
@@ -134,9 +236,15 @@ export default function ListingsView() {
                                 )}
                              </td>
                         </tr>
-                    ))}
+                        );
+                    })}
                 </tbody>
             </table>
+            {filtered.length === 0 && (
+                <div style={{ padding: '60px', textAlign: 'center', color: '#64748B', fontWeight: 700 }}>
+                    No listings match this filter.
+                </div>
+            )}
         </div>
 
         {/* Verification Review Modal */}
@@ -147,9 +255,16 @@ export default function ListingsView() {
                     <div style={{ padding: '24px 32px', borderBottom: '1px solid #F1F5F9', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                         <div>
                             <h2 style={{ fontSize: '20px', fontWeight: 900 }}>Property Field Report</h2>
-                            <p style={{ color: '#64748B', fontSize: '12px', fontWeight: 600 }}>Reviewing physical inspection data for {reviewItem.id}</p>
+                            <p style={{ color: '#64748B', fontSize: '12px', fontWeight: 600 }}>Reviewing physical inspection data for {reviewItem.id} — {reviewItem.name}</p>
                         </div>
-                        <button onClick={() => setReviewItem(null)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20}/></button>
+                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                            {/* Trust score in modal header */}
+                            <div style={{ background: trustColor(reviewItem.trust).bg, padding: '8px 16px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Shield size={14} color={trustColor(reviewItem.trust).color}/>
+                                <span style={{ fontSize: '13px', fontWeight: 900, color: trustColor(reviewItem.trust).color }}>Trust: {reviewItem.trust}%</span>
+                            </div>
+                            <button onClick={() => setReviewItem(null)} style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#F8FAFC', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20}/></button>
+                        </div>
                     </div>
 
                     <div className="modal-body-scroll" style={{ display: 'flex', flexDirection: 'row', flex: 1, overflowY: 'auto', flexWrap: 'wrap' }}>
@@ -157,7 +272,7 @@ export default function ListingsView() {
                         <div style={{ flex: '1.2', minWidth: '350px', background: '#F8FAFC', padding: '32px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
                                 <h4 style={{ fontSize: '14px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}><Camera size={16}/> Certified Media</h4>
-                                <span style={{ color: '#10B981', fontSize: '11px', fontWeight: 800 }}>8 Photos Taken Today</span>
+                                <span style={{ color: '#9CC942', fontSize: '11px', fontWeight: 800 }}>8 Photos Taken Today</span>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '16px' }}>
                                 <img src={reviewItem.image} alt="" style={{ width: '100%', aspectRatio: '4/3', objectFit: 'cover', borderRadius: '12px' }} />
@@ -180,10 +295,10 @@ export default function ListingsView() {
                                     ].map((item, id) => (
                                         <div key={id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', background: '#F0FDF4', borderRadius: '12px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                <div style={{ color: '#10B981' }}>{item.icon}</div>
+                                                <div style={{ color: '#9CC942' }}>{item.icon}</div>
                                                 <span style={{ fontSize: '13px', fontWeight: 700 }}>{item.label}</span>
                                             </div>
-                                            <span style={{ fontSize: '10px', fontWeight: 900, color: '#10B981' }}>{item.state}</span>
+                                            <span style={{ fontSize: '10px', fontWeight: 900, color: '#9CC942' }}>{item.state}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -191,7 +306,7 @@ export default function ListingsView() {
 
                             <div style={{ background: '#F8FAFC', padding: '20px', borderRadius: '16px', marginBottom: '32px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#10B981', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: 800 }}>DS</div>
+                                    <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#9CC942', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '10px', fontWeight: 800 }}>{reviewItem.initial}</div>
                                     <div>
                                         <p style={{ fontSize: '12px', fontWeight: 800 }}>{reviewItem.agent}</p>
                                         <p style={{ fontSize: '10px', color: '#64748B', fontWeight: 600 }}>Field Agent Feedback</p>
@@ -205,7 +320,7 @@ export default function ListingsView() {
                             <div style={{ display: 'flex', gap: '12px', position: 'sticky', bottom: 0, background: 'white', padding: '10px 0' }}>
                                 <button 
                                     onClick={() => handleUpdateStatus(reviewItem.id, 'VERIFIED')}
-                                    style={{ flex: 1, background: '#10B981', color: 'white', padding: '16px', borderRadius: '14px', fontSize: '13px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                                    style={{ flex: 1, background: '#9CC942', color: 'white', padding: '16px', borderRadius: '14px', fontSize: '13px', fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
                                 >
                                     <ShieldCheck size={18}/> Approve & Certify
                                 </button>

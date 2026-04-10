@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Keyboa
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 import { Image } from 'expo-image';
 
 export default function ReportListingScreen() {
@@ -24,7 +25,7 @@ export default function ReportListingScreen() {
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-            <Feather name="arrow-left" size={20} color="#005C3A" />
+            <Feather name="arrow-left" size={20} color="#9CC942" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Report Listing</Text>
         </View>
@@ -115,7 +116,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#005C3A',
+    color: '#9CC942',
     marginLeft: 16,
   },
   scrollContent: {
@@ -167,13 +168,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   radioOuterSelected: {
-    borderColor: '#005C3A',
+    borderColor: '#9CC942',
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#005C3A',
+    backgroundColor: KiraColors.primary,
   },
   reasonText: {
     fontSize: 14,
@@ -243,18 +244,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#F7F8F9',
   },
   submitButton: {
-    backgroundColor: '#006C45',
+    backgroundColor: KiraColors.primary,
     borderRadius: 30,
     paddingVertical: 18,
     alignItems: 'center',
-    shadowColor: '#005C3A',
+    shadowColor: '#9CC942',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
     elevation: 4,
   },
   submitButtonText: {
-    color: '#FFF',
+    color: '#1A1A1A',
     fontSize: 15,
     fontWeight: '700',
   },

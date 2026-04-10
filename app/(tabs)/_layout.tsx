@@ -1,43 +1,66 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
+import { Tabs, usePathname } from 'expo-router';
+import React, { useMemo } from 'react';
 import { View, Platform, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { KiraColors } from '@/constants/colors';
 import { router } from 'expo-router';
 import Svg, { Path } from 'react-native-svg';
+import Animated, { useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useAlerts } from '@/context/AlertsContext';
 
 const { width } = Dimensions.get('window');
+const TAB_COUNT = 5;
+const TAB_WIDTH = width / TAB_COUNT;
 
-const CurvedBackground = () => (
-  <View style={styles.svgContainer}>
-    <Svg width={width} height={75} viewBox={`0 0 ${width} 75`}>
-      <Path
-        d={`M0 0 
-           L${width / 2 - 36} 0 
-           C${width / 2 - 26} 0, ${width / 2 - 22} 22, ${width / 2} 22 
-           C${width / 2 + 22} 22, ${width / 2 + 26} 0, ${width / 2 + 36} 0 
-           L${width} 0 
-           L${width} 75 
-           L0 75 
-           Z`}
-        fill="#FFFFFF"
-      />
-    </Svg>
-    {/* Top border line */}
-    <View style={styles.topBorderLeft} />
-    <View style={styles.topBorderRight} />
-  </View>
-);
+const CurvedBackground = ({ activeIndex }: { activeIndex: number }) => {
+  const animatedDotStyle = useAnimatedStyle(() => {
+    const targetX = (activeIndex - (TAB_COUNT / 2 - 0.5)) * TAB_WIDTH;
+    return {
+      transform: [{ translateX: withSpring(targetX, { damping: 15, stiffness: 90 }) }],
+    };
+  });
+
+  return (
+    <View style={styles.svgContainer}>
+      <Svg width={width} height={75} viewBox={`0 0 ${width} 75`} style={StyleSheet.absoluteFill}>
+        <Path
+          d={`M0 0 
+             L${width / 2 - 36} 0 
+             C${width / 2 - 26} 0, ${width / 2 - 22} 22, ${width / 2} 22 
+             C${width / 2 + 22} 22, ${width / 2 + 26} 0, ${width / 2 + 36} 0 
+             L${width} 0 
+             L${width} 75 
+             L0 75 
+             Z`}
+          fill="#FFFFFF"
+        />
+      </Svg>
+
+      <Animated.View style={[styles.movingContainer, animatedDotStyle]}>
+         <View style={styles.liquidDip} />
+      </Animated.View>
+    </View>
+  );
+};
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+
+  const activeIndex = useMemo(() => {
+    if (pathname === '/' || pathname === '/(tabs)') return 0;
+    if (pathname.includes('locations')) return 1;
+    if (pathname.includes('saved')) return 3;
+    if (pathname.includes('profile')) return 4;
+    return 2; // Spacer/Center
+  }, [pathname]);
 
   return (
     <>
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#0F172A',
+          tabBarActiveTintColor: KiraColors.primary,
           tabBarInactiveTintColor: '#94A3B8',
           headerShown: false,
           tabBarStyle: {
@@ -50,9 +73,9 @@ export default function TabLayout() {
             elevation: 0,
             borderTopWidth: 0,
           },
-          tabBarBackground: () => <CurvedBackground />,
+          tabBarBackground: () => <CurvedBackground activeIndex={activeIndex} />,
           tabBarLabelStyle: {
-            fontSize: 9,
+            fontSize: 8,
             fontWeight: '700',
             marginBottom: Platform.OS === 'ios' ? 0 : 6,
             marginTop: -2,
@@ -63,8 +86,11 @@ export default function TabLayout() {
           options={{
             title: 'Home',
             tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconWrap, focused && styles.activeIconWrap]}>
-                <Feather size={18} name="home" color={focused ? '#0F172A' : '#94A3B8'} />
+              <View style={styles.iconContainer}>
+                {focused && <View style={styles.activeDot} />}
+                <View style={[styles.iconWrap, { transform: [{ scale: focused ? 1.15 : 1 }] }]}>
+                  <Feather size={18} name="home" color={focused ? KiraColors.primary : '#94A3B8'} />
+                </View>
               </View>
             ),
           }}
@@ -74,8 +100,11 @@ export default function TabLayout() {
           options={{
             title: 'Areas',
             tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconWrap, focused && styles.activeIconWrap]}>
-                <Feather size={18} name="map-pin" color={focused ? '#0F172A' : '#94A3B8'} />
+              <View style={styles.iconContainer}>
+                {focused && <View style={styles.activeDot} />}
+                <View style={[styles.iconWrap, { transform: [{ scale: focused ? 1.15 : 1 }] }]}>
+                  <Feather size={18} name="map-pin" color={focused ? KiraColors.primary : '#94A3B8'} />
+                </View>
               </View>
             ),
           }}
@@ -91,20 +120,25 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
-          name="saved"
+          name="alerts"
           options={{
-            title: 'Saved',
-            tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconWrap, focused && styles.activeIconWrap]}>
-                <Ionicons size={18} name={focused ? 'heart' : 'heart-outline'} color={focused ? '#0F172A' : '#94A3B8'} />
-              </View>
-            ),
+            href: null, // HIDDEN from tab bar as per user request
           }}
         />
 
         <Tabs.Screen
-          name="alerts"
-          options={{ href: null }}
+          name="saved"
+          options={{
+            title: 'Saved',
+            tabBarIcon: ({ focused }) => (
+              <View style={styles.iconContainer}>
+                {focused && <View style={styles.activeDot} />}
+                <View style={[styles.iconWrap, { transform: [{ scale: focused ? 1.15 : 1 }] }]}>
+                  <Ionicons size={18} name={focused ? 'heart' : 'heart-outline'} color={focused ? KiraColors.primary : '#94A3B8'} />
+                </View>
+              </View>
+            ),
+          }}
         />
 
         <Tabs.Screen
@@ -112,8 +146,11 @@ export default function TabLayout() {
           options={{
             title: 'Profile',
             tabBarIcon: ({ focused }) => (
-              <View style={[styles.iconWrap, focused && styles.activeIconWrap]}>
-                <Feather size={18} name="user" color={focused ? '#0F172A' : '#94A3B8'} />
+              <View style={styles.iconContainer}>
+                {focused && <View style={styles.activeDot} />}
+                <View style={[styles.iconWrap, { transform: [{ scale: focused ? 1.15 : 1 }] }]}>
+                  <Feather size={18} name="user" color={focused ? KiraColors.primary : '#94A3B8'} />
+                </View>
               </View>
             ),
           }}
@@ -146,22 +183,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  topBorderLeft: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: width / 2 - 36,
-    height: 1,
-    backgroundColor: '#F1F5F9',
-  },
-  topBorderRight: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: width / 2 - 36,
-    height: 1,
-    backgroundColor: '#F1F5F9',
-  },
   centerBtnContainer: {
     position: 'absolute',
     left: width / 2 - 22,
@@ -182,14 +203,37 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 8,
   },
-  iconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 4,
   },
-  activeIconWrap: {
-    backgroundColor: '#F1F5F9',
+  activeDot: {
+    position: 'absolute',
+    top: -12,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: KiraColors.primary,
+  },
+  movingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: 'center',
+    width: width,
+    zIndex: -1,
+  },
+  liquidDip: {
+    width: 24,
+    height: 3,
+    backgroundColor: KiraColors.primary,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    position: 'absolute',
+    top: 0,
+    shadowColor: KiraColors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 4,
   },
 });

@@ -25,10 +25,10 @@ const ReportsView: React.FC<ReportsProps> = () => {
     <section>
         <div className="view-header">
             <div className="view-title">
-                <p style={{ fontWeight: 800, color: '#10B981', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Strategic Assets</p>
+                <p style={{ fontWeight: 800, color: '#9CC942', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Strategic Assets</p>
                 <h1>Platform Intel.<br/><span style={{ opacity: 0.1 }}>Analytical Governance.</span></h1>
             </div>
-            <button style={{ background: '#10B981', color: 'white', padding: '14px 40px', borderRadius: '14px', fontSize: '14px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.2)', width: 'fit-content' }}>
+            <button style={{ background: '#9CC942', color: 'white', padding: '14px 40px', borderRadius: '14px', fontSize: '14px', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(16, 185, 129, 0.2)', width: 'fit-content' }}>
                 <FileCheck size={18}/> <span className="hide-mobile">Generate Report</span><span className="show-mobile" style={{ display: 'none' }}>Generate</span>
             </button>
         </div>
@@ -59,7 +59,7 @@ const ReportsView: React.FC<ReportsProps> = () => {
                 <tbody>
                     {reports.map((report, idx) => (
                         <tr key={idx}>
-                            <td style={{ fontWeight: 800, color: '#10B981', fontSize: '13px' }}>{report.id}</td>
+                            <td style={{ fontWeight: 800, color: '#9CC942', fontSize: '13px' }}>{report.id}</td>
                             <td>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                     <div style={{ width: '40px', height: '40px', background: '#F8FAFC', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B' }}>
@@ -86,15 +86,15 @@ const ReportsView: React.FC<ReportsProps> = () => {
                                 {report.status === 'FLAGGED' ? (
                                     <span className="pulse-critical" style={{ fontSize: '11px', fontWeight: 900, color: '#EF4444', gap: '6px' }}><AlertTriangle size={14}/> FLAGGED</span>
                                 ) : (
-                                    <span style={{ fontSize: '11px', fontWeight: 900, color: report.status === 'COMPLETED' ? '#10B981' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: report.status === 'COMPLETED' ? '#10B981' : '#64748B' }}></div>
+                                    <span style={{ fontSize: '11px', fontWeight: 900, color: report.status === 'COMPLETED' ? '#9CC942' : '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: report.status === 'COMPLETED' ? '#9CC942' : '#64748B' }}></div>
                                         {report.status}
                                     </span>
                                 )}
                             </td>
                             <td>
                                 <div style={{ display: 'flex', gap: '12px' }}>
-                                    <button style={{ color: '#10B981' }}><Download size={18}/></button>
+                                    <button style={{ color: '#9CC942' }}><Download size={18}/></button>
                                     <button style={{ color: '#64748B' }}><MoreHorizontal size={18}/></button>
                                 </div>
                             </td>

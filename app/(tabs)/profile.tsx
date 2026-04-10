@@ -1,16 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-
+import * as ImagePicker from 'expo-image-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Image } from 'expo-image';
 import { KiraColors } from '@/constants/colors';
+import { useAlerts } from '@/context/AlertsContext';
 
 export default function ProfileScreen() {
+  const { unreadCount } = useAlerts();
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [userName, setUserName] = useState('Cityzens User');
   const [userEmail, setUserEmail] = useState('user@kiranet.com');
+  const [userImage, setUserImage] = useState<string | null>(null);
 
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    try {
+      const img = await AsyncStorage.getItem('@user_image');
+      const name = await AsyncStorage.getItem('@user_name');
+      const email = await AsyncStorage.getItem('@user_email');
+      if (img) setUserImage(img);
+      if (name) setUserName(name);
+      if (email) setUserEmail(email);
+    } catch (e) {
+      console.warn('AsyncStorage not available', e);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      const uri = result.assets[0].uri;
+      setUserImage(uri);
+      try {
+        await AsyncStorage.setItem('@user_image', uri);
+      } catch (e) {}
+    }
+  };
+
+  const saveProfile = async () => {
+    try {
+      await AsyncStorage.setItem('@user_name', userName);
+      await AsyncStorage.setItem('@user_email', userEmail);
+    } catch (e) {}
+    setIsEditModalVisible(false);
+    Alert.alert('Success', 'Profile updated successfully!');
+  };
   const menuSections = [
     {
       title: 'Account Settings',
@@ -73,9 +120,11 @@ export default function ProfileScreen() {
             style={styles.bellWrap}
           >
             <Feather name="bell" size={24} color={KiraColors.primary} />
-            <View style={styles.notifBadge}>
-              <Text style={styles.notifBadgeText}>3</Text>
-            </View>
+            {unreadCount > 0 && (
+              <View style={styles.notifBadge}>
+                <Text style={styles.notifBadgeText}>{unreadCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -83,9 +132,18 @@ export default function ProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
         <View style={styles.userCard}>
-          <View style={styles.userAvatar}>
-            <Feather name="user" size={32} color={KiraColors.primary} />
-          </View>
+          <TouchableOpacity style={styles.userAvatar} onPress={pickImage}>
+            {userImage ? (
+              <Image source={{ uri: userImage }} style={styles.avatarImg} />
+            ) : (
+              <Text style={styles.avatarInitials}>
+                {userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              </Text>
+            )}
+            <View style={styles.cameraBadge}>
+              <Feather name="camera" size={10} color="#FFF" />
+            </View>
+          </TouchableOpacity>
           <View style={styles.userInfo}>
             <Text style={styles.userName}>{userName}</Text>
             <Text style={styles.userEmail}>{userEmail}</Text>
@@ -168,10 +226,7 @@ export default function ProfileScreen() {
 
             <TouchableOpacity 
               style={styles.saveBtn} 
-              onPress={() => {
-                setIsEditModalVisible(false);
-                Alert.alert('Success', 'Profile updated successfully!');
-              }}
+              onPress={saveProfile}
             >
               <Text style={styles.saveBtnText}>Save Changes</Text>
             </TouchableOpacity>
@@ -202,7 +257,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '800',
     color: '#1A1A1A',
-    marginLeft: 30, // Offset to center correctly with two icons on right
+    flex: 1,
+    textAlign: 'center',
   },
   headerRight: {
     flexDirection: 'row',
@@ -243,13 +299,40 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   userAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#E8F5E9',
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    backgroundColor: '#F3F4F6',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+    borderWidth: 2,
+    borderColor: KiraColors.primary,
+    position: 'relative',
+    overflow: 'visible',
+  },
+  avatarImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 32.5,
+  },
+  avatarInitials: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: KiraColors.primary,
+  },
+  cameraBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: KiraColors.primary,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
   userInfo: {
     flex: 1,

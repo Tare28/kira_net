@@ -1,15 +1,43 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useVisitPlan } from '@/context/VisitPlanContext';
-
+import { useSaved } from '@/context/SavedContext';
 import { KiraColors } from '@/constants/colors';
+import * as Haptics from 'expo-haptics';
+import Animated, { FadeInUp, FadeOutDown, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 
 export default function SavedScreen() {
   const { visits } = useVisitPlan();
+  const { saved, unsaveProperty, saveProperty } = useSaved();
+  const [showToast, setShowToast] = useState(false);
+  const [lastUnsaved, setLastUnsaved] = useState<any>(null);
+  const toastTimer = useRef<any>(null);
+
+  const handleUnsave = (item: any) => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    setLastUnsaved(item);
+    unsaveProperty(item.id);
+    
+    // Show toast
+    setShowToast(true);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => {
+      setShowToast(false);
+    }, 4000);
+  };
+
+  const handleUndo = () => {
+    if (lastUnsaved) {
+      saveProperty(lastUnsaved);
+      setShowToast(false);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
@@ -24,7 +52,10 @@ export default function SavedScreen() {
         <View style={styles.titleSection}>
           <Text style={styles.pageTitle}>Your Favorites</Text>
           <Text style={styles.pageSubtitle}>
-            Keep track of the properties you love. You have 4 saved rentals in Addis Ababa.
+            {saved.length === 0
+              ? 'Properties you heart will appear here.'
+              : `You have ${saved.length} saved rental${saved.length === 1 ? '' : 's'} in Addis Ababa.`
+            }
           </Text>
         </View>
 
@@ -76,70 +107,107 @@ export default function SavedScreen() {
           <Feather name="chevron-right" size={18} color={KiraColors.primary} />
         </TouchableOpacity>
 
-        <TouchableOpacity activeOpacity={0.92} onPress={() => router.push({ pathname: '/property-details', params: { id: '1' } })}>
-          <SavedCard 
-            image="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=600&auto=format&fit=crop"
-            price="45,000"
-            title="Luxury Bole Loft"
-            location="Bole, Addis Ababa"
-            isVerified={true}
-          />
-        </TouchableOpacity>
+        {/* ── Live Saved Properties ─────────────────────────────────── */}
+        {saved.length === 0 ? (
+          <View style={styles.emptyStateContainer}>
+            <View style={styles.emptyIllustration}>
+              <View style={styles.illustrationCircle}>
+                <Ionicons name="heart" size={40} color={KiraColors.primary} />
+                <View style={styles.miniHeart}>
+                   <Ionicons name="sparkles" size={14} color="#FFF" />
+                </View>
+              </View>
+              <View style={[styles.floatingIcon, { top: 0, left: -20 }]}>
+                <Ionicons name="home" size={20} color="#E2E8F0" />
+              </View>
+              <View style={[styles.floatingIcon, { bottom: 10, right: -15 }]}>
+                <Ionicons name="search" size={18} color="#E2E8F0" />
+              </View>
+            </View>
+            <Text style={styles.emptyStateTitle}>Your hearts are lonely</Text>
+            <Text style={styles.emptyStateSubtitle}>
+              Properties you like will show up here. Start exploring the best homes in Addis!
+            </Text>
+            <TouchableOpacity
+              style={styles.exploreBtn}
+              onPress={() => router.push('/(tabs)')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.exploreBtnText}>Go Finding Gems</Text>
+              <Feather name="compass" size={16} color="#FFF" style={{ marginLeft: 8 }} />
+            </TouchableOpacity>
+          </View>
+        ) : (
+          saved.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              activeOpacity={0.92}
+              onPress={() => router.push({ pathname: '/property-details', params: { id: item.id } })}
+            >
+              <SavedCard
+                image={item.image}
+                price={item.price}
+                title={item.title}
+                location={item.location}
+                isVerified={item.badge === 'verified'}
+                onUnsave={() => handleUnsave(item)}
+              />
+            </TouchableOpacity>
+          ))
+        )}
 
-        <TouchableOpacity activeOpacity={0.92} onPress={() => router.push({ pathname: '/property-details', params: { id: '3' } })}>
-          <SavedCard 
-            image="https://images.unsplash.com/photo-1554995207-c18c203602cb?q=80&w=600&auto=format&fit=crop"
-            price="28,500"
-            title="Skyline View Studio"
-            location="Kazanchis, Addis Ababa"
-            isVerified={true}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity activeOpacity={0.92} onPress={() => router.push({ pathname: '/property-details', params: { id: '2' } })}>
-          <SavedCard 
-            image="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=600&auto=format&fit=crop"
-            price="60,000"
-            title="Garden Oasis Villa"
-            location="Old Airport, Addis Ababa"
-            isVerified={true}
-          />
-        </TouchableOpacity>
-
-        <TouchableOpacity activeOpacity={0.92} onPress={() => router.push({ pathname: '/property-details', params: { id: '3' } })}>
-          <SavedCard 
-            image="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop"
-            price="32,000"
-            title="Modern CMC Apartment"
-            location="CMC, Addis Ababa"
-            isVerified={true}
-          />
-        </TouchableOpacity>
-
-        {/* Promote Card */}
-        <View style={styles.promoteCard}>
-           <View style={styles.starIconWrap}>
-             <Ionicons name="star" size={16} color="#FFF" />
-           </View>
-           <Text style={styles.promoteTitle}>Find more gems</Text>
-           <Text style={styles.promoteSubtitle}>
-             Based on your favorites, we found 12 new listings in Bole that match your style.
-           </Text>
-           <TouchableOpacity style={styles.promoteBtn}>
-             <Text style={styles.promoteBtnText}>See Recommendations</Text>
-           </TouchableOpacity>
-        </View>
+        {/* Promote Card — only show when list has items */}
+        {saved.length > 0 && (
+          <View style={styles.promoteCard}>
+            <View style={styles.starIconWrap}>
+              <Ionicons name="star" size={16} color="#FFF" />
+            </View>
+            <Text style={styles.promoteTitle}>Find more gems</Text>
+            <Text style={styles.promoteSubtitle}>
+              Based on your favorites, explore more listings that match your style.
+            </Text>
+            <TouchableOpacity style={styles.promoteBtn} onPress={() => router.push('/(tabs)')}>
+              <Text style={styles.promoteBtnText}>See Recommendations</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Undo Toast */}
+      {showToast && (
+        <Animated.View 
+          entering={SlideInDown.springify()} 
+          exiting={SlideOutDown}
+          style={styles.toastContainer}
+        >
+          <View style={styles.toastInner}>
+            <View style={styles.toastLeft}>
+              <Ionicons name="trash-outline" size={16} color="#EF4444" />
+              <Text style={styles.toastText}>Removed from favorites</Text>
+            </View>
+            <TouchableOpacity onPress={handleUndo} style={styles.undoBtn}>
+              <Text style={styles.undoText}>UNDO</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      )}
     </SafeAreaView>
   );
 }
 
-function SavedCard({ image, price, title, location, isVerified }: any) {
+function SavedCard({ image, price, title, location, isVerified, onUnsave }: {
+  image: string;
+  price: string;
+  title: string;
+  location: string;
+  isVerified: boolean;
+  onUnsave: () => void;
+}) {
   return (
     <View style={styles.card}>
       <View style={styles.imageContainer}>
         <Image source={image} style={styles.cardImage} />
-        <TouchableOpacity style={styles.heartBtn}>
+        <TouchableOpacity style={styles.heartBtn} onPress={onUnsave}>
           <Ionicons name="heart" size={18} color={KiraColors.danger} style={{ marginTop: 2 }} />
         </TouchableOpacity>
         {isVerified && (
@@ -285,6 +353,89 @@ const styles = StyleSheet.create({
     color: '#4A5568',
     marginLeft: 4,
   },
+  // Empty State
+  emptyStateContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyIllustration: {
+    width: 120,
+    height: 120,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  illustrationCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#F0FDF4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#DCFCE7',
+  },
+  miniHeart: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: KiraColors.primary,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
+  },
+  floatingIcon: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  emptyStateTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: '#1A1A1A',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    color: '#64748B',
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 30,
+  },
+  exploreBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A1A1A',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  exploreBtnText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
   promoteCard: {
     backgroundColor: KiraColors.primary,
     borderRadius: 20,
@@ -419,5 +570,49 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#4A5568',
     fontWeight: '500',
+  },
+  // Toast Styles
+  toastContainer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 20,
+    right: 20,
+    zIndex: 100,
+  },
+  toastInner: {
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  toastLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  toastText: {
+    color: '#F8FAFC',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  undoBtn: {
+    backgroundColor: 'rgba(156, 201, 66, 0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  undoText: {
+    color: '#9CC942',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.5,
   },
 });

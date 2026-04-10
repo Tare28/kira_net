@@ -7,8 +7,10 @@ import { router } from 'expo-router';
 
 import { Dimensions } from 'react-native';
 import { useFilters } from '@/context/FilterContext';
-import { PROPERTIES } from '@/data/properties';
+import { KiraColors } from '@/constants/colors';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
+import { PROPERTIES } from '@/data/properties';
+import Animated, { SlideInDown } from 'react-native-reanimated';
 
 const { width } = Dimensions.get('window');
 
@@ -43,7 +45,7 @@ export default function FiltersModalScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} hitSlop={{top:10,bottom:10,left:10,right:10}}>
-            <Feather name="x" size={24} color="#005C3A" />
+            <Feather name="x" size={24} color={KiraColors.primary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Filters</Text>
           <TouchableOpacity hitSlop={{top:10,bottom:10,left:10,right:10}} onPress={handleReset}>
@@ -51,6 +53,10 @@ export default function FiltersModalScreen() {
           </TouchableOpacity>
         </View>
 
+        <Animated.View 
+        entering={SlideInDown.springify().damping(15)} 
+        style={{ flex: 1 }}
+      >
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
           {/* Budget Range */}
@@ -72,7 +78,7 @@ export default function FiltersModalScreen() {
                   step={1000}
                   allowOverlap={false}
                   snapped
-                  selectedStyle={{ backgroundColor: '#005C3A', height: 4 }}
+                  selectedStyle={{ backgroundColor: KiraColors.primary, height: 4 }}
                   unselectedStyle={{ backgroundColor: '#E5E7EB', height: 4 }}
                   trackStyle={{ height: 4 }}
                   markerStyle={{ 
@@ -81,7 +87,7 @@ export default function FiltersModalScreen() {
                     width: 24, 
                     borderRadius: 12, 
                     borderWidth: 3, 
-                    borderColor: '#005C3A',
+                    borderColor: KiraColors.primary,
                     top: 2,
                     shadowColor: '#000',
                     shadowOffset: { width: 0, height: 2 },
@@ -127,7 +133,7 @@ export default function FiltersModalScreen() {
               style={styles.dropdownInput}
               onPress={() => setShowLocationModal(true)}
             >
-              <Ionicons name="location-sharp" size={20} color="#005C3A" />
+              <Ionicons name="location-sharp" size={20} color={KiraColors.primary} />
               <Text style={styles.dropdownText}>{filters.neighborhood || 'Select Area'}, Addis Ababa</Text>
               <Feather name="chevron-down" size={20} color="#1A1A1A" style={{ marginLeft: 'auto' }} />
             </TouchableOpacity>
@@ -140,7 +146,7 @@ export default function FiltersModalScreen() {
                 >
                   <Text style={[styles.chipText, filters.neighborhood === hood && styles.chipTextActive]}>{hood}</Text>
                   {filters.neighborhood === hood && (
-                    <Feather name="x" size={12} color="#005C3A" style={{ marginLeft: 4 }} />
+                    <Feather name="x" size={12} color={KiraColors.primary} style={{ marginLeft: 4 }} />
                   )}
                 </TouchableOpacity>
               ))}
@@ -156,7 +162,7 @@ export default function FiltersModalScreen() {
                 onPress={() => toggleAmenity('Water')}
               >
                 <View style={styles.amenityIconWrap}>
-                  <Ionicons name="water" size={20} color={filters.essentialWater ? '#FFF' : '#005C3A'} />
+                  <Ionicons name="water" size={20} color={filters.essentialWater ? '#FFF' : KiraColors.primary} />
                 </View>
                 <Text style={[styles.amenityCardText, filters.essentialWater && styles.amenityTextActive]}>Constant Water Supply</Text>
               </TouchableOpacity>
@@ -165,7 +171,7 @@ export default function FiltersModalScreen() {
                 onPress={() => toggleAmenity('Internet')}
               >
                 <View style={styles.amenityIconWrap}>
-                  <Feather name="wifi" size={20} color={filters.essentialInternet ? '#FFF' : '#005C3A'} />
+                  <Feather name="wifi" size={20} color={filters.essentialInternet ? '#FFF' : KiraColors.primary} />
                 </View>
                 <Text style={[styles.amenityCardText, filters.essentialInternet && styles.amenityTextActive]}>Fiber Optic Internet</Text>
               </TouchableOpacity>
@@ -177,7 +183,7 @@ export default function FiltersModalScreen() {
             <Text style={styles.sectionTitle}>Electricity Setup</Text>
             <View style={styles.electricityCard}>
               <View style={styles.electricityIconWrap}>
-                <Ionicons name="flash" size={20} color="#005C3A" />
+                <Ionicons name="flash" size={20} color={KiraColors.primary} />
               </View>
               <View style={styles.electricityTextWrap}>
                 <Text style={styles.electricityTitle}>Private Electric Meter</Text>
@@ -186,7 +192,7 @@ export default function FiltersModalScreen() {
               <Switch
                 value={filters.privateMeter}
                 onValueChange={(val) => updateFilters({ privateMeter: val })}
-                trackColor={{ true: '#005C3A', false: '#D1D5DB' }}
+                trackColor={{ true: KiraColors.primary, false: '#D1D5DB' }}
                 thumbColor="#FFF"
               />
             </View>
@@ -205,7 +211,7 @@ export default function FiltersModalScreen() {
               <Switch
                 value={filters.isVerified}
                 onValueChange={(val) => updateFilters({ isVerified: val })}
-                trackColor={{ true: '#005C3A', false: '#D1D5DB' }}
+                trackColor={{ true: KiraColors.primary, false: '#D1D5DB' }}
                 thumbColor="#FFF"
               />
             </View>
@@ -219,13 +225,14 @@ export default function FiltersModalScreen() {
             />
             <View style={styles.mapOverlay}>
               <TouchableOpacity style={styles.mapBtn} onPress={() => Alert.alert('Interactive Map', 'This will open the fullscreen map view.')}>
-                <Feather name="map" size={14} color="#005C3A" />
+                <Feather name="map" size={14} color={KiraColors.primary} />
                 <Text style={styles.mapBtnText}>PREVIEW IN MAP</Text>
               </TouchableOpacity>
             </View>
           </View>
 
         </ScrollView>
+      </Animated.View>
 
         {/* Footer */}
         <View style={styles.footer}>
@@ -269,7 +276,7 @@ export default function FiltersModalScreen() {
                     }}
                   >
                     <Text style={styles.locationItemText}>{item}</Text>
-                    {filters.neighborhood === item && <Feather name="check" size={20} color="#005C3A" />}
+                    {filters.neighborhood === item && <Feather name="check" size={20} color={KiraColors.primary} />}
                   </TouchableOpacity>
                 )}
               />
@@ -294,8 +301,8 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     backgroundColor: '#FFF',
   },
-  headerTitle: { fontSize: 16, fontWeight: '700', color: '#005C3A' },
-  resetText: { fontSize: 14, fontWeight: '700', color: '#005C3A' },
+  headerTitle: { fontSize: 16, fontWeight: '700', color: KiraColors.primary },
+  resetText: { fontSize: 14, fontWeight: '700', color: KiraColors.primary },
   scrollContent: { paddingHorizontal: 20, paddingVertical: 24, paddingBottom: 20 },
   section: { marginBottom: 28 },
   sectionOverline: {
@@ -307,7 +314,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between', marginBottom: 16,
   },
   sectionTitleGreen: {
-    fontSize: 24, fontWeight: '900', color: '#005C3A', letterSpacing: -0.5,
+    fontSize: 24, fontWeight: '900', color: KiraColors.primary, letterSpacing: -0.5,
   },
   currencyText: { fontSize: 12, fontWeight: '700', color: '#6B7280' },
   sliderCard: { backgroundColor: '#F3F4F6', borderRadius: 20, padding: 24 },
@@ -319,12 +326,12 @@ const styles = StyleSheet.create({
     width: '100%', position: 'absolute',
   },
   sliderActiveLine: {
-    height: 8, backgroundColor: '#005C3A', borderRadius: 4,
+    height: 8, backgroundColor: KiraColors.primary, borderRadius: 4,
     width: '50%', position: 'absolute', left: '10%',
   },
   sliderThumb: {
     width: 24, height: 24, borderRadius: 12,
-    backgroundColor: '#FFF', borderWidth: 3, borderColor: '#005C3A',
+    backgroundColor: '#FFF', borderWidth: 3, borderColor: KiraColors.primary,
     position: 'absolute', top: 3,
   },
   minMaxRow: {
@@ -360,13 +367,13 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: '#E8F5E9' },
   chipText: { fontSize: 12, fontWeight: '600', color: '#6B7280' },
-  chipTextActive: { color: '#005C3A', fontWeight: '700' },
+  chipTextActive: { color: KiraColors.primary, fontWeight: '700' },
   amenitiesGrid: { flexDirection: 'row', justifyContent: 'space-between' },
   amenityCard: {
     flex: 1, backgroundColor: '#FFF', borderRadius: 16,
     padding: 16, marginHorizontal: 6, borderWidth: 1, borderColor: '#F3F4F6',
   },
-  amenityCardActive: { backgroundColor: '#005C3A', borderColor: '#005C3A' },
+  amenityCardActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   amenityIconWrap: { marginBottom: 12 },
   amenityCardText: { fontSize: 13, fontWeight: '700', color: '#1A1A1A', lineHeight: 18 },
   amenityTextActive: { color: '#FFF' },
@@ -428,7 +435,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12, shadowRadius: 8, elevation: 3,
   },
   mapBtnText: {
-    fontSize: 11, fontWeight: '800', color: '#005C3A',
+    fontSize: 11, fontWeight: '800', color: KiraColors.primary,
     marginLeft: 6, letterSpacing: 0.5,
   },
   footer: {
@@ -436,8 +443,8 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: '#F3F4F6',
   },
   applyButton: {
-    backgroundColor: '#005C3A', borderRadius: 30, paddingVertical: 18, alignItems: 'center',
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 },
+    backgroundColor: KiraColors.primary, borderRadius: 30, paddingVertical: 18, alignItems: 'center',
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
   applyButtonText: { color: '#FFF', fontSize: 15, fontWeight: '800' },

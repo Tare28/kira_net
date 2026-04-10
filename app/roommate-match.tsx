@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 const { width } = Dimensions.get('window');
 
@@ -295,7 +296,7 @@ function RoommateCard({ roommate, onView, onConnect }: any) {
 
           {/* Budget */}
           <View style={styles.budgetChip}>
-            <MaterialCommunityIcons name="cash" size={13} color="#005C3A" />
+            <MaterialCommunityIcons name="cash" size={13} color="KiraColors.primary" />
             <Text style={styles.budgetText}>{roommate.budget.toLocaleString()} ETB/mo</Text>
           </View>
         </View>
@@ -375,7 +376,7 @@ function ProfileDetail({ roommate, onClose, onConnect }: any) {
         <View style={styles.tagWrap}>
           {roommate.lifestyle.map((tag: string) => (
             <View key={tag} style={[styles.lifeTag, { backgroundColor: '#E8F5E9' }]}>
-              <Text style={[styles.lifeTagText, { color: '#005C3A' }]}>{tag}</Text>
+              <Text style={[styles.lifeTagText, { color: 'KiraColors.primary' }]}>{tag}</Text>
             </View>
           ))}
         </View>
@@ -402,7 +403,7 @@ function ProfileDetail({ roommate, onClose, onConnect }: any) {
 function DetailItem({ icon, label, value }: any) {
   return (
     <View style={styles.detailItem}>
-      <MaterialIcons name={icon} size={16} color="#005C3A" />
+      <MaterialIcons name={icon} size={16} color="KiraColors.primary" />
       <Text style={styles.detailLabel}>{label}</Text>
       <Text style={styles.detailValue}>{value}</Text>
     </View>
@@ -495,20 +496,20 @@ const styles = StyleSheet.create({
   headerSub: { fontSize: 11, color: '#6B7280', fontWeight: '500', marginTop: 1 },
   createBtn: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#005C3A', justifyContent: 'center', alignItems: 'center',
+    backgroundColor: KiraColors.primary, justifyContent: 'center', alignItems: 'center',
   },
 
   scrollContent: { paddingHorizontal: 20, paddingTop: 4 },
 
   // Viral Banner
   viralBanner: {
-    backgroundColor: '#005C3A', borderRadius: 20, padding: 18, marginBottom: 20,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 6,
+    backgroundColor: KiraColors.primary, borderRadius: 20, padding: 18, marginBottom: 20,
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.2, shadowRadius: 12, elevation: 6,
   },
   viralLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14 },
   viralEmoji: { fontSize: 32 },
-  viralTitle: { fontSize: 16, fontWeight: '800', color: '#FFF', marginBottom: 3 },
-  viralSub: { fontSize: 12, color: 'rgba(255,255,255,0.8)' },
+  viralTitle: { fontSize: 16, fontWeight: '800', color: '#1A1A1A', marginBottom: 3 },
+  viralSub: { fontSize: 12, color: 'rgba(0,0,0,0.6)' },
   viralStats: { flexDirection: 'row', gap: 24 },
   statItem: { alignItems: 'flex-start' },
   statNum: { fontSize: 20, fontWeight: '900', color: '#FBC02D' },
@@ -528,24 +529,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18, paddingVertical: 8, borderRadius: 20,
     borderWidth: 1.5, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB',
   },
-  pillActive: { backgroundColor: '#005C3A', borderColor: '#005C3A' },
+  pillActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   pillText: { fontSize: 13, fontWeight: '600', color: '#4A5568' },
-  pillTextActive: { color: '#FFF' },
+  pillTextActive: { color: '#1A1A1A' },
   tagWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: {
     paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
     borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB',
   },
-  tagActive: { backgroundColor: '#E8F5E9', borderColor: '#005C3A' },
+  tagActive: { backgroundColor: '#E8F5E9', borderColor: KiraColors.primary },
   tagText: { fontSize: 12, fontWeight: '600', color: '#4A5568' },
-  tagTextActive: { color: '#005C3A' },
+  tagTextActive: { color: KiraColors.primary },
 
   // Results
   resultsRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14,
   },
   resultsLabel: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
-  sortText: { fontSize: 12, fontWeight: '700', color: '#005C3A' },
+  sortText: { fontSize: 12, fontWeight: '700', color: KiraColors.primary },
 
   // Card
   card: {
@@ -573,7 +574,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8F5E9', paddingHorizontal: 10, paddingVertical: 5,
     borderRadius: 20, alignSelf: 'flex-start',
   },
-  budgetText: { fontSize: 12, fontWeight: '800', color: '#005C3A' },
+  budgetText: { fontSize: 12, fontWeight: '800', color: 'KiraColors.primary' },
   bio: { fontSize: 13, color: '#4A5568', lineHeight: 19, marginBottom: 12 },
   lifeTag: {
     backgroundColor: '#F3F4F6', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
@@ -584,15 +585,15 @@ const styles = StyleSheet.create({
     borderTopWidth: 1, borderTopColor: '#F3F4F6', marginTop: 12,
   },
   viewBtn: {
-    flex: 1, borderWidth: 1.5, borderColor: '#005C3A', borderRadius: 14,
+    flex: 1, borderWidth: 1.5, borderColor: 'KiraColors.primary', borderRadius: 14,
     paddingVertical: 11, alignItems: 'center',
   },
-  viewBtnText: { fontSize: 13, fontWeight: '700', color: '#005C3A' },
+  viewBtnText: { fontSize: 13, fontWeight: '700', color: 'KiraColors.primary' },
   connectBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7,
-    backgroundColor: '#005C3A', borderRadius: 14, paddingVertical: 11,
+    backgroundColor: KiraColors.primary, borderRadius: 14, paddingVertical: 11,
   },
-  connectBtnText: { fontSize: 13, fontWeight: '800', color: '#FFF' },
+  connectBtnText: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
 
   // Empty state
   emptyState: { alignItems: 'center', paddingVertical: 50 },
@@ -648,8 +649,8 @@ const styles = StyleSheet.create({
   safetyText: { flex: 1, fontSize: 12, color: '#1D4ED8', lineHeight: 18 },
   connectBtnLarge: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-    backgroundColor: '#005C3A', borderRadius: 18, paddingVertical: 18,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
+    backgroundColor: 'KiraColors.primary', borderRadius: 18, paddingVertical: 18,
+    shadowColor: 'KiraColors.primary', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
   connectBtnLargeText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
 
@@ -661,9 +662,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14, fontSize: 15, color: '#1A1A1A', fontWeight: '500', marginBottom: 16,
   },
   submitBtn: {
-    backgroundColor: '#005C3A', borderRadius: 16, paddingVertical: 18,
+    backgroundColor: 'KiraColors.primary', borderRadius: 16, paddingVertical: 18,
     alignItems: 'center', marginTop: 8,
-    shadowColor: '#005C3A', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
+    shadowColor: 'KiraColors.primary', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
-  submitBtnText: { fontSize: 15, fontWeight: '800', color: '#FFF' },
+  submitBtnText: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
 });

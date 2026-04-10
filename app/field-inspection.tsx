@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { KiraColors } from '@/constants/colors';
 
 export default function FieldInspection() {
   const { name } = useLocalSearchParams();
@@ -60,13 +61,13 @@ export default function FieldInspection() {
                         onPress={() => toggleCheck(item.key as keyof typeof checks)}
                     >
                         <View style={styles.checkLeft}>
-                            <Ionicons name={item.icon as any} size={20} color={checks[item.key as keyof typeof checks] ? '#FFF' : '#000'} />
+                            <Ionicons name={item.icon as any} size={20} color={checks[item.key as keyof typeof checks] ? '#1A1A1A' : '#1A1A1A'} />
                             <Text style={[styles.checkLabel, checks[item.key as keyof typeof checks] && styles.checkLabelActive]}>
                                 {item.label}
                             </Text>
                         </View>
                         {checks[item.key as keyof typeof checks] ? (
-                            <Ionicons name="checkmark-circle" size={24} color="#FFF" />
+                            <Ionicons name="checkmark-circle" size={24} color="#1A1A1A" />
                         ) : (
                             <View style={styles.emptyCircle} />
                         )}
@@ -105,7 +106,7 @@ export default function FieldInspection() {
 
         <TouchableOpacity style={styles.submitBtn} onPress={handleFinish}>
             <Text style={styles.submitBtnText}>Submit Field Report</Text>
-            <Feather name="upload-cloud" size={18} color="#FFF" />
+            <Feather name="upload-cloud" size={18} color="#1A1A1A" />
         </TouchableOpacity>
 
       </ScrollView>
@@ -130,20 +131,20 @@ const styles = StyleSheet.create({
 
   checklist: { gap: 12 },
   checkBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 18, backgroundColor: '#F8F9FA', borderRadius: 20, borderWidth: 1, borderColor: '#F1F3F5' },
-  checkBtnActive: { backgroundColor: '#000', borderColor: '#000' },
+  checkBtnActive: { backgroundColor: KiraColors.primary, borderColor: KiraColors.primary },
   checkLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  checkLabel: { fontSize: 14, fontWeight: '700', color: '#000' },
-  checkLabelActive: { color: '#FFF' },
+  checkLabel: { fontSize: 14, fontWeight: '700', color: '#1A1A1A' },
+  checkLabelActive: { color: '#1A1A1A' },
   emptyCircle: { width: 24, height: 24, borderRadius: 12, borderWidth: 2, borderColor: '#E2E8F0' },
 
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   addPhotoBtn: { width: '48%', aspectRatio: 1, borderRadius: 20, backgroundColor: '#F8F9FA', borderWidth: 1, borderColor: '#F1F3F5', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  addPhotoText: { fontSize: 13, fontWeight: '800', color: '#000' },
+  addPhotoText: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
   photoPlaceholder: { width: '48%', aspectRatio: 1, borderRadius: 20, backgroundColor: '#F8F9FA', borderWidth: 1, borderColor: '#F1F3F5' },
 
   notesContainer: { backgroundColor: '#F8F9FA', borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#F1F3F5' },
-  notesInput: { fontSize: 14, color: '#000', fontWeight: '600', minHeight: 100, textAlignVertical: 'top' },
+  notesInput: { fontSize: 14, color: '#1A1A1A', fontWeight: '600', minHeight: 100, textAlignVertical: 'top' },
 
-  submitBtn: { flexDirection: 'row', backgroundColor: '#000', borderRadius: 20, paddingVertical: 20, alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 8 },
-  submitBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  submitBtn: { flexDirection: 'row', backgroundColor: KiraColors.primary, borderRadius: 20, paddingVertical: 20, alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 10, shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.2, shadowRadius: 20, elevation: 8 },
+  submitBtnText: { color: '#1A1A1A', fontSize: 16, fontWeight: '800' },
 });

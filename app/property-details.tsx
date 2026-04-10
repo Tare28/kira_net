@@ -11,6 +11,7 @@ const AnimatedImage = Animated.createAnimatedComponent(Image);
 import { Feather, Ionicons, MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useVisitPlan } from '@/context/VisitPlanContext';
+import { useSaved } from '@/context/SavedContext';
 
 import { KiraColors } from '@/constants/colors';
 
@@ -28,8 +29,9 @@ const MARKET_DATA: Record<string, { avg: number; cheaper: number; trend: 'up' | 
 import { PROPERTIES as SHARED_PROPERTIES } from '@/data/properties';
 
 // We'll merge the UI-specific details with the shared property data
+// Keys match the #KN-XXX id format from data/properties.ts
 const PROPERTIES: Record<string, any> = {
-  '1': {
+  '#KN-001': {
     ...SHARED_PROPERTIES[0],
     images: [
       'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=800&auto=format&fit=crop',
@@ -67,7 +69,7 @@ const PROPERTIES: Record<string, any> = {
       tags: ['Business Hub', 'Great Nightlife', 'Near Airport'],
     },
   },
-  '2': {
+  '#KN-002': {
     ...SHARED_PROPERTIES[1],
     images: [
       'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=800&auto=format&fit=crop',
@@ -105,7 +107,7 @@ const PROPERTIES: Record<string, any> = {
       tags: ['Family-Friendly', 'Near Schools', 'Quieter Area'],
     },
   },
-  '3': {
+  '#KN-003': {
     ...SHARED_PROPERTIES[2],
     images: [
       'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=800&auto=format&fit=crop',
@@ -166,15 +168,31 @@ function noiseLabel(level: number) {
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 export default function PropertyDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const property = PROPERTIES[id ?? '1'] ?? PROPERTIES['1'];
+  const property = PROPERTIES[id ?? '#KN-001'] ?? PROPERTIES['#KN-001'];
   const isCommercial = ['shop', 'cafe', 'restaurant'].includes(property.category);
   const [activeImage, setActiveImage] = useState(0);
-  const [saved, setSaved] = useState(false);
   const [offlineMapSaved, setOfflineMapSaved] = useState(false);
   const [showAllTags, setShowAllTags] = useState(false);
 
   const { addVisit, removeVisit, isInPlan } = useVisitPlan();
-  const inPlan = isInPlan(id ?? '1');
+  const { saveProperty, unsaveProperty, isSaved } = useSaved();
+  const inPlan = isInPlan(id ?? '#KN-001');
+  const saved = isSaved(id ?? '#KN-001');
+
+  const handleSave = () => {
+    if (saved) {
+      unsaveProperty(id ?? '#KN-001');
+    } else {
+      saveProperty({
+        id: id ?? '#KN-001',
+        title: property.title,
+        location: property.location,
+        price: property.price,
+        image: property.images[0],
+        badge: property.badge,
+      });
+    }
+  };
 
   const scale = useSharedValue(1);
   const animatedStyle = useAnimatedStyle(() => ({
@@ -192,10 +210,10 @@ export default function PropertyDetailsScreen() {
     setTimeout(() => { scale.value = 1; }, 100);
 
     if (inPlan) {
-      removeVisit(id ?? '1');
+      removeVisit(id ?? '#KN-001');
     } else {
       addVisit({
-        id: id ?? '1',
+        id: id ?? '#KN-001',
         title: property.title,
         location: property.location,
         price: property.price,
@@ -245,7 +263,7 @@ export default function PropertyDetailsScreen() {
             <TouchableOpacity style={styles.overlayBtn} onPress={handleShare}>
               <Feather name="share-2" size={20} color="#1A1A1A" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.overlayBtn} onPress={() => setSaved(s => !s)}>
+            <TouchableOpacity style={styles.overlayBtn} onPress={handleSave}>
               <Ionicons name={saved ? 'heart' : 'heart-outline'} size={20} color={saved ? KiraColors.danger : '#1A1A1A'} />
             </TouchableOpacity>
             <TouchableOpacity 
@@ -432,34 +450,33 @@ export default function PropertyDetailsScreen() {
           </View>
           <Text style={styles.aiSub}>Based on price, location & amenities</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.similarRow}>
-            {[
-              { id: '2', title: 'Modern Garden Villa', location: 'Old Airport', price: '45,000', image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=400&auto=format&fit=crop', badge: 'hot_deal' },
-              { id: '3', title: 'Kazanchis Studio', location: 'Kazanchis', price: '18,500', image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=400&auto=format&fit=crop', badge: 'verified' },
-              { id: '1', title: 'The Summit Residency', location: 'Bole', price: '25,000', image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=400&auto=format&fit=crop', badge: 'verified' },
-            ].filter(s => s.id !== id).map(sim => (
-              <TouchableOpacity
-                key={sim.id} style={styles.simCard} activeOpacity={0.88}
-                onPress={() => router.replace({ pathname: '/property-details', params: { id: sim.id } })}
-              >
-                <View style={styles.simImageWrap}>
-                  <Image source={sim.image} style={styles.simImage} />
-                  <View style={[styles.simBadge, sim.badge === 'hot_deal' ? styles.simBadgeHot : styles.simBadgeVerified]}>
-                    {sim.badge === 'verified'
-                      ? <MaterialIcons name="verified" size={10} color="#3B82F6" />
-                      : <Text style={styles.simBadgeHotText}>HOT</Text>
-                    }
+            {SHARED_PROPERTIES
+              .filter(p => p.id !== id && (p.location.includes(property.location) || Math.abs(parseInt(p.price.replace(/,/g, '')) - parseInt(property.price.replace(/,/g, ''))) < 10000))
+              .slice(0, 3)
+              .map(sim => (
+                <TouchableOpacity
+                  key={sim.id} style={styles.simCard} activeOpacity={0.88}
+                  onPress={() => router.replace({ pathname: '/property-details', params: { id: sim.id } })}
+                >
+                  <View style={styles.simImageWrap}>
+                    <Image source={sim.image} style={styles.simImage} />
+                    <View style={[styles.simBadge, sim.badge === 'verified' ? styles.simBadgeVerified : styles.simBadgeHot]}>
+                      {sim.badge === 'verified'
+                        ? <MaterialIcons name="verified" size={10} color="#3B82F6" />
+                        : <Text style={styles.simBadgeHotText}>HOT</Text>
+                      }
+                    </View>
                   </View>
-                </View>
-                <View style={styles.simInfo}>
-                  <Text style={styles.simTitle} numberOfLines={1}>{sim.title}</Text>
-                  <View style={styles.simLocRow}>
-                    <Ionicons name="location-sharp" size={10} color="#4A5568" />
-                    <Text style={styles.simLocation}>{sim.location}</Text>
+                  <View style={styles.simInfo}>
+                    <Text style={styles.simTitle} numberOfLines={1}>{sim.title}</Text>
+                    <View style={styles.simLocRow}>
+                      <Ionicons name="location-sharp" size={10} color="#4A5568" />
+                      <Text style={styles.simLocation}>{sim.location}</Text>
+                    </View>
+                    <Text style={styles.simPrice}>{sim.price} <Text style={styles.simPriceUnit}>ETB/mo</Text></Text>
                   </View>
-                  <Text style={styles.simPrice}>{sim.price} <Text style={styles.simPriceUnit}>ETB/mo</Text></Text>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))}
           </ScrollView>
         </View>
 
@@ -1049,7 +1066,7 @@ const styles = StyleSheet.create({
     shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2, shadowRadius: 8, elevation: 4,
   },
-  contactBtnText: { fontSize: 14, fontWeight: '800', color: '#FFF' },
+  contactBtnText: { fontSize: 14, fontWeight: '800', color: '#1A1A1A' },
 });
 
 // ─── Trust Card Styles ────────────────────────────────────────────────────────

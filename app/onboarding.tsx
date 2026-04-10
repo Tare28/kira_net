@@ -1,242 +1,235 @@
 import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Dimensions, ScrollView, Animated
+  Dimensions, StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import Animated, { 
+  useAnimatedScrollHandler, 
+  useAnimatedStyle, 
+  useSharedValue, 
+  interpolate,
+  Extrapolate,
+  runOnJS
+} from 'react-native-reanimated';
+import { KiraColors } from '@/constants/colors';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 const SLIDES = [
   {
     id: 1,
     title: 'Find Your\nPerfect Home',
     subtitle: 'Browse hundreds of verified rentals across Addis Ababa — studios, apartments, villas, and more.',
-    bg: '#005C3A',
-    accent: '#FBC02D',
-    icon: <FontAwesome5 name="home" size={80} color="#FBC02D" />,
-    dots: ['#FBC02D', 'rgba(255,255,255,0.3)', 'rgba(255,255,255,0.3)'],
+    image: require('../assets/images/onboarding_1.png'),
+    tag: 'Premium Listings'
   },
   {
     id: 2,
     title: 'Smart Filters\n& AI Matching',
-    subtitle: 'Filter by price, deposit, utilities, and neighborhood. Our AI recommends listings tailored just for you.',
-    bg: '#FBC02D',
-    accent: '#005C3A',
-    icon: <MaterialIcons name="auto-awesome" size={80} color="#005C3A" />,
-    dots: ['rgba(0,92,58,0.3)', '#005C3A', 'rgba(0,92,58,0.3)'],
+    subtitle: 'Filter by price, deposit, and utilities. Our AI recommends listings tailored just for your lifestyle.',
+    image: require('../assets/images/onboarding_2.png'),
+    tag: 'Elite Search'
   },
   {
     id: 3,
     title: 'Verified Listings\nYou Can Trust',
-    subtitle: 'Every verified listing has been physically inspected by the Kira-Net team. No scams, no fake photos.',
-    bg: '#1A1A2E',
-    accent: '#FBC02D',
-    icon: <MaterialIcons name="verified" size={80} color="#FBC02D" />,
-    dots: ['rgba(255,255,255,0.3)', 'rgba(255,255,255,0.3)', '#FBC02D'],
+    subtitle: 'Every listing has been physically inspected by the Kira-Net team. No scams, no fake photos.',
+    image: require('../assets/images/onboarding_3.png'),
+    tag: 'Safe & Secure'
   },
 ];
 
 export default function OnboardingScreen() {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<Animated.ScrollView>(null);
   const [activeSlide, setActiveSlide] = useState(0);
+  const scrollX = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x;
+      const index = Math.round(event.contentOffset.x / width);
+      runOnJS(setActiveSlide)(index);
+    },
+  });
 
   const goNext = () => {
     if (activeSlide < SLIDES.length - 1) {
       scrollRef.current?.scrollTo({ x: width * (activeSlide + 1), animated: true });
-      setActiveSlide(s => s + 1);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     } else {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace('/login');
     }
   };
 
-  const skip = () => router.replace('/login');
-
-  const onScroll = (e: any) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / width);
-    setActiveSlide(index);
+  const skip = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.replace('/login');
   };
 
-  const slide = SLIDES[activeSlide];
-
   return (
-    <View style={[styles.root, { backgroundColor: slide.bg }]}>
-      {/* Skip button */}
+    <View style={styles.root}>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+      
+      {/* Background Images with Animated Overlay */}
+      <View style={StyleSheet.absoluteFill}>
+        {SLIDES.map((s, idx) => {
+          const bgStyle = useAnimatedStyle(() => {
+            const opacity = interpolate(
+              scrollX.value,
+              [(idx - 1) * width, idx * width, (idx + 1) * width],
+              [0, 1, 0],
+              Extrapolate.CLAMP
+            );
+            return { opacity };
+          });
+
+          return (
+            <Animated.View key={s.id} style={[StyleSheet.absoluteFill, bgStyle]}>
+              <Image source={s.image} style={StyleSheet.absoluteFill} contentFit="cover" />
+            </Animated.View>
+          );
+        })}
+        {/* Cinematic Gradient Overlay */}
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.92)']}
+          style={StyleSheet.absoluteFill}
+        />
+      </View>
+
+      {/* Top Bar Actions */}
       <SafeAreaView style={styles.topBar}>
-        {activeSlide < SLIDES.length - 1 ? (
-          <TouchableOpacity onPress={skip} style={styles.skipBtn}>
-            <Text style={[styles.skipText, { color: slide.accent }]}>Skip</Text>
-          </TouchableOpacity>
-        ) : <View />}
-        <View style={styles.dotsRow}>
-          {SLIDES.map((_, i) => (
-            <View key={i} style={[
-              styles.dot,
-              { backgroundColor: i === activeSlide ? slide.accent : 'rgba(255,255,255,0.3)' },
-              i === activeSlide && styles.dotActive,
-            ]} />
-          ))}
+        <View style={styles.logoWrap}>
+           <Text style={styles.brandText}>KIRA-NET</Text>
         </View>
+        <TouchableOpacity onPress={skip} style={styles.skipBtn}>
+           <Text style={styles.skipText}>Skip</Text>
+        </TouchableOpacity>
       </SafeAreaView>
 
-      {/* Slides */}
-      <ScrollView
-        ref={scrollRef}
+      {/* Slides Container */}
+      <Animated.ScrollView
+        ref={scrollRef as any}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={onScroll}
+        onScroll={scrollHandler}
         scrollEventThrottle={16}
         style={{ flex: 1 }}
       >
         {SLIDES.map((s, idx) => (
-          <View key={idx} style={[styles.slide, { backgroundColor: s.bg }]}>
-            {/* Illustration Circle */}
-            <View style={[styles.illustrationCircle, { borderColor: `${s.accent}40`, backgroundColor: `${s.accent}18` }]}>
-              <View style={[styles.illustrationInner, { backgroundColor: `${s.accent}28` }]}>
-                {s.icon}
-              </View>
-            </View>
-
-            <View style={styles.textBlock}>
-              <Text style={[styles.slideTitle, { color: '#FFF' }]}>{s.title}</Text>
-              <Text style={[styles.slideSubtitle, { color: 'rgba(255,255,255,0.8)' }]}>{s.subtitle}</Text>
-            </View>
-
-            {/* Feature Pills */}
-            <View style={styles.pillsRow}>
-              {idx === 0 && ['Bole', 'Kazanchis', 'Yeka', 'CMC'].map(n => (
-                <View key={n} style={[styles.featurePill, { borderColor: `${s.accent}60` }]}>
-                  <Text style={[styles.featurePillText, { color: s.accent }]}>{n}</Text>
-                </View>
-              ))}
-              {idx === 1 && ['AI Picks', 'Smart Filter', 'Price Match'].map(n => (
-                <View key={n} style={[styles.featurePill, { borderColor: `${s.accent}60` }]}>
-                  <Text style={[styles.featurePillText, { color: s.accent }]}>{n}</Text>
-                </View>
-              ))}
-              {idx === 2 && ['Inspected', 'No Scams', 'Guaranteed'].map(n => (
-                <View key={n} style={[styles.featurePill, { borderColor: `${s.accent}60` }]}>
-                  <Text style={[styles.featurePillText, { color: s.accent }]}>{n}</Text>
-                </View>
-              ))}
+          <View key={idx} style={styles.slide}>
+            <View style={styles.contentWrap}>
+               <View style={styles.tagWrap}>
+                  <Text style={styles.tagText}>{s.tag}</Text>
+               </View>
+               <Text style={styles.titleText}>{s.title}</Text>
+               <Text style={styles.subtitleText}>{s.subtitle}</Text>
             </View>
           </View>
         ))}
-      </ScrollView>
+      </Animated.ScrollView>
 
-      {/* Bottom CTA */}
-      <SafeAreaView style={styles.bottomBar}>
+      {/* Footer / Controls */}
+      <SafeAreaView style={styles.footerContainer}>
+        {/* Pagination Dots */}
+        <View style={styles.dotsRow}>
+          {SLIDES.map((_, i) => {
+            const dotStyle = useAnimatedStyle(() => {
+              const dotWidth = interpolate(
+                scrollX.value,
+                [(i - 1) * width, i * width, (i + 1) * width],
+                [8, 24, 8],
+                Extrapolate.CLAMP
+              );
+              const opacity = interpolate(
+                scrollX.value,
+                [(i - 1) * width, i * width, (i + 1) * width],
+                [0.3, 1, 0.3],
+                Extrapolate.CLAMP
+              );
+              return { width: dotWidth, opacity };
+            });
+
+            return (
+              <Animated.View 
+                key={i} 
+                style={[
+                  styles.dot, 
+                  dotStyle,
+                  { backgroundColor: KiraColors.primary }
+                ]} 
+              />
+            );
+          })}
+        </View>
+
         <TouchableOpacity
-          style={[styles.ctaBtn, { backgroundColor: slide.accent }]}
+          style={styles.mainCta}
           onPress={goNext}
-          activeOpacity={0.85}
+          activeOpacity={0.9}
         >
-          <Text style={[styles.ctaBtnText, { color: slide.bg }]}>
-            {activeSlide === SLIDES.length - 1 ? 'Get Started' : 'Next'}
+          <Text style={styles.mainCtaText}>
+            {activeSlide === SLIDES.length - 1 ? 'Get Started' : 'Next Step'}
           </Text>
-          <Feather name="arrow-right" size={18} color={slide.bg} style={{ marginLeft: 8 }} />
+          <Feather name="arrow-right" size={18} color="#1A1A1A" />
         </TouchableOpacity>
 
-        {activeSlide === SLIDES.length - 1 && (
-          <TouchableOpacity onPress={skip} style={styles.loginLink}>
-            <Text style={styles.loginLinkText}>Already have an account? <Text style={{ color: '#FBC02D', fontWeight: '800' }}>Log In</Text></Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.bottomLinkRow}>
+           <Text style={styles.bottomLinkText}>Experience Luxury Living in Addis</Text>
+        </View>
       </SafeAreaView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: 1, backgroundColor: '#000' },
   topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingTop: 16,
-    paddingBottom: 8,
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 24, paddingVertical: 12,
   },
-  skipBtn: { paddingVertical: 6, paddingHorizontal: 12 },
-  skipText: { fontSize: 14, fontWeight: '700' },
-  dotsRow: { flexDirection: 'row', alignItems: 'center' },
-  dot: {
-    width: 8, height: 8, borderRadius: 4, marginHorizontal: 3,
+  logoWrap: { flexDirection: 'row', alignItems: 'center' },
+  brandText: { fontSize: 16, fontWeight: '900', color: '#FFF', letterSpacing: 2 },
+  skipBtn: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)'
   },
-  dotActive: { width: 24 },
-  slide: {
-    width,
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 32,
-    paddingTop: 20,
-    paddingBottom: 20,
+  skipText: { fontSize: 12, fontWeight: '800', color: '#FFF', textTransform: 'uppercase' },
+  
+  slide: { width, flex: 1, justifyContent: 'flex-end', paddingBottom: 100 },
+  contentWrap: { paddingHorizontal: 32 },
+  tagWrap: { 
+    backgroundColor: 'rgba(255,255,255,0.12)', 
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, 
+    alignSelf: 'flex-start', marginBottom: 16,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)'
   },
-  illustrationCircle: {
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    borderWidth: 2,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 40,
+  tagText: { color: KiraColors.primary, fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  titleText: { fontSize: 44, fontWeight: '900', color: '#FFF', lineHeight: 52, letterSpacing: -1.5, marginBottom: 16 },
+  subtitleText: { fontSize: 16, color: 'rgba(255,255,255,0.7)', lineHeight: 24, fontWeight: '500' },
+
+  footerContainer: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    paddingHorizontal: 24, paddingBottom: 40, alignItems: 'center',
   },
-  illustrationInner: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
+  dotsRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 32 },
+  dot: { height: 4, borderRadius: 2, marginHorizontal: 3 },
+
+  mainCta: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12,
+    width: '100%', backgroundColor: KiraColors.primary, paddingVertical: 20, borderRadius: 20,
+    shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 15, elevation: 12,
   },
-  textBlock: { alignItems: 'center', marginBottom: 28 },
-  slideTitle: {
-    fontSize: 34,
-    fontWeight: '900',
-    textAlign: 'center',
-    letterSpacing: -1,
-    lineHeight: 38,
-    marginBottom: 16,
-  },
-  slideSubtitle: {
-    fontSize: 15,
-    textAlign: 'center',
-    lineHeight: 22,
-  },
-  pillsRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' },
-  featurePill: {
-    borderWidth: 1,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    marginHorizontal: 4,
-    marginBottom: 8,
-  },
-  featurePillText: { fontSize: 12, fontWeight: '700' },
-  bottomBar: {
-    paddingHorizontal: 24,
-    paddingBottom: 20,
-    paddingTop: 12,
-    alignItems: 'center',
-  },
-  ctaBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-    paddingVertical: 18,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    elevation: 6,
-    marginBottom: 12,
-  },
-  ctaBtnText: { fontSize: 16, fontWeight: '900' },
-  loginLink: { paddingVertical: 8 },
-  loginLinkText: { fontSize: 13, color: 'rgba(255,255,255,0.7)', fontWeight: '500' },
+  mainCtaText: { fontSize: 16, fontWeight: '900', color: '#1A1A1A' },
+  bottomLinkRow: { marginTop: 20 },
+  bottomLinkText: { fontSize: 12, color: 'rgba(255,255,255,0.4)', fontWeight: '600' },
 });

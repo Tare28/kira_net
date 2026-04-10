@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   textInput: { flex: 1, fontSize: 14, color: '#000', fontWeight: '600', marginLeft: 12 },
 
   primaryBtn: { flexDirection: 'row', backgroundColor: KiraColors.primary, borderRadius: 18, paddingVertical: 20, alignItems: 'center', justifyContent: 'center', gap: 12, marginTop: 16, shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.15, shadowRadius: 20, elevation: 8 },
-  primaryBtnText: { color: '#FFF', fontSize: 16, fontWeight: '800' },
+  primaryBtnText: { color: '#1A1A1A', fontSize: 16, fontWeight: '800' },
 
   divider: { flexDirection: 'row', alignItems: 'center', marginVertical: 32 },
   line: { flex: 1, height: 1, backgroundColor: '#F1F3F5' },
