@@ -101,5 +101,25 @@
     "category": "Property Category",
     "utilities": "Utilities Included",
     "submit": "Submit Listing"
+  },
+  "landlord": {
+    "dashboardTitle": "My Properties",
+    "exclusiveAccess": "Exclusive Landlord Access",
+    "exclusiveSubtitle": "To manage listings and see your performance analytics, you must be registered as a Landlord.",
+    "goToProfile": "Go to Profile",
+    "totalListed": "Listed Properties",
+    "active": "Active",
+    "boosted": "Boosted",
+    "all": "All",
+    "viewDetail": "View Detail",
+    "edit": "Edit",
+    "postNew": "Post a New Property",
+    "accessibility": {
+      "back": "Go back",
+      "add": "Add new property",
+      "viewDetail": "View property details",
+      "boost": "Boost listing",
+      "edit": "Edit property listing"
+    }
   }
 }

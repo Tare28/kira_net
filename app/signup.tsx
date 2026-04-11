@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, Text, StyleSheet, TouchableOpacity, TextInput, 
   KeyboardAvoidingView, Platform, ScrollView, Animated 
@@ -9,6 +9,7 @@ import { router } from 'expo-router';
 import { KiraColors } from '@/constants/colors';
 import { useUser } from '@/context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import TutorialGuide from '@/components/TutorialGuide';
 
 import { useLanguage } from '@/context/LanguageContext';
 
@@ -20,6 +21,34 @@ export default function SignupScreen() {
   const [email, setEmail] = useState('');
   const [idNumber, setIdNumber] = useState('');
   const { login } = useUser();
+
+  const [isTutorialVisible, setIsTutorialVisible] = useState(false);
+
+  useEffect(() => {
+    checkTutorial();
+  }, []);
+
+  const checkTutorial = async () => {
+    const completed = await AsyncStorage.getItem('tutorial_signup_completed');
+    if (!completed) {
+      setTimeout(() => setIsTutorialVisible(true), 1000);
+    }
+  };
+
+  const signupSteps = [
+    {
+      title: t.signupStep1Title,
+      description: t.signupStep1Desc,
+    },
+    {
+      title: t.signupStep2Title,
+      description: t.signupStep2Desc,
+    },
+    {
+      title: t.signupStep3Title,
+      description: t.signupStep3Desc,
+    }
+  ];
 
   const handleSignup = async () => {
     if (!fullName || !email) {
@@ -199,6 +228,12 @@ export default function SignupScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <TutorialGuide 
+        steps={signupSteps} 
+        tourKey="signup" 
+        visible={isTutorialVisible} 
+        onComplete={() => setIsTutorialVisible(false)} 
+      />
     </SafeAreaView>
   );
 }

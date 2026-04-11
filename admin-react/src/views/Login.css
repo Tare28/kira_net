@@ -1,0 +1,392 @@
+.login-v2-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #FFFFFF;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  color: #1A1A1A;
+  overflow: hidden;
+}
+
+/* Professional Mesh Gradient Background */
+.mesh-gradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(156, 201, 66, 0.05) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(37, 99, 235, 0.03) 0px, transparent 50%);
+  z-index: 0;
+}
+
+/* Subtle Dot Grid */
+.dot-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+.login-v2-wrapper {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Nav */
+.login-v2-nav {
+  padding: 32px 48px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  background: #1A1A1A;
+  color: #9CC942;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-links a {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748B;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: #1A1A1A;
+}
+
+.nav-lang {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Main */
+.login-v2-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.login-v2-card {
+  width: 100%;
+  max-width: 440px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 24px;
+  padding: 48px;
+  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.card-header h1 {
+  font-size: 28px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+}
+
+.card-header p {
+  color: #64748B;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Form */
+.v2-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.v2-error-banner {
+  background: #FEF2F2;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #FEE2E2;
+}
+
+.v2-error-banner p {
+  color: #DC2626;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.v2-input-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.v2-input-section label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.forgot-link {
+  font-size: 13px;
+  font-weight: 700;
+  color: #9CC942;
+}
+
+.v2-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.v2-icon {
+  position: absolute;
+  left: 16px;
+  color: #94A3B8;
+}
+
+.v2-input-box input {
+  width: 100%;
+  padding: 12px 16px 12px 48px;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  font-size: 15px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: #F8FAFC;
+}
+
+.v2-input-box input:focus {
+  border-color: #1A1A1A;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+}
+
+.v2-input-box.error input {
+  border-color: #EF4444;
+  background: #FFF5F5;
+}
+
+.v2-toggle {
+  position: absolute;
+  right: 12px;
+  color: #94A3B8;
+  padding: 6px;
+}
+
+/* Checkbox */
+.v2-options {
+  margin: 4px 0;
+}
+
+.v2-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+}
+
+.v2-checkbox input {
+  display: none;
+}
+
+.checkmark {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 5px;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.v2-checkbox input:checked + .checkmark {
+  background: #1A1A1A;
+  border-color: #1A1A1A;
+}
+
+.v2-checkbox input:checked + .checkmark::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Submit */
+.v2-submit-btn {
+  width: 100%;
+  background: #1A1A1A;
+  color: white;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  transition: all 0.2s ease;
+}
+
+.v2-submit-btn:hover:not(:disabled) {
+  background: #000000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.v2-submit-btn:disabled {
+  opacity: 0.6;
+}
+
+.v2-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* SSO */
+.v2-divider {
+  margin: 32px 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.v2-divider::before, .v2-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+.v2-divider span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #94A3B8;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.v2-sso-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.sso-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  background: white;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+  transition: all 0.2s ease;
+}
+
+.sso-btn:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+}
+
+.sso-btn img {
+  width: 18px;
+  height: 18px;
+}
+
+/* Footer */
+.v2-page-footer {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.security-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #F0FDF4;
+  border-radius: 20px;
+}
+
+.security-note span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #15803D;
+}
+
+.v2-page-footer p {
+  font-size: 13px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .login-v2-nav { padding: 24px; }
+  .login-v2-card { padding: 32px 24px; border: none; box-shadow: none; }
+  .login-v2-main { justify-content: flex-start; }
+}

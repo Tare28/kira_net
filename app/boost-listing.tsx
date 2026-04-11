@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
-import {
-  View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, ActivityIndicator, Dimensions
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
+import { KiraColors } from '@/constants/colors';
+import { SystemConfig } from '@/constants/SystemConfig';
+import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { KiraColors } from '@/constants/colors';
+import React, { useState } from 'react';
+import {
+  ActivityIndicator, Dimensions,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -30,16 +35,18 @@ const LANDLORD_PROPERTIES = [
   },
 ];
 
+const BASE_BOOST = SystemConfig.fees.listingBoost;
+
 const BOOST_PLANS = [
-  { days: 7, label: '7 Days', price: 150, tag: 'Starter', desc: 'Great for testing reach' },
-  { days: 14, label: '14 Days', price: 250, tag: 'Popular', desc: 'Most landlords choose this', highlight: true },
-  { days: 30, label: '30 Days', price: 400, tag: 'Best Value', desc: 'Maximum visibility guaranteed' },
+  { days: 7, label: '7 Days', price: BASE_BOOST, tag: 'Starter', desc: 'Great for testing reach' },
+  { days: 14, label: '14 Days', price: Math.round(BASE_BOOST * 1.8), tag: 'Popular', desc: 'Most landlords choose this', highlight: true },
+  { days: 30, label: '30 Days', price: Math.round(BASE_BOOST * 3.5), tag: 'Best Value', desc: 'Maximum visibility guaranteed' },
 ];
 
 const PAYMENT_METHODS = [
   { id: 'telebirr', name: 'Telebirr', color: '#E83E51', icon: 'phone-portrait' as const, description: 'Pay with your Telebirr wallet' },
   { id: 'cbe', name: 'CBE Birr', color: '#007BFF', icon: 'card' as const, description: 'Commercial Bank of Ethiopia' },
-  { id: 'card', name: 'Card / Visa', color: '#1A1A2E', icon: 'card-outline' as const, description: 'Visa or Mastercard' },
+  { id: 'receipt', name: 'Manual Receipt', color: '#16A34A', icon: 'cloud-upload-outline' as const, description: 'Upload screenshot of transfer' },
 ];
 
 type Step = 'select_property' | 'select_plan' | 'select_payment' | 'processing' | 'success';
@@ -55,7 +62,7 @@ export default function BoostListingScreen() {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.restrictedContainer}>
           <View style={[styles.iconCircle, { backgroundColor: '#FFFBEB' }]}>
-             <Feather name="zap" size={48} color={KiraColors.warning} />
+            <Feather name="zap" size={48} color={KiraColors.warning} />
           </View>
           <Text style={styles.restrictedTitle}>Boost Your Business</Text>
           <Text style={styles.restrictedSubtitle}>
@@ -78,6 +85,16 @@ export default function BoostListingScreen() {
     : null;
 
   const handlePay = () => {
+    if (selectedPayment?.id === 'receipt') {
+      router.push({
+        pathname: '/upload-payment',
+        params: { 
+          amount: selectedPlan?.price.toString(),
+          title: selectedProperty?.title
+        }
+      });
+      return;
+    }
     setStep('processing');
     setTimeout(() => setStep('success'), 2800);
   };
@@ -87,7 +104,7 @@ export default function BoostListingScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+          <TouchableOpacity onPress={() => router.back()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Feather name="arrow-left" size={22} color="#1A1A1A" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Boost Listing</Text>
@@ -147,7 +164,7 @@ export default function BoostListingScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setStep('select_property')} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+          <TouchableOpacity onPress={() => setStep('select_property')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Feather name="arrow-left" size={22} color="#1A1A1A" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Boost Duration</Text>
@@ -235,7 +252,7 @@ export default function BoostListingScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => setStep('select_plan')} hitSlop={{top:10,bottom:10,left:10,right:10}}>
+          <TouchableOpacity onPress={() => setStep('select_plan')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
             <Feather name="arrow-left" size={22} color="#1A1A1A" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Payment</Text>

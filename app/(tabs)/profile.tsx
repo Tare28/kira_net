@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { 
+  View, 
+  Text, 
+  StyleSheet, 
+  TouchableOpacity, 
+  ScrollView, 
+  Alert, 
+  Modal, 
+  TextInput, 
+  KeyboardAvoidingView, 
+  Platform 
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Image } from 'expo-image';
+import { useTranslation } from 'react-i18next';
+
 import { KiraColors } from '@/constants/colors';
 import { useAlerts } from '@/context/AlertsContext';
 import { useUser } from '@/context/UserContext';
@@ -13,29 +26,37 @@ import { useUser } from '@/context/UserContext';
 export default function ProfileScreen() {
   const { unreadCount } = useAlerts();
   const { role, logout } = useUser();
+  const { t } = useTranslation();
+  
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-  const [userName, setUserName] = useState('Cityzens User');
-  const [userEmail, setUserEmail] = useState('user@kiranet.com');
+  const [userName, setUserName] = useState('John Doe');
+  const [userEmail, setUserEmail] = useState('john.landlord@kiranet.com');
   const [userImage, setUserImage] = useState<string | null>(null);
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    if (role) {
+      loadProfile();
+    }
+  }, [role]);
 
   const loadProfile = async () => {
+    if (!role) return;
     try {
-      const img = await AsyncStorage.getItem('@user_image');
-      const name = await AsyncStorage.getItem('@user_name');
-      const email = await AsyncStorage.getItem('@user_email');
+      const img = await AsyncStorage.getItem(`@user_image_${role}`);
+      const name = await AsyncStorage.getItem(`@user_name_${role}`);
+      const email = await AsyncStorage.getItem(`@user_email_${role}`);
+      
       if (img) setUserImage(img);
       if (name) setUserName(name);
       if (email) setUserEmail(email);
+      else if (role === 'tenant') setUserEmail('john.renter@kiranet.com');
     } catch (e) {
       console.warn('AsyncStorage not available', e);
     }
   };
 
   const pickImage = async () => {
+    if (!role) return;
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: true,
@@ -47,60 +68,20 @@ export default function ProfileScreen() {
       const uri = result.assets[0].uri;
       setUserImage(uri);
       try {
-        await AsyncStorage.setItem('@user_image', uri);
+        await AsyncStorage.setItem(`@user_image_${role}`, uri);
       } catch (e) {}
     }
   };
 
   const saveProfile = async () => {
+    if (!role) return;
     try {
-      await AsyncStorage.setItem('@user_name', userName);
-      await AsyncStorage.setItem('@user_email', userEmail);
+      await AsyncStorage.setItem(`@user_name_${role}`, userName);
+      await AsyncStorage.setItem(`@user_email_${role}`, userEmail);
     } catch (e) {}
     setIsEditModalVisible(false);
     Alert.alert('Success', 'Profile updated successfully!');
   };
-
-  const menuSections = [
-    ...(role === 'landlord' || role === 'agent' ? [{
-      title: 'Account Settings',
-      items: [
-        { name: 'Payment Methods', icon: 'credit-card', action: () => Alert.alert('Secure Payments', 'You can manage your Telebirr and Credit Card links here in the next update.') },
-        { name: 'Notification Preferences', icon: 'bell', action: () => Alert.alert('Notifications', 'Push notifications for new listings are currently active.') },
-      ]
-    }] : []),
-    ...(role === 'agent' || role === 'landlord' ? [{
-      title: 'Field Operations',
-      items: [
-        { name: 'Agent Terminal', icon: 'briefcase', action: () => router.push('/agent-dashboard') },
-      ]
-    }] : []),
-    ...(role === 'landlord' ? [{
-      title: 'Hosting & Landlord',
-      items: [
-        { name: 'My Properties', icon: 'home', action: () => router.push('/landlord-dashboard') },
-        { name: 'Payment History', icon: 'pie-chart', action: () => Alert.alert('History', 'No payment history yet.') },
-      ]
-    }] : []),
-    {
-      title: 'Support & Legal',
-      items: [
-        { name: 'Help Center', icon: 'help-circle', action: () => router.push('/modal?type=help') },
-        { name: 'Safety Center', icon: 'shield', action: () => router.push('/modal?type=safety') },
-        { name: 'Terms of Service', icon: 'file-text', action: () => router.push('/modal?type=terms') },
-      ]
-    },
-    {
-      title: 'Community',
-      items: [
-        ...(role === 'tenant' ? [
-          { name: '🤝 Roommate Finder', icon: 'users', action: () => router.push('/roommate-match') },
-        ] : []),
-        { name: '🧾 Rental Agreement', icon: 'file-text', action: () => router.push('/rental-agreement') },
-        { name: '🚛 Moving Services', icon: 'truck', action: () => router.push('/moving-services') },
-      ]
-    }
-  ];
 
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to sign out?', [
@@ -112,364 +93,250 @@ export default function ProfileScreen() {
     ]);
   };
 
-  const handleItemPress = (item: any) => {
-    if (item.action) {
-      item.action();
-    }
-  };
+  // ─── LANDLORD PROFILE VIEW ──────────────────────────────────────────────────
+  const LandlordProfile = () => (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
-        <View style={{ width: 24 }} />
-        <Text style={styles.headerTitle}>User Profile</Text>
-        <View style={styles.headerRight}>
-          {(role === 'landlord' || role === 'agent') && (
-            <TouchableOpacity onPress={() => router.push('/boost-listing')} hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}>
-              <Feather name="zap" size={24} color={KiraColors.warning} />
-            </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
-            onPress={() => router.push('/(tabs)/alerts')}
-            style={styles.bellWrap}
-          >
-            <Feather name="bell" size={24} color={KiraColors.primary} />
-            {unreadCount > 0 && (
-              <View style={styles.notifBadge}>
-                <Text style={styles.notifBadgeText}>{unreadCount}</Text>
-              </View>
-            )}
+      {/* ── Hero Section ──────────────────────────────────────────────────── */}
+      <View style={styles.landlordHero}>
+        <View style={styles.landlordHeroRow}>
+          <TouchableOpacity style={styles.avatarBig} onPress={pickImage}>
+            {userImage
+              ? <Image source={{ uri: userImage }} style={styles.avatarImgBig} />
+              : <View style={styles.avatarPlaceholder}><Text style={styles.avatarText}>{userName[0]}</Text></View>}
+            <View style={styles.editBadge}><Feather name="camera" size={12} color="#FFF" /></View>
           </TouchableOpacity>
+          <View style={styles.landlordHeroInfo}>
+            <Text style={styles.landlordName}>{userName}</Text>
+            <View style={styles.roleBadge}>
+              <MaterialIcons name="verified-user" size={12} color={KiraColors.primary} />
+              <Text style={styles.roleText}>Verified Landlord</Text>
+            </View>
+            <Text style={styles.landlordEmail}>{userEmail}</Text>
+          </View>
+        </View>
+
+        {/* KPI Stripe */}
+        <View style={styles.kpiStripe}>
+          {[
+            { val: '8',   lab: 'Properties', onPress: () => router.push('/landlord-dashboard') },
+            { val: '42',  lab: 'Total Leads', onPress: undefined },
+            { val: '4.8', lab: '★ Rating',    onPress: undefined },
+            { val: '67%', lab: 'Occupancy',   onPress: undefined },
+          ].map((s, i, arr) => (
+            <React.Fragment key={i}>
+              <TouchableOpacity style={styles.kpiStripeItem} onPress={s.onPress}>
+                <Text style={styles.kpiStripeVal}>{s.val}</Text>
+                <Text style={styles.kpiStripeLab}>{s.lab}</Text>
+              </TouchableOpacity>
+              {i < arr.length - 1 && <View style={styles.kpiStripeDivider} />}
+            </React.Fragment>
+          ))}
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        <View style={styles.userCard}>
-          <TouchableOpacity style={styles.userAvatar} onPress={pickImage}>
-            {userImage ? (
-              <Image source={{ uri: userImage }} style={styles.avatarImg} />
-            ) : (
-              <Text style={styles.avatarInitials}>
-                {userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-              </Text>
-            )}
-            <View style={styles.cameraBadge}>
-              <Feather name="camera" size={10} color="#FFF" />
-            </View>
-          </TouchableOpacity>
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{userName}</Text>
-            <Text style={styles.userEmail}>{userEmail}</Text>
-          </View>
-        </View>
+      {/* ── Management ──────────────────────────────────────────────────── */}
+      <View style={styles.menuGroup}>
+        <Text style={styles.groupTitle}>Management & Hosting</Text>
+        <MenuButton icon="home" label="Manage Listings" sub="Post, edit and update properties" onPress={() => router.push('/landlord-dashboard')} />
+        <MenuButton icon="zap" label="Boost Management" sub="Maximize your property visibility" onPress={() => router.push('/boost-listing')} />
+        <MenuButton 
+          icon="credit-card" 
+          label="Invoices & Payouts" 
+          sub="History of your platform settlements" 
+          onPress={() => router.push({
+            pathname: '/upload-payment',
+            params: { title: 'Platform Subscription', amount: '850' }
+          })} 
+        />
+      </View>
 
-        {menuSections.map((section, idx) => (
-          <View key={idx} style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <View style={styles.sectionCard}>
-              {section.items.map((item, itemIdx) => (
-                <TouchableOpacity 
-                   key={itemIdx} 
-                   style={[styles.menuItem, itemIdx === section.items.length - 1 && styles.menuItemLast]}
-                   onPress={() => handleItemPress(item)}
-                >
-                   <View style={styles.menuIconBox}>
-                     <Feather name={item.icon as any} size={18} color="#4A5568" />
-                   </View>
-                   <Text style={styles.menuItemText}>{item.name}</Text>
-                   <Feather name="chevron-right" size={18} color="#D1D5DB" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        ))}
+      {/* ── Operations ──────────────────────────────────────────────────── */}
+      <View style={styles.menuGroup}>
+        <Text style={styles.groupTitle}>Operations</Text>
+        <MenuButton icon="file-text" label="Rental Agreements" sub="Digital lease management" onPress={() => router.push('/rental-agreement')} />
+        <MenuButton icon="shield" label="Safety & Verification" sub="Manage your trust documents" />
+        <MenuButton icon="settings" label="Account Settings" sub="Profile, security, and notifications" onPress={() => setIsEditModalVisible(true)} />
+      </View>
 
-        <TouchableOpacity 
-          style={styles.logoutBtn} 
-          onPress={handleLogout}
-        >
-          <Feather name="log-out" size={16} color={KiraColors.danger} />
-          <Text style={styles.logoutBtnText}>Log Out</Text>
+      {/* ── Logout ──────────────────────────────────────────────────────── */}
+      <TouchableOpacity style={styles.landlordLogout} onPress={handleLogout}>
+        <Feather name="log-out" size={18} color="#EF4444" />
+        <Text style={styles.logoutText}>Sign Out of Kira-Net</Text>
+      </TouchableOpacity>
+
+      <View style={{ height: 40 }} />
+    </ScrollView>
+  );
+
+  // ─── RENTER PROFILE VIEW ────────────────────────────────────────────────────
+  const RenterProfile = () => (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.renterHeader}>
+         <TouchableOpacity style={styles.renterAvatar} onPress={pickImage}>
+            {userImage ? <Image source={{ uri: userImage }} style={styles.avatarImgMedium} /> : <View style={styles.avatarBgSmall}><Text style={styles.avatarTextSmall}>{userName[0]}</Text></View>}
+         </TouchableOpacity>
+         <View style={styles.renterInfo}>
+            <Text style={styles.renterName}>{userName}</Text>
+            <Text style={styles.renterEmail}>{userEmail}</Text>
+         </View>
+         <TouchableOpacity style={styles.editBtn} onPress={() => setIsEditModalVisible(true)}>
+            <Feather name="edit-3" size={18} color={KiraColors.primary} />
+         </TouchableOpacity>
+      </View>
+
+      <View style={styles.menuGroup}>
+        <Text style={styles.groupTitle}>My Search</Text>
+        <MenuButton icon="heart" label="Saved Properties" sub="Listings you've favorited" onPress={() => router.push('/(tabs)/saved')} />
+        <MenuButton icon="map-pin" label="Visit Planner" sub="Your scheduled property viewings" onPress={() => router.push('/visit-planner')} />
+        <MenuButton icon="users" label="Roommate Finder" sub="Connect with potential roommates" onPress={() => router.push('/roommate-match')} />
+      </View>
+
+      <View style={styles.menuGroup}>
+        <Text style={styles.groupTitle}>Agreements & Services</Text>
+        <MenuButton icon="file-text" label="Rental Agreements" sub="View your signed lease papers" onPress={() => router.push('/rental-agreement')} />
+        <MenuButton icon="truck" label="Moving Services" sub="Book logistical help for your move" onPress={() => router.push('/moving-services')} />
+        <MenuButton icon="help-circle" label="Help Center" sub="Support and safety resources" onPress={() => router.push('/modal?type=help')} />
+      </View>
+
+      <TouchableOpacity style={styles.renterLogout} onPress={handleLogout}>
+        <Text style={styles.logoutTextSmall}>Log Out</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      {/* Header */}
+      <View style={styles.screenHeader}>
+        <Text style={styles.screenTitle}>Account</Text>
+        <TouchableOpacity style={styles.notifBtn} onPress={() => router.push('/(tabs)/alerts')}>
+          <Feather name="bell" size={24} color="#1A1A1A" />
+          {unreadCount > 0 && <View style={styles.notifDot} />}
         </TouchableOpacity>
+      </View>
 
-      </ScrollView>
+      {role === 'landlord' ? <LandlordProfile /> : <RenterProfile />}
 
-      <Modal visible={isEditModalVisible} animationType="slide" transparent={true}>
-        <KeyboardAvoidingView 
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-          style={styles.modalOverlay}
-        >
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Edit Profile</Text>
-              <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
-                <Feather name="x" size={24} color="#1A1A1A" />
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Full Name</Text>
-              <TextInput 
-                style={styles.textInput} 
-                value={userName} 
-                onChangeText={setUserName}
-                placeholder="Enter your name"
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.inputLabel}>Email Address</Text>
-              <TextInput 
-                style={styles.textInput} 
-                value={userEmail} 
-                onChangeText={setUserEmail}
-                placeholder="Enter your email"
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
-
-            <TouchableOpacity 
-              style={styles.saveBtn} 
-              onPress={saveProfile}
-            >
-              <Text style={styles.saveBtnText}>Save Changes</Text>
-            </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      </Modal>
+      <ProfileEditModal 
+        visible={isEditModalVisible} 
+        onClose={() => setIsEditModalVisible(false)} 
+        onSave={saveProfile}
+        name={userName}
+        setName={setUserName}
+        email={userEmail}
+        setEmail={setUserEmail}
+      />
     </SafeAreaView>
   );
 }
 
+// ─── Helper Components ────────────────────────────────────────────────────────
+const MenuButton = ({ icon, label, sub, onPress }: any) => (
+  <TouchableOpacity style={styles.menuBtn} onPress={onPress}>
+    <View style={styles.menuIconWrap}>
+      <Feather name={icon} size={18} color="#4A5568" />
+    </View>
+    <View style={styles.menuTextWrap}>
+      <Text style={styles.menuLabel}>{label}</Text>
+      <Text style={styles.menuSub}>{sub}</Text>
+    </View>
+    <Feather name="chevron-right" size={18} color="#D1D5DB" />
+  </TouchableOpacity>
+);
+
+const ProfileEditModal = ({ visible, onClose, onSave, name, setName, email, setEmail }: any) => (
+  <Modal visible={visible} animationType="slide" transparent={true}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={styles.modalOverlay}>
+      <View style={styles.modalContent}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Edit Profile</Text>
+          <TouchableOpacity onPress={onClose}><Feather name="x" size={24} color="#1A1A1A" /></TouchableOpacity>
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Full Name</Text>
+          <TextInput style={styles.textInput} value={name} onChangeText={setName} />
+        </View>
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Email Address</Text>
+          <TextInput style={styles.textInput} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+        </View>
+        <TouchableOpacity style={styles.saveBtn} onPress={onSave}>
+          <Text style={styles.saveBtnText}>Save Changes</Text>
+        </TouchableOpacity>
+      </View>
+    </KeyboardAvoidingView>
+  </Modal>
+);
+
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: '#F7F8F9',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1A1A1A',
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  bellWrap: {
-    position: 'relative',
-  },
-  notifBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -4,
-    backgroundColor: KiraColors.danger,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-    borderWidth: 1.5,
-    borderColor: '#FFF',
-  },
-  notifBadgeText: {
-    color: '#FFF',
-    fontSize: 8,
-    fontWeight: '900',
-  },
-  scrollContent: {
-    paddingBottom: 120, // Increased to avoid footer tab overlap
-  },
-  userCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#FFF',
-    marginBottom: 12,
-  },
-  userAvatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: KiraColors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  avatarImg: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-  },
-  avatarInitials: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#1A1A1A',
-  },
-  cameraBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: '#1A1A1A',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFF',
-  },
-  userInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  userName: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#1A1A1A',
-  },
-  userEmail: {
-    fontSize: 13,
-    color: '#64748B',
-    marginTop: 2,
-    fontWeight: '500',
-  },
-  sectionContainer: {
-    marginTop: 12,
-    paddingHorizontal: 20,
-  },
-  sectionTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#94A3B8',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginLeft: 4,
-  },
-  sectionCard: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
-  },
-  menuItemLast: {
-    borderBottomWidth: 0,
-  },
-  menuIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: '#F8FAFC',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  menuItemText: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    marginTop: 40,
-    marginHorizontal: 20,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#FFF',
-    borderWidth: 1,
-    borderColor: '#FEE2E2',
-  },
-  logoutBtnText: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: KiraColors.danger,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#FFF',
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    padding: 24,
-    paddingBottom: 40,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#1A1A1A',
-  },
-  inputGroup: {
-    marginBottom: 24,
-  },
-  inputLabel: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#94A3B8',
-    marginBottom: 8,
-    textTransform: 'uppercase',
-  },
-  textInput: {
-    backgroundColor: '#F8FAFC',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-  },
-  saveBtn: {
-    backgroundColor: KiraColors.primary,
-    padding: 18,
-    borderRadius: 30,
-    alignItems: 'center',
-    marginTop: 8,
-    shadowColor: KiraColors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveBtnText: {
-    fontSize: 15,
-    fontWeight: '900',
-    color: '#FFF',
-  },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFB' },
+  screenHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, paddingVertical: 16, backgroundColor: '#FFF' },
+  screenTitle: { fontSize: 24, fontWeight: '900', color: '#1A1A1A', letterSpacing: -1 },
+  notifBtn: { position: 'relative', width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  notifDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444', borderWidth: 2, borderColor: '#FFF' },
+  scrollContent: { paddingBottom: 100 },
+
+  // Landlord Styles
+  landlordHero: { backgroundColor: '#FFF', paddingHorizontal: 24, paddingBottom: 24, paddingTop: 8, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  landlordHeroRow: { flexDirection: 'row', alignItems: 'center', gap: 18, marginBottom: 24 },
+  landlordHeroInfo: { flex: 1 },
+  avatarBig: { width: 76, height: 76, borderRadius: 38, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 5 },
+  avatarImgBig: { width: 76, height: 76, borderRadius: 38 },
+  avatarPlaceholder: { width: 76, height: 76, borderRadius: 38, backgroundColor: KiraColors.primary, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { fontSize: 28, fontWeight: '900', color: '#FFF' },
+  editBadge: { position: 'absolute', bottom: 0, right: 0, width: 24, height: 24, borderRadius: 12, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#FFF' },
+  landlordName: { fontSize: 20, fontWeight: '900', color: '#1A1A1A', marginBottom: 4 },
+  landlordEmail: { fontSize: 11, color: '#94A3B8', fontWeight: '600', marginTop: 4 },
+  roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#F0FDF4', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20, alignSelf: 'flex-start' },
+  roleText: { fontSize: 10, fontWeight: '800', color: '#16A34A', textTransform: 'uppercase' },
+
+  // KPI Stripe
+  kpiStripe: { flexDirection: 'row', backgroundColor: '#F8FAFC', borderRadius: 20, padding: 16, borderWidth: 1, borderColor: '#F1F5F9' },
+  kpiStripeItem: { flex: 1, alignItems: 'center' },
+  kpiStripeVal: { fontSize: 18, fontWeight: '900', color: '#1A1A1A', marginBottom: 3 },
+  kpiStripeLab: { fontSize: 9, fontWeight: '700', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 0.3 },
+  kpiStripeDivider: { width: 1, height: 32, backgroundColor: '#E2E8F0', alignSelf: 'center' },
+
+  // Legacy (kept for menu rows)
+  statBox: { flex: 1, alignItems: 'center' },
+  statVal: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
+  statLab: { fontSize: 10, fontWeight: '700', color: '#94A3B8', marginTop: 2 },
+  statDivider: { width: 1, height: 30, backgroundColor: '#F1F5F9' },
+  landlordStats: { flexDirection: 'row', padding: 24, marginTop: -20, marginBottom: 8, marginHorizontal: 24, backgroundColor: '#FFF', borderRadius: 24, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 },
+
+  menuGroup: { marginTop: 32, paddingHorizontal: 24 },
+  groupTitle: { fontSize: 12, fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 16, marginLeft: 4 },
+  menuBtn: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 16, borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+  menuIconWrap: { width: 40, height: 40, borderRadius: 12, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', marginRight: 16 },
+  menuTextWrap: { flex: 1 },
+  menuLabel: { fontSize: 15, fontWeight: '800', color: '#1E293B', marginBottom: 2 },
+  menuSub: { fontSize: 11, fontWeight: '500', color: '#64748B' },
+
+  landlordLogout: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginTop: 40, padding: 20, marginHorizontal: 24, backgroundColor: '#FEF2F2', borderRadius: 20, borderWidth: 1, borderColor: '#FEE2E2' },
+  logoutText: { fontSize: 15, fontWeight: '900', color: '#EF4444' },
+
+  // Renter Styles
+  renterHeader: { flexDirection: 'row', alignItems: 'center', padding: 24, backgroundColor: '#FFF', marginHorizontal: 24, borderRadius: 32, marginTop: 12, borderWidth: 1, borderColor: '#F1F5F9' },
+  renterAvatar: { width: 60, height: 60, borderRadius: 30, backgroundColor: KiraColors.primary, alignItems: 'center', justifyContent: 'center' },
+  avatarImgMedium: { width: 60, height: 60, borderRadius: 30 },
+  avatarBgSmall: { width: 60, height: 60, borderRadius: 30, backgroundColor: KiraColors.primary, alignItems: 'center', justifyContent: 'center' },
+  avatarTextSmall: { fontSize: 24, fontWeight: '900', color: '#FFF' },
+  renterInfo: { flex: 1, marginLeft: 16 },
+  renterName: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
+  renterEmail: { fontSize: 13, color: '#64748B', fontWeight: '500' },
+  editBtn: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center', backgroundColor: '#F0FDF4', borderRadius: 12 },
+  renterLogout: { alignItems: 'center', marginTop: 40, padding: 20 },
+  logoutTextSmall: { fontSize: 15, fontWeight: '800', color: '#EF4444' },
+
+  // Modal
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#FFF', borderTopLeftRadius: 32, borderTopRightRadius: 32, padding: 24, paddingBottom: 40 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32 },
+  modalTitle: { fontSize: 20, fontWeight: '900', color: '#1A1A1A' },
+  inputGroup: { marginBottom: 24 },
+  inputLabel: { fontSize: 11, fontWeight: '800', color: '#94A3B8', marginBottom: 8, textTransform: 'uppercase' },
+  textInput: { backgroundColor: '#F8FAFC', borderRadius: 12, padding: 16, fontSize: 14, fontWeight: '600', color: '#1A1A1A', borderWidth: 1, borderColor: '#F1F5F9' },
+  saveBtn: { backgroundColor: KiraColors.primary, padding: 18, borderRadius: 30, alignItems: 'center', marginTop: 8, shadowColor: KiraColors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 },
+  saveBtnText: { fontSize: 15, fontWeight: '900', color: '#FFF' },
 });

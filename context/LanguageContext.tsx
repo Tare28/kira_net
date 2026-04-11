@@ -40,6 +40,23 @@ export interface Translations {
   agreeTerms: string;
   alreadyHave: string;
   signInLink: string;
+
+  // Tutorials
+  tutorialFinish: string;
+  tutorialNext: string;
+  tutorialSkip: string;
+  signupStep1Title: string;
+  signupStep1Desc: string;
+  signupStep2Title: string;
+  signupStep2Desc: string;
+  signupStep3Title: string;
+  signupStep3Desc: string;
+  loginStep1Title: string;
+  loginStep1Desc: string;
+  loginStep2Title: string;
+  loginStep2Desc: string;
+  loginStep3Title: string;
+  loginStep3Desc: string;
 }
 
 const TRANSLATIONS: Record<Language, Translations> = {
@@ -75,6 +92,21 @@ const TRANSLATIONS: Record<Language, Translations> = {
     agreeTerms: 'I agree to the Terms & Privacy Policy',
     alreadyHave: 'Already have an account?',
     signInLink: 'Sign In',
+    tutorialFinish: 'Finish',
+    tutorialNext: 'Next Step',
+    tutorialSkip: 'Skip All',
+    signupStep1Title: 'Choose Your Role',
+    signupStep1Desc: 'Select Renter to search for luxury homes, or Landlord to list and manage your properties with ease.',
+    signupStep2Title: 'Built on Trust',
+    signupStep2Desc: 'Kira-Net is a verified ecosystem. Landlords who provide Government IDs are highlighted as "Verified" and get 3x more views.',
+    signupStep3Title: 'Secure Access',
+    signupStep3Desc: 'Your phone number is your primary key. We use SMS verification to keep your data and agreements safe.',
+    loginStep1Title: 'Welcome Back',
+    loginStep1Desc: 'Your premium property journey continues here. Sign in to access your saved listings or manage your properties.',
+    loginStep2Title: 'Localized for Ethiopia',
+    loginStep2Desc: 'Tap the globe icon to switch between English, Amharic, and Oromo at any time.',
+    loginStep3Title: 'Secure Environment',
+    loginStep3Desc: 'Kira-Net uses high-grade encryption for all communications. Your data and lease agreements are always protected.',
   },
   om: {
     slide1Title: 'Mana\nBarbaadde Argadhu',
@@ -108,6 +140,21 @@ const TRANSLATIONS: Record<Language, Translations> = {
     agreeTerms: 'Gosaawwan & Imaammata Dhuunfaa waliin waliigala',
     alreadyHave: 'Dursitee akkaawuntii qabdaa?',
     signInLink: 'Seeni',
+    tutorialFinish: 'Xumuri',
+    tutorialNext: 'Tarkaanfii Itti Aanu',
+    tutorialSkip: 'Hunda Irra Darbi',
+    signupStep1Title: 'Shoora Keetti Filadhu',
+    signupStep1Desc: 'Manneen qananii barbaaduuf Kireeffataa, yookiin manneen keessan galmeessuuf fi bulchuuf Abbaa Manaa filadhaa.',
+    signupStep2Title: 'Amanummaa Irratti Hundaa\'e',
+    signupStep2Desc: 'Kira-Net ecosystemii mirkanaa\'aadha. Abbootii manaa eenyummeessaa mootummaa dhiyeessan "Mirkanaa\'aa" jedhamanii mul\'atu, akkasumas view dacha 3 argatu.',
+    signupStep3Title: 'Seensa Nagahaa',
+    signupStep3Desc: 'Lakkoofsi bilbila keessanii kii furtuu keessani. Odeeffannoo fi waliigaltee keessan eeguuf mirkaneessa SMS fayyadamna.',
+    loginStep1Title: 'Baga Deebi\'tan',
+    loginStep1Desc: 'Imalli keessan inni jireenya qananii asitti itti fufa. Galmeelee qusattaniitti seenuuf yookiin manneen keessan bulchuuf seeni.',
+    loginStep2Title: 'Itoophiyaaf Kan Mijaaye',
+    loginStep2Desc: 'Afwan Ingiliffaa, Amaariffaa fi Oromifaa gidduutti jijjiiruuf mallattoo globe tuqi.',
+    loginStep3Title: 'Naannoo Nagahaa',
+    loginStep3Desc: 'Kira-Net qunnamtii hundaaf iccitii sadarkaa olaanaa qabu fayyadama. Odeeffannoon keessanii fi waliigalteen kireeffannaa yeroo mara eegamaadha.',
   },
   am: {
     slide1Title: 'ቤትህን\nፈልግ',
@@ -141,6 +188,21 @@ const TRANSLATIONS: Record<Language, Translations> = {
     agreeTerms: 'ከሁኔታዎች እና የግላዊነት ፖሊሲ ጋር እስማማለሁ',
     alreadyHave: 'ቀደም ሲል መለያ አለህ?',
     signInLink: 'ግባ',
+    tutorialFinish: 'ጨርስ',
+    tutorialNext: 'የሚቀጥለው ደረጃ',
+    tutorialSkip: 'ሁሉንም ዝለል',
+    signupStep1Title: 'ሚናዎን ይምረጡ',
+    signupStep1Desc: 'የቅንጦት ቤቶችን ለመፈለግ "ተከራይ"ን ይምረጡ፣ ወይም ቤቶችዎን ለመመዝገብ እና ለማስተዳደር "የቤት ባለቤት"ን ይምረጡ።',
+    signupStep2Title: 'በእምነት ላይ የተገነባ',
+    signupStep2Desc: 'Kira-Net የተረጋገጠ ሥርዓት ነው። የመንግስት መታወቂያ የሚያቀርቡ የቤት ባለቤቶች "የተረጋገጠ" ተብለው ጎልተው ይታያሉ፣ እንዲሁም 3 እጥፍ ለቤት ፈላጊዎች ይታያሉ።',
+    signupStep3Title: 'ደህንነቱ የተጠበቀ መግቢያ',
+    signupStep3Desc: 'የስልክ ቁጥርዎ ዋናው ቁልፍዎ ነው። መረጃዎን እና ውሎችን ደህንነት ለመጠበቅ በኤስኤምኤስ (SMS) ማረጋገጫ እንጠቀማለን።',
+    loginStep1Title: 'እንኳን ደህና መጡ',
+    loginStep1Desc: 'የእርስዎ የቅንጦት ቤት ፍለጋ ጉዞ እዚህ ይቀጥላል። የተቀመጡ ቤቶችን ለማየት ወይም ቤቶችዎን ለማስተዳደር ይግቡ።',
+    loginStep2Title: 'ለኢትዮጵያ ተስማሚ የተደረገ',
+    loginStep2Desc: 'በእንግሊዝኛ፣ በአማርኛ እና በአፋን ኦሮሞ ለመቀያየር የዓለምን ምልክት (globe) ይንኩ።',
+    loginStep3Title: 'ደህንነቱ የተጠበቀ አካባቢ',
+    loginStep3Desc: 'Kira-Net ለሁሉም ግንኙነቶች ከፍተኛ ጥበቃን ይጠቀማል። የእርስዎ መረጃ እና የኪራይ ውል ሁል ጊዜ የተጠበቁ ናቸው።',
   },
 };
 

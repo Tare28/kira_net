@@ -95,11 +95,19 @@ const SettingsView: React.FC<SettingsProps> = () => {
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
                         <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
                             <label style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '12px' }}>BOOST PRICE (ETB)</label>
-                            <input type="text" defaultValue="250" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%' }}/>
+                            <input type="text" defaultValue="300" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#1A1A1A' }}/>
                         </div>
                         <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
                             <label style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '12px' }}>VERIFY FEE (ETB)</label>
-                            <input type="text" defaultValue="500" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%' }}/>
+                            <input type="text" defaultValue="500" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#1A1A1A' }}/>
+                        </div>
+                        <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
+                            <label style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '12px' }}>VISIT BOOKING (ETB)</label>
+                            <input type="text" defaultValue="50" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#1A1A1A' }}/>
+                        </div>
+                        <div style={{ background: 'white', padding: '24px', borderRadius: '20px', border: '1px solid #F1F5F9' }}>
+                            <label style={{ fontSize: '10px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '12px' }}>RENTAL CONVENIENCE (ETB)</label>
+                            <input type="text" defaultValue="150" style={{ fontSize: '24px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#1A1A1A' }}/>
                         </div>
                     </div>
                 </div>

@@ -149,8 +149,48 @@ export default function BoostView() {
     }));
   };
 
+  const [feeConfig, setFeeConfig] = useState({
+    boost: '300',
+    verify: '500',
+    visit: '50',
+    lease: '150'
+  });
+
+  const updateFee = (key: string, val: string) => setFeeConfig(prev => ({ ...prev, [key]: val }));
+
   return (
     <section>
+      {/* ── Pricing Governance ────────────────────────────────────────── */}
+      <div style={{ marginBottom: '32px' }}>
+        <p style={{ fontWeight: 800, color: '#9CC942', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '16px' }}>
+          Platform Pricing Governance
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+          {[
+            { id: 'boost', label: 'Listing Boost', val: feeConfig.boost },
+            { id: 'verify', label: 'TaaS Verification', val: feeConfig.verify },
+            { id: 'visit', label: 'Visit Booking', val: feeConfig.visit },
+            { id: 'lease', label: 'Lease Vault', val: feeConfig.lease },
+          ].map(fee => (
+            <div key={fee.id} style={{ background: 'white', padding: '16px 20px', borderRadius: '16px', border: '1px solid #F1F5F9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+              <label style={{ fontSize: '9px', fontWeight: 800, color: '#64748B', display: 'block', marginBottom: '8px', textTransform: 'uppercase' }}>{fee.label} (ETB)</label>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <input 
+                  type="text" 
+                  value={fee.val} 
+                  onChange={(e) => updateFee(fee.id, e.target.value)}
+                  style={{ fontSize: '18px', fontWeight: 900, border: 'none', background: 'transparent', outline: 'none', width: '100%', color: '#1A1A1A' }}
+                />
+                <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: '#F4F9EB', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9CC942' }}>
+                  <TrendingUp size={12}/>
+                </div>
+              </div>
+            </div>
+          ))}
+          <button style={{ background: '#1A1A1A', color: 'white', borderRadius: '16px', fontWeight: 800, fontSize: '12px', padding: '12px', cursor: 'pointer' }} onClick={() => alert('Pricing parameters updated successfully.')}>Save Changes</button>
+        </div>
+      </div>
+
       {/* ── Page Header ──────────────────────────────────────────────────── */}
       <div className="view-header">
         <div className="view-title">

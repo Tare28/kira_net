@@ -1,33 +1,32 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-  StyleSheet, Dimensions, ScrollView, View, Text,
-  TextInput, TouchableOpacity,
-} from 'react-native';
-import { Image } from 'expo-image';
-import { Feather, Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useVisitPlan } from '@/context/VisitPlanContext';
-import { useSaved } from '@/context/SavedContext';
-import { BlurView } from 'expo-blur';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Haptics from 'expo-haptics';
 import { useAlerts } from '@/context/AlertsContext';
+import { useSaved } from '@/context/SavedContext';
 import { useUser } from '@/context/UserContext';
-import Animated, { 
-  useSharedValue, 
-  useAnimatedStyle, 
-  withSpring, 
-  withRepeat,
-  withTiming,
-  interpolateColor 
+import { useVisitPlan } from '@/context/VisitPlanContext';
+import { Feather, Ionicons, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Dimensions, ScrollView,
+  StyleSheet,
+  Text,
+  TextInput, TouchableOpacity,
+  View,
+} from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring
 } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
+import { Skeleton } from '@/components/Skeleton';
 import { KiraColors } from '@/constants/colors';
 import { Typography } from '@/constants/typography';
-import { Skeleton } from '@/components/Skeleton';
 
 const { width } = Dimensions.get('window');
 
@@ -56,168 +55,146 @@ import { useFilters } from '@/context/FilterContext';
 function LandlordHome({ insets }: { insets: any }) {
   const now = new Date();
   const hour = now.getHours();
-  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const greeting = hour < 12 ? 'Morning' : hour < 17 ? 'Afternoon' : 'Evening';
+  const dateStr = now.toLocaleDateString('en-ET', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  const AI_RECS = [
-    {
-      id: 'rec1', icon: 'zap', color: '#F59E0B', bg: '#FFFBEB',
-      title: 'Boost Summit Residency',
-      desc: '48 saves this week — this listing is gaining traction. A 7-day boost could convert into 3–5 signed leases.',
-      cta: 'Boost Now',
-      route: '/boost-listing',
-    },
-    {
-      id: 'rec2', icon: 'camera', color: '#8B5CF6', bg: '#F5F3FF',
-      title: 'Add Photos to Garden Villa',
-      desc: 'Listings with 6+ photos get 4× more inquiries. Garden Villa only has 3. Request a professional shoot today.',
-      cta: 'Request Shoot',
-      route: null,
-    },
-    {
-      id: 'rec3', icon: 'trending-up', color: '#0EA5E9', bg: '#F0F9FF',
-      title: 'Reprice Kazanchis Studio',
-      desc: 'Similar studios in Kazanchis now list at 21,000 ETB. You\'re 12% below market — consider raising to capture extra revenue.',
-      cta: 'Edit Price',
-      route: null,
-    },
+  const PROPERTIES_SNAP = [
+    { id: '1', title: 'The Summit Residency', location: 'Bole', price: '25,000', status: 'Boosted', statusColor: '#9CC942', views: 248, leads: 12, image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?q=80&w=120&auto=format&fit=crop' },
+    { id: '2', title: 'Modern Garden Villa', location: 'Old Airport', price: '45,000', status: 'Active', statusColor: '#16A34A', views: 94, leads: 4, image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=120&auto=format&fit=crop' },
+    { id: '3', title: 'Kazanchis Studio', location: 'Kazanchis', price: '18,500', status: 'Pending', statusColor: '#D97706', views: 15, leads: 0, image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=120&auto=format&fit=crop' },
   ];
 
-  const MARKET_INTEL = [
-    { area: 'Bole', change: '+5.2%', trend: 'up', desc: 'Rental surge', color: '#9CC942' },
-    { area: 'Kazanchis', change: 'Peak', trend: 'fire', desc: 'Studio demand', color: '#F59E0B' },
-    { area: 'Old Airport', change: 'Stable', trend: 'minus', desc: 'Mid-range', color: '#64748B' },
-    { area: 'Sarbet', change: '+2.1%', trend: 'up', desc: 'Growing', color: '#9CC942' },
+  const ACTIVITY = [
+    { icon: 'message-circle', color: '#0EA5E9', bg: '#F0F9FF', text: 'Melat Haile inquired about Summit Residency', time: '2h ago' },
+    { icon: 'zap-off',        color: '#F59E0B', bg: '#FFFBEB', text: 'Boost expired on Modern Garden Villa', time: '1d ago' },
+    { icon: 'file-text',      color: '#9CC942', bg: '#F4F9EB', text: 'Rental agreement signed — Kazanchis Studio', time: '2d ago' },
   ];
 
   return (
     <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingTop: insets.top + 120, paddingHorizontal: 20, paddingBottom: 120 }}
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingTop: insets.top + 120, paddingBottom: 120 }}
     >
-        {/* ── Premium Greeting ──────────────────────────────────────────────── */}
-        <View style={lh.greetRow}>
-            <View>
-                <Text style={lh.greetSmall}>{greeting} 👋</Text>
-                <Text style={lh.greetBig}>Command Center</Text>
+      {/* ── Hero Greeting ─────────────────────────────────────────────────── */}
+      <View style={lh.heroSection}>
+        <View>
+          <Text style={lh.heroDate}>{dateStr}</Text>
+          <Text style={lh.heroGreeting}>Good {greeting}, Abebe 👋</Text>
+          <Text style={lh.heroSub}>Here's your property overview</Text>
+        </View>
+        <TouchableOpacity style={lh.heroAvatarBtn} onPress={() => router.push('/(tabs)/profile')}>
+          <Text style={lh.heroAvatarText}>AT</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* ── KPI Strip ─────────────────────────────────────────────────────── */}
+      <ScrollView
+        horizontal showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 28 }}
+        contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+      >
+        {[
+          { label: 'Monthly Income', value: '88,500', unit: 'ETB', icon: 'dollar-sign', color: '#9CC942', bg: '#F4F9EB', trend: '+12.4%' },
+          { label: 'Active Listings', value: '3', unit: 'props', icon: 'home', color: '#0EA5E9', bg: '#F0F9FF', trend: 'Stable' },
+          { label: 'Occupancy Rate', value: '67', unit: '%', icon: 'users', color: '#8B5CF6', bg: '#F5F3FF', trend: '+5%' },
+          { label: 'Total Leads', value: '12', unit: 'this mo.', icon: 'user-plus', color: '#F59E0B', bg: '#FFFBEB', trend: '+3 new' },
+        ].map((kpi, i) => (
+          <View key={i} style={lh.kpiCard}>
+            <View style={[lh.kpiIconBox, { backgroundColor: kpi.bg }]}>
+              <Feather name={kpi.icon as any} size={16} color={kpi.color} />
             </View>
-            <TouchableOpacity
-                style={lh.notifPill}
-                onPress={() => router.push('/(tabs)/alerts')}
-            >
-                <Feather name="bell" size={15} color={KiraColors.primary} />
-                <Text style={lh.notifPillText}>Alerts</Text>
-                <View style={lh.notifDot} />
-            </TouchableOpacity>
-        </View>
-
-        {/* ── Revenue + KPI Card ─────────────────────────────────────────────── */}
-        <View style={lh.revenueCard}>
-            <LinearGradient
-                colors={['#1A1A1A', '#2C2C2C']}
-                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-                style={StyleSheet.absoluteFill}
-            />
-            {/* Brand green accent blob */}
-            <View style={[lh.decorCircle, { top: -40, right: -20, width: 140, height: 140, backgroundColor: KiraColors.primary, opacity: 0.12 }]} />
-            <View style={[lh.decorCircle, { bottom: -10, left: 20, width: 70, height: 70, backgroundColor: KiraColors.primary, opacity: 0.07 }]} />
-
-            <Text style={lh.revenueLabel}>APRIL 2026 PROJECTED INCOME</Text>
-            <Text style={lh.revenueAmount}>88,500 <Text style={lh.revenueCur}>ETB</Text></Text>
-            <View style={lh.revenueMeta}>
-                <View style={lh.revenueBadge}>
-                    <Feather name="trending-up" size={11} color={KiraColors.primary} />
-                    <Text style={lh.revenueBadgeText}>+12.4% vs March</Text>
-                </View>
-                <Text style={lh.revenueAssets}>Portfolio: 14.2M ETB</Text>
+            <Text style={lh.kpiLabel}>{kpi.label}</Text>
+            <View style={lh.kpiValueRow}>
+              <Text style={[lh.kpiValue, { color: kpi.color }]}>{kpi.value}</Text>
+              <Text style={lh.kpiUnit}> {kpi.unit}</Text>
             </View>
-
-            {/* Mini KPI Row */}
-            <View style={lh.miniKpiRow}>
-                {[
-                    { label: 'PROPERTIES', val: '3' },
-                    { label: 'OCCUPANCY', val: '67%' },
-                    { label: 'LEADS', val: '12' },
-                    { label: 'VIEWS', val: '1.2K' },
-                ].map((k, i) => (
-                    <View key={i} style={lh.miniKpi}>
-                        <Text style={lh.miniKpiVal}>{k.val}</Text>
-                        <Text style={lh.miniKpiLab}>{k.label}</Text>
-                    </View>
-                ))}
+            <View style={[lh.kpiTrendPill, { backgroundColor: kpi.bg }]}>
+              <Text style={[lh.kpiTrendText, { color: kpi.color }]}>{kpi.trend}</Text>
             </View>
-        </View>
+          </View>
+        ))}
+      </ScrollView>
 
-        {/* ── AI Recommendations ────────────────────────────────────────────── */}
-        <View style={lh.sectionHeaderRow}>
-            <View style={lh.aiTag}>
-                <MaterialCommunityIcons name="robot-outline" size={12} color="#FFF" />
-                <Text style={lh.aiTagText}>AI</Text>
+      {/* ── Properties Overview ───────────────────────────────────────────── */}
+      <View style={lh.sectionHeaderRow}>
+        <Text style={lh.sectionH}>My Properties</Text>
+        <TouchableOpacity onPress={() => router.push('/landlord-dashboard')}>
+          <Text style={lh.seeAll}>Manage All →</Text>
+        </TouchableOpacity>
+      </View>
+
+      <View style={{ paddingHorizontal: 20, marginBottom: 28 }}>
+        {PROPERTIES_SNAP.map((prop, i) => (
+          <TouchableOpacity
+            key={prop.id}
+            style={lh.propRow}
+            onPress={() => router.push({ pathname: '/property-details', params: { id: prop.id } })}
+          >
+            <Image source={prop.image} style={lh.propThumb} contentFit="cover" />
+            <View style={lh.propInfo}>
+              <Text style={lh.propTitle} numberOfLines={1}>{prop.title}</Text>
+              <View style={lh.propMeta}>
+                <Feather name="map-pin" size={10} color="#94A3B8" />
+                <Text style={lh.propLocation}>{prop.location}</Text>
+                <Text style={lh.propDot}>·</Text>
+                <Text style={lh.propPrice}>{prop.price} ETB</Text>
+              </View>
+              <View style={lh.propStats}>
+                <Feather name="eye" size={10} color="#94A3B8" />
+                <Text style={lh.propStatText}>{prop.views}</Text>
+                <Feather name="user-plus" size={10} color="#94A3B8" style={{ marginLeft: 8 }} />
+                <Text style={lh.propStatText}>{prop.leads}</Text>
+              </View>
             </View>
-            <Text style={lh.sectionH}>Recommendations</Text>
-        </View>
+            <View style={[lh.propStatusPill, { backgroundColor: prop.statusColor + '20' }]}>
+              <Text style={[lh.propStatusText, { color: prop.statusColor }]}>{prop.status}</Text>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ marginHorizontal: -20 }}
-            contentContainerStyle={{ paddingHorizontal: 20, paddingRight: 20, gap: 14 }}
-        >
-            {AI_RECS.map((rec) => (
-                <View key={rec.id} style={lh.recCard}>
-                    <View style={[lh.recIconWrap, { backgroundColor: rec.bg }]}>
-                        <Feather name={rec.icon as any} size={22} color={rec.color} />
-                    </View>
-                    <Text style={lh.recTitle}>{rec.title}</Text>
-                    <Text style={lh.recDesc}>{rec.desc}</Text>
-                    <TouchableOpacity
-                        style={[lh.recCta, { borderColor: rec.color }]}
-                        onPress={() => rec.route && router.push(rec.route as any)}
-                    >
-                        <Text style={[lh.recCtaText, { color: rec.color }]}>{rec.cta}</Text>
-                        <Feather name="arrow-right" size={12} color={rec.color} />
-                    </TouchableOpacity>
-                </View>
-            ))}
-        </ScrollView>
+      {/* ── Quick Actions ─────────────────────────────────────────────────── */}
+      <View style={lh.sectionHeaderRow}>
+        <Text style={lh.sectionH}>Quick Actions</Text>
+      </View>
+      <View style={lh.quickActionsRow}>
+        {[
+          { icon: 'zap', label: 'Boost',     color: '#F59E0B', bg: '#FFFBEB', onPress: () => router.push('/boost-listing') },
+          { icon: 'plus', label: 'New',      color: '#9CC942', bg: '#F4F9EB', onPress: () => router.push('/list-property') },
+          { icon: 'file-text', label: 'Lease', color: '#0EA5E9', bg: '#F0F9FF', onPress: () => router.push('/rental-agreement') },
+          { icon: 'home', label: 'Manage',   color: '#8B5CF6', bg: '#F5F3FF', onPress: () => router.push('/landlord-dashboard') },
+        ].map((a, i) => (
+          <TouchableOpacity key={i} style={lh.quickBtn} onPress={a.onPress}>
+            <View style={[lh.quickIconBox, { backgroundColor: a.bg }]}>
+              <Feather name={a.icon as any} size={20} color={a.color} />
+            </View>
+            <Text style={lh.quickLabel}>{a.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-        {/* ── Market Intelligence ───────────────────────────────────────────── */}
-        <View style={[lh.sectionHeaderRow, { marginTop: 32 }]}>
-            <Text style={lh.sectionH}>Market Intel</Text>
-            <TouchableOpacity><Text style={lh.seeAll}>Full Report →</Text></TouchableOpacity>
-        </View>
+      {/* ── Recent Activity ───────────────────────────────────────────────── */}
+      <View style={[lh.sectionHeaderRow, { marginTop: 28 }]}>
+        <Text style={lh.sectionH}>Recent Activity</Text>
+        <TouchableOpacity><Text style={lh.seeAll}>View All →</Text></TouchableOpacity>
+      </View>
 
-        <View style={lh.intelGrid}>
-            {MARKET_INTEL.map((m, i) => (
-                <View key={i} style={lh.intelCard}>
-                    <Text style={lh.intelArea}>{m.area}</Text>
-                    <Text style={[lh.intelChange, { color: m.color }]}>{m.change}</Text>
-                    <Text style={lh.intelDesc}>{m.desc}</Text>
-                    {m.trend === 'up' && <Feather name="trending-up" size={14} color={m.color} style={{ marginTop: 4 }} />}
-                    {m.trend === 'fire' && <Text style={{ fontSize: 14 }}>🔥</Text>}
-                    {m.trend === 'minus' && <Feather name="minus" size={14} color={m.color} style={{ marginTop: 4 }} />}
-                </View>
-            ))}
-        </View>
+      <View style={{ paddingHorizontal: 20 }}>
+        {ACTIVITY.map((item, i) => (
+          <View key={i} style={lh.activityItem}>
+            <View style={[lh.activityIconBox, { backgroundColor: item.bg }]}>
+              <Feather name={item.icon as any} size={16} color={item.color} />
+            </View>
+            <View style={lh.activityContent}>
+              <Text style={lh.activityText}>{item.text}</Text>
+              <Text style={lh.activityTime}>{item.time}</Text>
+            </View>
+            <Feather name="chevron-right" size={14} color="#CBD5E1" />
+          </View>
+        ))}
+      </View>
 
-        {/* ── Operational Shortcuts ────────────────────────────────────────── */}
-        <Text style={[lh.sectionH, { marginTop: 32, marginBottom: 16 }]}>Quick Actions</Text>
-        <View style={lh.opsRow}>
-            {[
-                { icon: 'camera', label: 'Request Photos', color: '#8B5CF6', bg: '#F5F3FF', onPress: null },
-                { icon: 'file-text', label: 'Legal Forms', color: '#0EA5E9', bg: '#F0F9FF', onPress: null },
-                { icon: 'home', label: 'My Inventory', color: '#9CC942', bg: '#F4F9EB', onPress: () => router.push('/landlord-dashboard') },
-                { icon: 'plus-circle', label: 'New Listing', color: '#F59E0B', bg: '#FFFBEB', onPress: () => router.push('/list-property') },
-            ].map((op, i) => (
-                <TouchableOpacity key={i} style={lh.opsCard} onPress={op.onPress ?? undefined}>
-                    <View style={[lh.opsIconWrap, { backgroundColor: op.bg }]}>
-                        <Feather name={op.icon as any} size={20} color={op.color} />
-                    </View>
-                    <Text style={lh.opsLabel}>{op.label}</Text>
-                </TouchableOpacity>
-            ))}
-        </View>
-
-        <View style={{ height: 120 }} />
+      <View style={{ height: 120 }} />
     </ScrollView>
   );
 }
@@ -233,8 +210,8 @@ export default function ExploreScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-     const timer = setTimeout(() => setIsLoading(false), 1500);
-     return () => clearTimeout(timer);
+    const timer = setTimeout(() => setIsLoading(false), 1500);
+    return () => clearTimeout(timer);
   }, []);
   const { neighborhood: navNeighborhood } = useLocalSearchParams<{ neighborhood?: string }>();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -305,27 +282,27 @@ export default function ExploreScreen() {
           <View style={styles.headerContent}>
             {/* Left: Quick Profile/Account */}
             <View style={styles.headerAvatar}>
-               <Text style={styles.avatarInitial}>K</Text>
+              <Text style={styles.avatarInitial}>K</Text>
             </View>
 
             {/* Center: Brand Identity */}
             <View style={styles.headerCenter}>
-               <View style={styles.logoRow}>
-                  <Text style={styles.logoTextKira}>Kira</Text>
-                  <Text style={styles.logoTextNet}>-Net</Text>
-               </View>
-               <View style={styles.roleBadge}>
-                  <Text style={styles.roleBadgeText}>{role?.toUpperCase() || 'TENANT'}</Text>
-               </View>
+              <View style={styles.logoRow}>
+                <Text style={styles.logoTextKira}>Kira</Text>
+                <Text style={styles.logoTextNet}>-Net</Text>
+              </View>
+              <View style={styles.roleBadge}>
+                <Text style={styles.roleBadgeText}>{role?.toUpperCase() || 'TENANT'}</Text>
+              </View>
             </View>
 
             {/* Right: Notifications */}
-            <TouchableOpacity 
-                style={styles.headerNotif}
-                onPress={() => router.push('/(tabs)/alerts')}
+            <TouchableOpacity
+              style={styles.headerNotif}
+              onPress={() => router.push('/(tabs)/alerts')}
             >
-               <Feather name="bell" size={20} color="#1A1A1A" />
-               {unreadCount > 0 && <View style={styles.headerNotifDot} />}
+              <Feather name="bell" size={20} color="#1A1A1A" />
+              {unreadCount > 0 && <View style={styles.headerNotifDot} />}
             </TouchableOpacity>
           </View>
         </View>
@@ -334,173 +311,173 @@ export default function ExploreScreen() {
       {role === 'landlord' ? (
         <LandlordHome insets={insets} />
       ) : (
-        <ScrollView 
-          showsVerticalScrollIndicator={false} 
+        <ScrollView
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 80 }]}
           onScroll={(e) => {
             scrollY.value = e.nativeEvent.contentOffset.y;
           }}
           scrollEventThrottle={16}
         >
-        
-        {/* ── Mesh Gradient Background ─────────────────────────────────────── */}
-        <View style={styles.meshContainer}>
-          <LinearGradient
-            colors={['rgba(156, 201, 66, 0.05)', 'rgba(255, 255, 255, 0)']}
-            style={styles.meshBubble1}
-          />
-          <LinearGradient
-            colors={['rgba(251, 192, 45, 0.08)', 'rgba(255, 255, 255, 0)']}
-            style={styles.meshBubble2}
-          />
-        </View>
 
-        {/* ── Hero ─────────────────────────────────────────────────────────── */}
-        <View style={styles.titleSection}>
-          <Text style={styles.headline}>Find your</Text>
-          <Text style={styles.headline}>sanctuary</Text>
-          <Text style={styles.headlineBlack}>in Addis.</Text>
-        </View>
-
-        {/* ── Search & Filter ──────────────────────────────────────────────── */}
-        <View style={styles.searchSection}>
-          <View style={styles.searchInputContainer}>
-            <Feather name="search" size={18} color="#6B7280" style={styles.searchIcon} />
-            <TextInput
-              placeholder="Search by location or name"
-              placeholderTextColor="#6B7280"
-              style={styles.searchInput}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
+          {/* ── Mesh Gradient Background ─────────────────────────────────────── */}
+          <View style={styles.meshContainer}>
+            <LinearGradient
+              colors={['rgba(156, 201, 66, 0.05)', 'rgba(255, 255, 255, 0)']}
+              style={styles.meshBubble1}
+            />
+            <LinearGradient
+              colors={['rgba(251, 192, 45, 0.08)', 'rgba(255, 255, 255, 0)']}
+              style={styles.meshBubble2}
             />
           </View>
 
-          {/* Smart Suggestions */}
-          {(isSearchFocused || searchQuery.length > 0) && (
-            <View style={styles.suggestionsContainer}>
-               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                 {SUGGESTIONS.map((s, idx) => (
-                   <TouchableOpacity 
-                     key={idx} 
-                     style={styles.suggestionBadge}
-                     onPress={() => {
+          {/* ── Hero ─────────────────────────────────────────────────────────── */}
+          <View style={styles.titleSection}>
+            <Text style={styles.headline}>Find your</Text>
+            <Text style={styles.headline}>sanctuary</Text>
+            <Text style={styles.headlineBlack}>in Addis.</Text>
+          </View>
+
+          {/* ── Search & Filter ──────────────────────────────────────────────── */}
+          <View style={styles.searchSection}>
+            <View style={styles.searchInputContainer}>
+              <Feather name="search" size={18} color="#6B7280" style={styles.searchIcon} />
+              <TextInput
+                placeholder="Search by location or name"
+                placeholderTextColor="#6B7280"
+                style={styles.searchInput}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
+              />
+            </View>
+
+            {/* Smart Suggestions */}
+            {(isSearchFocused || searchQuery.length > 0) && (
+              <View style={styles.suggestionsContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {SUGGESTIONS.map((s, idx) => (
+                    <TouchableOpacity
+                      key={idx}
+                      style={styles.suggestionBadge}
+                      onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setSearchQuery(s.label.split('in ')[1]);
-                     }}
-                   >
-                     <Ionicons name={s.icon as any} size={12} color="#9CC942" style={{ marginRight: 4 }} />
-                     <Text style={styles.suggestionText}>{s.label}</Text>
-                   </TouchableOpacity>
-                 ))}
-               </ScrollView>
-            </View>
-          )}
-
-          <TouchableOpacity style={styles.filterButton} onPress={() => router.push('/modal')}>
-            <Feather name="sliders" size={16} color="#1A1A1A" />
-            <Text style={styles.filterText}>Filter</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* ── Visit Planner CTA Banner (shows when plan has items) ─────────── */}
-        {visits.length > 0 && (
-          <TouchableOpacity
-            style={styles.plannerStrip}
-            activeOpacity={0.88}
-            onPress={() => router.push('/visit-planner')}
-          >
-            <MaterialCommunityIcons name="map-marker-path" size={18} color="#1A1A1A" />
-            <Text style={styles.plannerStripText}>
-              {visits.length} propert{visits.length === 1 ? 'y' : 'ies'} in your Visit Plan — tap to view route
-            </Text>
-            <Feather name="chevron-right" size={16} color="rgba(0,0,0,0.5)" />
-          </TouchableOpacity>
-        )}
-
-        {/* ── Categories ───────────────────────────────────────────────────── */}
-        <ScrollView
-          horizontal showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesRow}
-        >
-          {CATEGORIES.map(cat => (
-            <TouchableOpacity
-              key={cat.key}
-              style={[styles.categoryPill, activeCategory === cat.key && styles.categoryPillActive]}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setActiveCategory(cat.key);
-              }}
-            >
-              <Text style={activeCategory === cat.key ? styles.categoryPillTextActive : styles.categoryPillText}>
-                {cat.label}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* ── Listings ─────────────────────────────────────────────────────── */}
-        <View style={styles.listingsContainer}>
-          {isLoading ? (
-             <>
-               <SkeletonCard />
-               <SkeletonCard />
-             </>
-          ) : (
-            <>
-              {filtered.map((p, i) => (
-                <React.Fragment key={p.id}>
-                  <PropertyCard property={p} />
-                  
-                  {/* ── Boost Promo In-Line ─────────────────────────────────── */}
-                  {i === 1 && (role === 'landlord' || role === 'agent') && (
-                    <TouchableOpacity 
-                      style={styles.boostBanner}
-                      onPress={() => router.push('/boost-listing')}
-                      activeOpacity={0.9}
+                      }}
                     >
-                      <View style={styles.boostBannerLeft}>
-                        <View style={styles.boostIconRound}>
-                          <Feather name="zap" size={20} color="#FFF" />
-                        </View>
-                        <View>
-                          <Text style={styles.boostBannerTitle}>Get 10x More Leads</Text>
-                          <Text style={styles.boostBannerSub}>Push your listing to the top of results</Text>
-                        </View>
-                      </View>
-                      <Feather name="chevron-right" size={20} color={KiraColors.primary} />
+                      <Ionicons name={s.icon as any} size={12} color="#9CC942" style={{ marginRight: 4 }} />
+                      <Text style={styles.suggestionText}>{s.label}</Text>
                     </TouchableOpacity>
-                  )}
-                </React.Fragment>
-              ))}
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
-              {filtered.length === 0 && (
-                <View style={styles.emptyState}>
-                  <Feather name="home" size={40} color="#D1D5DB" />
-                  <Text style={styles.emptyStateText}>No listings in this category yet.</Text>
-                </View>
-              )}
-            </>
+            <TouchableOpacity style={styles.filterButton} onPress={() => router.push('/modal')}>
+              <Feather name="sliders" size={16} color="#1A1A1A" />
+              <Text style={styles.filterText}>Filter</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* ── Visit Planner CTA Banner (shows when plan has items) ─────────── */}
+          {visits.length > 0 && (
+            <TouchableOpacity
+              style={styles.plannerStrip}
+              activeOpacity={0.88}
+              onPress={() => router.push('/visit-planner')}
+            >
+              <MaterialCommunityIcons name="map-marker-path" size={18} color="#1A1A1A" />
+              <Text style={styles.plannerStripText}>
+                {visits.length} propert{visits.length === 1 ? 'y' : 'ies'} in your Visit Plan — tap to view route
+              </Text>
+              <Feather name="chevron-right" size={16} color="rgba(0,0,0,0.5)" />
+            </TouchableOpacity>
           )}
-        </View>
-      </ScrollView>
+
+          {/* ── Categories ───────────────────────────────────────────────────── */}
+          <ScrollView
+            horizontal showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesRow}
+          >
+            {CATEGORIES.map(cat => (
+              <TouchableOpacity
+                key={cat.key}
+                style={[styles.categoryPill, activeCategory === cat.key && styles.categoryPillActive]}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setActiveCategory(cat.key);
+                }}
+              >
+                <Text style={activeCategory === cat.key ? styles.categoryPillTextActive : styles.categoryPillText}>
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* ── Listings ─────────────────────────────────────────────────────── */}
+          <View style={styles.listingsContainer}>
+            {isLoading ? (
+              <>
+                <SkeletonCard />
+                <SkeletonCard />
+              </>
+            ) : (
+              <>
+                {filtered.map((p, i) => (
+                  <React.Fragment key={p.id}>
+                    <PropertyCard property={p} />
+
+                    {/* ── Boost Promo In-Line ─────────────────────────────────── */}
+                    {i === 1 && (role === 'landlord' || role === 'agent') && (
+                      <TouchableOpacity
+                        style={styles.boostBanner}
+                        onPress={() => router.push('/boost-listing')}
+                        activeOpacity={0.9}
+                      >
+                        <View style={styles.boostBannerLeft}>
+                          <View style={styles.boostIconRound}>
+                            <Feather name="zap" size={20} color="#FFF" />
+                          </View>
+                          <View>
+                            <Text style={styles.boostBannerTitle}>Get 10x More Leads</Text>
+                            <Text style={styles.boostBannerSub}>Push your listing to the top of results</Text>
+                          </View>
+                        </View>
+                        <Feather name="chevron-right" size={20} color={KiraColors.primary} />
+                      </TouchableOpacity>
+                    )}
+                  </React.Fragment>
+                ))}
+
+                {filtered.length === 0 && (
+                  <View style={styles.emptyState}>
+                    <Feather name="home" size={40} color="#D1D5DB" />
+                    <Text style={styles.emptyStateText}>No listings in this category yet.</Text>
+                  </View>
+                )}
+              </>
+            )}
+          </View>
+        </ScrollView>
       )}
 
       {/* ── Floating Boost FAB ────────────────────────────────────────── */}
       {(role === 'landlord' || role === 'agent') && (
         <View style={styles.fabContainer}>
-        <TouchableOpacity 
-          style={styles.fabInner}
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            router.push('/boost-listing');
-          }}
-        >
-          <Feather name="zap" size={20} color="#1A1A1A" />
-          <Text style={styles.fabText}>Boost</Text>
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={styles.fabInner}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push('/boost-listing');
+            }}
+          >
+            <Feather name="zap" size={20} color="#1A1A1A" />
+            <Text style={styles.fabText}>Boost</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
     </View>
@@ -550,9 +527,9 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
   const handleVisit = () => {
     isPressed.value = 1.05;
     setTimeout(() => { isPressed.value = 1; }, 100);
-    
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    
+
     if (inPlan) {
       removeVisit(property.id);
     } else {
@@ -574,10 +551,10 @@ function PropertyCard({ property }: { property: typeof PROPERTIES[number] }) {
         onPress={() => router.push({ pathname: '/property-details', params: { id: property.id } })}
       >
         <View style={styles.imageContainer}>
-          <AnimatedImage 
+          <AnimatedImage
             sharedTransitionTag={`image-${property.id}`}
-            source={property.image} 
-            style={styles.cardImage} 
+            source={property.image}
+            style={styles.cardImage}
           />
 
           {property.badge === 'verified' && (
@@ -802,16 +779,16 @@ const styles = StyleSheet.create({
   logoRow: { flexDirection: 'row', alignItems: 'center' },
   logoTextKira: { fontSize: 16, fontWeight: '900', color: '#1A1A1A' },
   logoTextNet: { fontSize: 16, fontWeight: '900', color: KiraColors.primary },
-  roleBadge: { 
-    backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2, 
-    borderRadius: 6, marginTop: 2 
+  roleBadge: {
+    backgroundColor: '#F1F5F9', paddingHorizontal: 6, paddingVertical: 2,
+    borderRadius: 6, marginTop: 2
   },
   roleBadgeText: { fontSize: 8, fontWeight: '900', color: '#64748B' },
   headerNotif: { position: 'relative', width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
-  headerNotifDot: { 
-    position: 'absolute', top: 8, right: 8, width: 8, height: 8, 
-    borderRadius: 4, backgroundColor: KiraColors.primary, 
-    borderWidth: 1.5, borderColor: '#FFF' 
+  headerNotifDot: {
+    position: 'absolute', top: 8, right: 8, width: 8, height: 8,
+    borderRadius: 4, backgroundColor: KiraColors.primary,
+    borderWidth: 1.5, borderColor: '#FFF'
   },
 
   // FAB
@@ -1031,104 +1008,102 @@ const styles = StyleSheet.create({
 });
 
 const appStyles = StyleSheet.create({
-    heroSection: { marginBottom: 24 },
-    heroTitle: { fontSize: 28, fontWeight: '900', color: '#1A1A1A' },
-    heroSub: { fontSize: 14, color: '#64748B', marginTop: 4 },
-    glassCardContainer: { 
-        height: 180, borderRadius: 28, overflow: 'hidden', marginBottom: 32,
-        shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10
-    },
-    glassCard: { flex: 1 },
-    glassContent: { flex: 1, padding: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-    glassLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1, marginBottom: 8 },
-    glassValue: { fontSize: 32, fontWeight: '900', color: '#1A1A1A' },
-    glassCurrency: { fontSize: 14, fontWeight: '600', color: '#64748B' },
-    glassDivider: { width: 1, height: '60%', backgroundColor: 'rgba(0,0,0,0.05)' },
-    trendBadge: { 
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F9EB', 
-        paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginTop: 12, alignSelf: 'flex-start'
-    },
-    trendText: { fontSize: 11, fontWeight: '700', color: '#9CC942', marginLeft: 4 },
-    intelSection: { marginBottom: 32 },
-    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    sectionTitle: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
-    seeAll: { fontSize: 13, fontWeight: '800', color: KiraColors.primary },
-    trendCard: { 
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', 
-        padding: 16, borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9'
-    },
-    trendIconWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
-    trendBody: { flex: 1 },
-    trendTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
-    trendDesc: { fontSize: 12, color: '#64748B', lineHeight: 18 },
-    opsSection: { marginBottom: 24 },
-    opsGrid: { flexDirection: 'row', justifyContent: 'space-between' },
-    opsItem: { 
-        width: (width - 40 - 24) / 3, alignItems: 'center', 
-        backgroundColor: '#FFF', paddingVertical: 16, borderRadius: 20,
-        borderWidth: 1, borderColor: '#F1F5F9'
-    },
-    opsIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F4F9EB', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
-    opsText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
+  heroSection: { marginBottom: 24 },
+  heroTitle: { fontSize: 28, fontWeight: '900', color: '#1A1A1A' },
+  heroSub: { fontSize: 14, color: '#64748B', marginTop: 4 },
+  glassCardContainer: {
+    height: 180, borderRadius: 28, overflow: 'hidden', marginBottom: 32,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.1, shadowRadius: 20, elevation: 10
+  },
+  glassCard: { flex: 1 },
+  glassContent: { flex: 1, padding: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  glassLabel: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1, marginBottom: 8 },
+  glassValue: { fontSize: 32, fontWeight: '900', color: '#1A1A1A' },
+  glassCurrency: { fontSize: 14, fontWeight: '600', color: '#64748B' },
+  glassDivider: { width: 1, height: '60%', backgroundColor: 'rgba(0,0,0,0.05)' },
+  trendBadge: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F9EB',
+    paddingHorizontal: 8, paddingVertical: 4, borderRadius: 10, marginTop: 12, alignSelf: 'flex-start'
+  },
+  trendText: { fontSize: 11, fontWeight: '700', color: '#9CC942', marginLeft: 4 },
+  intelSection: { marginBottom: 32 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
+  seeAll: { fontSize: 13, fontWeight: '800', color: KiraColors.primary },
+  trendCard: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF',
+    padding: 16, borderRadius: 20, marginBottom: 12, borderWidth: 1, borderColor: '#F1F5F9'
+  },
+  trendIconWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginRight: 16 },
+  trendBody: { flex: 1 },
+  trendTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
+  trendDesc: { fontSize: 12, color: '#64748B', lineHeight: 18 },
+  opsSection: { marginBottom: 24 },
+  opsGrid: { flexDirection: 'row', justifyContent: 'space-between' },
+  opsItem: {
+    width: (width - 40 - 24) / 3, alignItems: 'center',
+    backgroundColor: '#FFF', paddingVertical: 16, borderRadius: 20,
+    borderWidth: 1, borderColor: '#F1F5F9'
+  },
+  opsIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F4F9EB', justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
+  opsText: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
 });
 
 const lh = StyleSheet.create({
-    greetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
-    greetSmall: { fontSize: 13, color: '#64748B', fontWeight: '600' },
-    greetBig: { fontSize: 26, fontWeight: '900', color: '#1A1A1A', marginTop: 2 },
-    notifPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: KiraColors.softPrimary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: KiraColors.primary, position: 'relative' },
-    notifPillText: { fontSize: 12, fontWeight: '800', color: KiraColors.primary },
-    notifDot: { position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: 4, backgroundColor: '#EF4444', borderWidth: 1.5, borderColor: KiraColors.softPrimary },
+  greetRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 },
+  greetSmall: { fontSize: 13, color: '#64748B', fontWeight: '600' },
+  greetBig: { fontSize: 26, fontWeight: '900', color: '#1A1A1A', marginTop: 2 },
+  notifPill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: KiraColors.softPrimary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: KiraColors.primary, position: 'relative' },
+  notifPillText: { fontSize: 12, fontWeight: '800', color: KiraColors.primary },
+  notifDot: { position: 'absolute', top: 4, right: 4, width: 7, height: 7, borderRadius: 4, backgroundColor: '#EF4444', borderWidth: 1.5, borderColor: KiraColors.softPrimary },
 
-    revenueCard: { borderRadius: 28, overflow: 'hidden', padding: 24, marginBottom: 32, minHeight: 200 },
-    decorCircle: { position: 'absolute', borderRadius: 999 },
-    revenueLabel: { fontSize: 9, fontWeight: '900', color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5, marginBottom: 8 },
-    revenueAmount: { fontSize: 36, fontWeight: '900', color: '#FFF', marginBottom: 12 },
-    revenueCur: { fontSize: 18, fontWeight: '700', color: 'rgba(255,255,255,0.6)' },
-    revenueMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    revenueBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(156,201,66,0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20, gap: 5 },
-    revenueBadgeText: { fontSize: 11, fontWeight: '800', color: '#9CC942' },
-    revenueAssets: { fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: '600' },
-    miniKpiRow: { flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)', paddingTop: 14 },
-    miniKpi: { alignItems: 'center', flex: 1 },
-    miniKpiVal: { fontSize: 15, fontWeight: '900', color: '#FFF' },
-    miniKpiLab: { fontSize: 8, fontWeight: '700', color: 'rgba(255,255,255,0.65)', letterSpacing: 0.6, marginTop: 3 },
+  // Hero Greeting
+  heroSection: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, marginBottom: 28 },
+  heroDate: { fontSize: 11, fontWeight: '700', color: '#94A3B8', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+  heroGreeting: { fontSize: 26, fontWeight: '900', color: '#1A1A1A', letterSpacing: -0.5 },
+  heroSub: { fontSize: 13, color: '#64748B', fontWeight: '600', marginTop: 3 },
+  heroAvatarBtn: { width: 46, height: 46, borderRadius: 23, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' },
+  heroAvatarText: { fontSize: 14, fontWeight: '900', color: '#9CC942' },
 
-    sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16, marginTop: 8 },
-    aiTag: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A1A', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, gap: 4 },
-    aiTagText: { fontSize: 9, fontWeight: '900', color: '#9CC942', letterSpacing: 1 },
-    sectionH: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
-    seeAll: { fontSize: 13, fontWeight: '800', color: KiraColors.primary },
+  // KPI Cards
+  kpiCard: { width: 150, backgroundColor: '#FFF', borderRadius: 22, padding: 18, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12, elevation: 2 },
+  kpiIconBox: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  kpiLabel: { fontSize: 10, fontWeight: '700', color: '#94A3B8', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.3 },
+  kpiValueRow: { flexDirection: 'row', alignItems: 'flex-end' },
+  kpiValue: { fontSize: 22, fontWeight: '900' },
+  kpiUnit: { fontSize: 11, fontWeight: '600', color: '#94A3B8', marginBottom: 2, marginLeft: 2 },
+  kpiTrendPill: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, marginTop: 10 },
+  kpiTrendText: { fontSize: 10, fontWeight: '800' },
 
-    recCard: {
-        width: width * 0.76,
-        marginRight: 14,
-        backgroundColor: '#FFF', borderRadius: 24, padding: 20,
-        borderWidth: 1, borderColor: '#F1F5F9',
-        shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.06, shadowRadius: 16, elevation: 4,
-    },
-    recIconWrap: { width: 48, height: 48, borderRadius: 16, justifyContent: 'center', alignItems: 'center', marginBottom: 14 },
-    recTitle: { fontSize: 15, fontWeight: '900', color: '#1A1A1A', marginBottom: 8 },
-    recDesc: { fontSize: 12, color: '#64748B', lineHeight: 18, marginBottom: 16 },
-    recCta: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1.5, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8, alignSelf: 'flex-start' },
-    recCtaText: { fontSize: 12, fontWeight: '800' },
+  // Property Rows
+  propRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', borderRadius: 18, padding: 14, marginBottom: 10, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
+  propThumb: { width: 60, height: 60, borderRadius: 14, marginRight: 14 },
+  propInfo: { flex: 1 },
+  propTitle: { fontSize: 14, fontWeight: '800', color: '#1A1A1A', marginBottom: 4 },
+  propMeta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 },
+  propLocation: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+  propDot: { fontSize: 11, color: '#CBD5E1' },
+  propPrice: { fontSize: 11, fontWeight: '800', color: '#9CC942' },
+  propStats: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  propStatText: { fontSize: 11, color: '#94A3B8', fontWeight: '600', marginRight: 4 },
+  propStatusPill: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  propStatusText: { fontSize: 10, fontWeight: '900' },
 
-    intelGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 8 },
-    intelCard: {
-        width: (width - 40 - 12) / 2,
-        backgroundColor: '#FFF', borderRadius: 20, padding: 16,
-        borderWidth: 1, borderColor: '#F1F5F9',
-    },
-    intelArea: { fontSize: 13, fontWeight: '900', color: '#1A1A1A', marginBottom: 4 },
-    intelChange: { fontSize: 20, fontWeight: '900', marginBottom: 4 },
-    intelDesc: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
+  // Quick Actions
+  quickActionsRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 8 },
+  quickBtn: { alignItems: 'center', flex: 1 },
+  quickIconBox: { width: 54, height: 54, borderRadius: 18, alignItems: 'center', justifyContent: 'center', marginBottom: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  quickLabel: { fontSize: 11, fontWeight: '800', color: '#1A1A1A' },
 
-    opsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-    opsCard: {
-        width: (width - 40 - 12) / 2,
-        backgroundColor: '#FFF', borderRadius: 20, padding: 18,
-        borderWidth: 1, borderColor: '#F1F5F9', alignItems: 'flex-start',
-    },
-    opsIconWrap: { width: 44, height: 44, borderRadius: 14, justifyContent: 'center', alignItems: 'center', marginBottom: 12 },
-    opsLabel: { fontSize: 13, fontWeight: '800', color: '#1A1A1A' },
+  // Section headers
+  sectionHeaderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 14, marginTop: 8 },
+  sectionH: { fontSize: 18, fontWeight: '900', color: '#1A1A1A' },
+  seeAll: { fontSize: 13, fontWeight: '800', color: KiraColors.primary },
+
+  // Activity Feed
+  activityItem: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#FFF', borderRadius: 18, padding: 16, marginBottom: 10, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.03, shadowRadius: 8, elevation: 1 },
+  activityIconBox: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', flexShrink: 0 },
+  activityContent: { flex: 1 },
+  activityText: { fontSize: 13, fontWeight: '700', color: '#1A1A1A', lineHeight: 18 },
+  activityTime: { fontSize: 11, color: '#94A3B8', fontWeight: '600', marginTop: 3 },
 });

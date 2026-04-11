@@ -29,8 +29,10 @@ import SettingsView from './views/SettingsView';
 import ReportsView from './views/ReportsView';
 import SystemMetadataView from './views/SystemMetadataView';
 import BoostView from './views/BoostView';
+import LoginView from './views/LoginView';
 
 const App: React.FC = () => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeTab, setActiveTab] = useState('dashboard');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -57,6 +59,10 @@ const App: React.FC = () => {
             default:          return <DashboardView onNavigate={setActiveTab} />;
         }
     };
+
+    if (!isLoggedIn) {
+        return <LoginView onLogin={() => setIsLoggedIn(true)} />;
+    }
 
     return (
         <div className="layout-container">
@@ -116,7 +122,7 @@ const App: React.FC = () => {
                         <Settings size={20} />
                         <span>Settings</span>
                     </button>
-                    <button className="nav-link" style={{ color: '#EF4444' }}>
+                    <button className="nav-link" style={{ color: '#EF4444' }} onClick={() => setIsLoggedIn(false)}>
                         <LogOut size={20} />
                         {!isSidebarCollapsed && <span>Logout</span>}
                     </button>

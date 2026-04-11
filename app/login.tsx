@@ -7,12 +7,42 @@ import { KiraColors } from '@/constants/colors';
 import { useUser, UserRole } from '@/context/UserContext';
 import { useLanguage } from '@/context/LanguageContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import TutorialGuide from '@/components/TutorialGuide';
+import { useEffect } from 'react';
 
 export default function LoginScreen() {
   const { t, language, setLanguage } = useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const { login } = useUser();
+
+  const [isTutorialVisible, setIsTutorialVisible] = useState(false);
+
+  useEffect(() => {
+    checkTutorial();
+  }, []);
+
+  const checkTutorial = async () => {
+    const completed = await AsyncStorage.getItem('tutorial_login_completed');
+    if (!completed) {
+      setTimeout(() => setIsTutorialVisible(true), 1200);
+    }
+  };
+
+  const loginSteps = [
+    {
+      title: t.loginStep1Title,
+      description: t.loginStep1Desc,
+    },
+    {
+      title: t.loginStep2Title,
+      description: t.loginStep2Desc,
+    },
+    {
+      title: t.loginStep3Title,
+      description: t.loginStep3Desc,
+    }
+  ];
 
   const handleLogin = async () => {
     // ─── MOCK USERS ───────────────────────────────────────────────────────────
@@ -26,8 +56,8 @@ export default function LoginScreen() {
     if (user && user.pass === password) {
        try {
          await login(email, user.role);
-         await AsyncStorage.setItem('@user_name', user.name);
-         await AsyncStorage.setItem('@user_email', email);
+         await AsyncStorage.setItem(`@user_name_${user.role}`, user.name);
+         await AsyncStorage.setItem(`@user_email_${user.role}`, email);
          router.replace('/(tabs)');
        } catch (e) {
          Alert.alert('System Error', 'Failed to initialize session.');
@@ -139,6 +169,12 @@ export default function LoginScreen() {
 
         </ScrollView>
       </KeyboardAvoidingView>
+      <TutorialGuide 
+        steps={loginSteps} 
+        tourKey="login" 
+        visible={isTutorialVisible} 
+        onComplete={() => setIsTutorialVisible(false)} 
+      />
     </SafeAreaView>
   );
 }

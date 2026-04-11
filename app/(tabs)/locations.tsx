@@ -53,31 +53,31 @@ function LandlordLeadsView() {
   const LEADS = [
     {
       id: '1', name: 'Mekdes Zeleke', initials: 'MZ', color: '#9CC942',
-      property: 'Summit Residency', time: '10 mins ago',
+      property: 'Summit Residency', propertyShort: 'Summit', time: '10m ago',
       status: 'Inquiry', trust: 92, verified: true,
-      message: 'I\'m interested in the 2-bedroom. Is the floor negotiable? I can move in next week.',
+      message: 'I\'m interested in the 2-bed. Is the floor negotiable? I can move in next week.',
       aiReply: 'Hi Mekdes, the floor is negotiable. Can we schedule a call at 3pm today?',
     },
     {
       id: '2', name: 'Kalkidan Alemu', initials: 'KA', color: '#0EA5E9',
-      property: 'Summit Residency', time: '1 hour ago',
+      property: 'Summit Residency', propertyShort: 'Summit', time: '1h ago',
       status: 'Visit Planned', trust: 88, verified: true,
       message: 'Confirmed my visit for Saturday 10am. Looking forward to it!',
       aiReply: 'See you Saturday at 10am, Kalkidan. I\'ll send you the gate code.',
     },
     {
       id: '3', name: 'Yared Tadesse', initials: 'YT', color: '#F59E0B',
-      property: 'Garden Villa', time: 'Yesterday',
+      property: 'Garden Villa', propertyShort: 'Garden', time: 'Yesterday',
       status: 'Inquiry', trust: 75, verified: false,
-      message: 'Does the villa have parking for 2 cars? I have a family.',
+      message: 'Does the villa have parking for 2 cars? I have a family of four.',
       aiReply: 'Hi Yared, yes — the villa has a private compound for 2 vehicles.',
     },
     {
       id: '4', name: 'Hiwot Bekele', initials: 'HB', color: '#8B5CF6',
-      property: 'Kazanchis Studio', time: '2 days ago',
+      property: 'Kazanchis Studio', propertyShort: 'Kazanchis', time: '2d ago',
       status: 'New', trust: 68, verified: false,
       message: 'Can I get a discount for 6-month advanced payment?',
-      aiReply: 'Hi Hiwot! For 6-month advance payment, I can offer a 5% reduction.',
+      aiReply: 'Hi Hiwot! For 6-month advance, I can offer a 5% reduction.',
     },
   ];
 
@@ -87,134 +87,147 @@ function LandlordLeadsView() {
     ? LEADS.filter(l => l.status === 'Visit Planned')
     : LEADS;
 
+  const statusConfig: Record<string, { bg: string; color: string; icon: string }> = {
+    'Visit Planned': { bg: '#F4F9EB', color: '#9CC942',  icon: 'calendar' },
+    'Inquiry':       { bg: '#EFF6FF', color: '#0EA5E9',  icon: 'message-circle' },
+    'New':           { bg: '#F5F3FF', color: '#8B5CF6',  icon: 'user-plus' },
+    'Hot':           { bg: '#FEF3C7', color: '#D97706',  icon: 'zap' },
+  };
+
+  const trustColor = (t: number) => t >= 85 ? '#9CC942' : t >= 70 ? '#F59E0B' : '#EF4444';
+  const trustLabel = (t: number) => t >= 85 ? 'High Trust' : t >= 70 ? 'Medium' : 'Low';
+
   return (
     <View style={ll.root}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-          {/* ── Spring Green Brand Hero Header ──────────────────────────────── */}
-          <View style={[ll.hero, { paddingTop: insets.top + 20 }]}>
-              <LinearGradient colors={['#7aaa2a', '#9CC942']} style={StyleSheet.absoluteFill} />
-              <View style={[ll.heroDecor, { top: -24, right: -24, backgroundColor: '#FFF', opacity: 0.12 }]} />
-              <View style={[ll.heroDecor, { bottom: -16, left: 60, width: 80, height: 80, backgroundColor: '#FFF', opacity: 0.08 }]} />
 
-              <View style={ll.heroTop}>
-                  <View>
-                      <Text style={ll.heroTitle}>Leads & Activity</Text>
-                      <Text style={ll.heroSub}>Your tenant pipeline</Text>
+      {/* ── Professional White Header ───────────────────────────────────── */}
+      <View style={[ll.profHeader, { paddingTop: insets.top + 16 }]}>
+        <View style={ll.profHeaderTop}>
+          <View>
+            <View style={ll.profLiveRow}>
+              <View style={ll.profLiveDot} />
+              <Text style={ll.profLiveText}>REAL-TIME ACTIVITY</Text>
+            </View>
+            <Text style={ll.profTitle}>Leads Pipeline.</Text>
+          </View>
+          <TouchableOpacity style={ll.profBellBtn} onPress={() => router.push('/(tabs)/alerts')}>
+            <Feather name="bell" size={20} color="#1A1A1A" />
+            <View style={ll.profBellDot} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Stats Row */}
+        <View style={ll.profStatsRow}>
+          {[
+            { val: '12', lab: 'ACTIVE',   color: '#0EA5E9', bg: '#F0F9FF' },
+            { val: '3',  lab: 'URGENT',   color: '#F59E0B', bg: '#FFFBEB' },
+            { val: '4.8',lab: 'MATCH',    color: '#9CC942', bg: '#F4F9EB' },
+            { val: '88%',lab: 'TRUST',    color: '#8B5CF6', bg: '#F5F3FF' },
+          ].map((s, i) => (
+            <View key={i} style={[ll.profStatBox, { backgroundColor: s.bg }]}>
+              <Text style={[ll.profStatVal, { color: s.color }]}>{s.val}</Text>
+              <Text style={ll.profStatLab}>{s.lab}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 130 }}>
+        {/* ── Tab Switcher ──────────────────────────────────────────────── */}
+        <View style={ll.tabContainer}>
+            <View style={ll.tabRow}>
+            {(['all', 'hot', 'visits'] as const).map(tab => (
+                <TouchableOpacity
+                key={tab}
+                style={[ll.tab, activeTab === tab && ll.tabActive]}
+                onPress={() => setActiveTab(tab)}
+                >
+                <Text style={[ll.tabText, activeTab === tab && ll.tabTextActive]}>
+                    {tab === 'all' ? 'All Activity' : tab === 'hot' ? '🔥 Hot Leads' : '📅 Visits'}
+                </Text>
+                </TouchableOpacity>
+            ))}
+            </View>
+        </View>
+
+        <View style={{ paddingHorizontal: 20 }}>
+          {filtered.map((lead) => {
+            const sc = statusConfig[lead.status] ?? { bg: '#F1F5F9', color: '#64748B', icon: 'circle' };
+            const tc = trustColor(lead.trust);
+
+            return (
+              <TouchableOpacity key={lead.id} style={ll.card} activeOpacity={0.92} onPress={() => router.push('/chat')}>
+
+                {/* Card Header */}
+                <View style={ll.cardHead}>
+                  <View style={[ll.avatar, { backgroundColor: lead.color + '15', borderColor: lead.color + '40' }]}>
+                    <Text style={[ll.avatarText, { color: lead.color }]}>{lead.initials}</Text>
                   </View>
-                  <TouchableOpacity style={ll.filterBtn} onPress={() => router.push('/(tabs)/alerts')}>
-                      <Feather name="sliders" size={16} color="rgba(255,255,255,0.7)" />
-                  </TouchableOpacity>
-              </View>
 
-              {/* Stats strip */}
-              <View style={ll.statsStrip}>
-                  {[
-                      { val: '12', lab: 'Total Leads' },
-                      { val: '3', lab: 'Hot Leads' },
-                      { val: '4', lab: 'Visits' },
-                      { val: '88%', lab: 'Avg Trust' },
-                  ].map((s, i) => (
-                      <View key={i} style={ll.statItem}>
-                          <Text style={ll.statVal}>{s.val}</Text>
-                          <Text style={ll.statLab}>{s.lab}</Text>
-                      </View>
-                  ))}
-              </View>
-          </View>
+                  <View style={ll.cardInfo}>
+                    <View style={ll.nameRow}>
+                      <Text style={ll.name}>{lead.name}</Text>
+                      {lead.verified && (
+                        <Ionicons name="shield-checkmark" size={14} color="#9CC942" />
+                      )}
+                    </View>
+                    <View style={ll.propRow}>
+                      <Text style={ll.property}>{lead.propertyShort}</Text>
+                      <Text style={ll.dot}>·</Text>
+                      <Text style={ll.time}>{lead.time}</Text>
+                    </View>
+                  </View>
 
-          <View style={ll.body}>
-              {/* ── Tab Switcher ──────────────────────────────────────────── */}
-              <View style={ll.tabRow}>
-                  {(['all', 'hot', 'visits'] as const).map(tab => (
-                      <TouchableOpacity
-                          key={tab}
-                          style={[ll.tab, activeTab === tab && ll.tabActive]}
-                          onPress={() => setActiveTab(tab)}
-                      >
-                          <Text style={[ll.tabText, activeTab === tab && ll.tabTextActive]}>
-                              {tab === 'all' ? 'All Leads' : tab === 'hot' ? '🔥 Hot' : '📅 Visits'}
-                          </Text>
-                      </TouchableOpacity>
-                  ))}
-              </View>
+                  <View style={[ll.statusTag, { backgroundColor: sc.bg }]}>
+                    <Text style={[ll.statusText, { color: sc.color }]}>{lead.status}</Text>
+                  </View>
+                </View>
 
-              {/* ── Lead Cards ────────────────────────────────────────────── */}
-              {filtered.map((lead) => (
-                  <TouchableOpacity key={lead.id} style={ll.card} onPress={() => router.push('/chat')}>
-                      {/* Card Header */}
-                      <View style={ll.cardHead}>
-                          <View style={[ll.avatar, { backgroundColor: lead.color }]}>
-                              <Text style={ll.avatarText}>{lead.initials}</Text>
-                          </View>
-                          <View style={ll.cardInfo}>
-                              <View style={ll.nameRow}>
-                                  <Text style={ll.name}>{lead.name}</Text>
-                                  {lead.verified && (
-                                      <View style={ll.verifiedBadge}>
-                                          <Ionicons name="shield-checkmark" size={10} color="#9CC942" />
-                                          <Text style={ll.verifiedText}>Verified</Text>
-                                      </View>
-                                  )}
-                              </View>
-                              <Text style={ll.property}>Re: {lead.property}</Text>
-                          </View>
-                          <View style={ll.cardMeta}>
-                              <View style={[ll.statusTag, {
-                                  backgroundColor: lead.status === 'Visit Planned' ? '#F4F9EB' :
-                                  lead.status === 'Hot' ? '#FEF3C7' : '#F1F5F9'
-                              }]}>
-                                  <Text style={[ll.statusText, {
-                                      color: lead.status === 'Visit Planned' ? '#9CC942' :
-                                      lead.status === 'Hot' ? '#D97706' : '#64748B'
-                                  }]}>{lead.status}</Text>
-                              </View>
-                              <Text style={ll.time}>{lead.time}</Text>
-                          </View>
-                      </View>
+                {/* Trust Score */}
+                <View style={ll.trustRow}>
+                  <View style={ll.trustBarWrap}>
+                    <View style={ll.trustBar}>
+                      <View style={[ll.trustFill, { width: `${lead.trust}%` as any, backgroundColor: tc }]} />
+                    </View>
+                  </View>
+                  <Text style={[ll.trustBadgeText, { color: tc }]}>{lead.trust}% {trustLabel(lead.trust)}</Text>
+                </View>
 
-                      {/* Message Preview */}
-                      <View style={ll.messageWrap}>
-                          <Text style={ll.message} numberOfLines={2}>"{lead.message}"</Text>
-                      </View>
+                {/* Message */}
+                <View style={ll.messageWrap}>
+                  <Text style={ll.message} numberOfLines={2}>"{lead.message}"</Text>
+                </View>
 
-                      {/* AI Reply Suggestion */}
-                      <View style={ll.aiBox}>
-                          <View style={ll.aiBoxHeader}>
-                              <MaterialCommunityIcons name="robot-outline" size={12} color="#9CC942" />
-                              <Text style={ll.aiBoxLabel}>AI Suggested Reply</Text>
-                          </View>
-                          <Text style={ll.aiBoxText}>{lead.aiReply}</Text>
-                          <View style={ll.aiActions}>
-                              <TouchableOpacity style={ll.aiSend}>
-                                  <Feather name="send" size={12} color="#9CC942" />
-                                  <Text style={ll.aiSendText}>Send</Text>
-                              </TouchableOpacity>
-                              <TouchableOpacity style={ll.aiEdit}>
-                                  <Text style={ll.aiEditText}>Edit first</Text>
-                              </TouchableOpacity>
-                          </View>
-                      </View>
+                {/* AI Helper */}
+                <View style={ll.aiBox}>
+                  <View style={ll.aiBoxHeader}>
+                    <MaterialCommunityIcons name="robot-outline" size={12} color="#9CC942" />
+                    <Text style={ll.aiBoxLabel}>ASSISTED RESPONSE</Text>
+                  </View>
+                  <Text style={ll.aiBoxText}>{lead.aiReply}</Text>
+                  <View style={ll.aiActions}>
+                    <TouchableOpacity style={ll.aiSend}>
+                      <Feather name="send" size={12} color="#FFF" />
+                      <Text style={ll.aiSendText}>Send</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={ll.aiEdit}>
+                        <Text style={ll.aiEditText}>Edit</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
 
-                      {/* Trust bar */}
-                      <View style={ll.trustRow}>
-                          <View style={ll.trustBar}>
-                              <View style={[ll.trustFill, { width: `${lead.trust}%`, backgroundColor: lead.trust > 85 ? '#9CC942' : lead.trust > 70 ? '#F59E0B' : '#EF4444' }]} />
-                          </View>
-                          <Text style={ll.trustPct}>{lead.trust}% trust</Text>
-                      </View>
-                  </TouchableOpacity>
-              ))}
-
-              {/* ── Messenger CTA ─────────────────────────────────────────── */}
-              <TouchableOpacity style={ll.messengerBtn} onPress={() => router.push('/(tabs)/alerts')}>
-                  <LinearGradient colors={['#1A1A1A', '#2D2D2D']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
-                  <Feather name="message-circle" size={20} color="#9CC942" />
-                  <Text style={ll.messengerBtnText}>Open Full Messenger</Text>
-                  <Feather name="arrow-right" size={16} color="rgba(255,255,255,0.4)" />
               </TouchableOpacity>
+            );
+          })}
 
-              <View style={{ height: 100 }} />
-          </View>
+          {/* Messenger CTA */}
+          <TouchableOpacity style={ll.messengerBtn} onPress={() => router.push('/(tabs)/alerts')}>
+            <LinearGradient colors={['#1A1A1A', '#2D2D2D']} style={StyleSheet.absoluteFill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
+            <Feather name="message-circle" size={20} color="#9CC942" />
+            <Text style={ll.messengerBtnText}>Open Full Messenger</Text>
+            <Feather name="arrow-right" size={16} color="rgba(255,255,255,0.4)" />
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </View>
   );
@@ -506,99 +519,74 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, color: '#64748B', marginBottom: 24 },
 });
 
-const leadStyles = StyleSheet.create({
-    statsRow: { flexDirection: 'row', marginBottom: 32, gap: 12 },
-    statPack: { 
-        flex: 1, backgroundColor: '#F8FAFC', padding: 16, borderRadius: 20,
-        borderWidth: 1, borderColor: '#F1F5F9' 
-    },
-    statVal: { fontSize: 24, fontWeight: '900', color: '#1A1A1A' },
-    statLab: { fontSize: 11, fontWeight: '700', color: '#64748B', marginTop: 4 },
-    sectionTitle: { fontSize: 18, fontWeight: '900', color: '#1A1A1A', marginBottom: 16 },
-    leadCard: { 
-        backgroundColor: '#FFF', borderRadius: 24, padding: 16, marginBottom: 16,
-        borderWidth: 1, borderColor: '#F1F5F9',
-        shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.03, shadowRadius: 10, elevation: 2
-    },
-    leadHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-    avatarCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#9CC942', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-    avatarInitial: { fontSize: 18, fontWeight: '900', color: '#FFF' },
-    leadMain: { flex: 1 },
-    leadName: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
-    leadDetail: { fontSize: 12, color: '#64748B', marginTop: 2 },
-    trustBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F9EB', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, gap: 4 },
-    trustText: { fontSize: 10, fontWeight: '800', color: '#9CC942' },
-    leadFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderTopWidth: 1, borderTopColor: '#F8FAFC', paddingTop: 12 },
-    leadTime: { fontSize: 11, color: '#94A3B8' },
-    statusTag: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10 },
-    statusTagText: { fontSize: 10, fontWeight: '800' },
-    fullMessengerBtn: { 
-        backgroundColor: '#1A1A1A', borderRadius: 20, paddingVertical: 18, 
-        flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 10, marginTop: 12
-    },
-    fullMessengerBtnText: { color: '#FFF', fontSize: 14, fontWeight: '900' },
-});
-
 const ll = StyleSheet.create({
     root: { flex: 1, backgroundColor: '#F8FAFC' },
-    hero: { paddingHorizontal: 24, paddingBottom: 28, overflow: 'hidden', position: 'relative' },
-    heroDecor: { position: 'absolute', width: 120, height: 120, borderRadius: 999, opacity: 0.15 },
-    heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 },
-    heroTitle: { fontSize: 26, fontWeight: '900', color: '#FFF' },
-    heroSub: { fontSize: 13, color: 'rgba(255,255,255,0.7)', marginTop: 3 },
-    filterBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', justifyContent: 'center', alignItems: 'center' },
-    statsStrip: { flexDirection: 'row', justifyContent: 'space-between' },
-    statItem: { alignItems: 'center', flex: 1 },
-    statVal: { fontSize: 18, fontWeight: '900', color: '#FFF' },
-    statLab: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.6)', letterSpacing: 0.8, marginTop: 3 },
 
-    body: { padding: 20 },
-    tabRow: { flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 16, padding: 4, marginBottom: 20, gap: 2 },
+    // ── Professional White Header
+    profHeader: { backgroundColor: '#FFF', paddingHorizontal: 20, paddingBottom: 24, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+    profHeaderTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    profLiveRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+    profLiveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#9CC942' },
+    profLiveText: { fontSize: 10, fontWeight: '800', color: '#64748B', letterSpacing: 1 },
+    profTitle: { fontSize: 32, fontWeight: '900', color: '#1A1A1A', letterSpacing: -1 },
+    profBellBtn: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#F8FAFC', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
+    profBellDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EF4444', borderWidth: 2, borderColor: '#FFF' },
+
+    profStatsRow: { flexDirection: 'row', gap: 10 },
+    profStatBox: { flex: 1, padding: 12, borderRadius: 16, alignItems: 'center' },
+    profStatVal: { fontSize: 18, fontWeight: '900' },
+    profStatLab: { fontSize: 9, fontWeight: '700', color: '#64748B', textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 },
+
+    // ── Tab Switcher
+    tabContainer: { paddingHorizontal: 20, marginTop: 20, marginBottom: 12 },
+    tabRow: { flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 16, padding: 4, gap: 2 },
     tab: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
     tabActive: { backgroundColor: '#FFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 6, elevation: 2 },
     tabText: { fontSize: 12, fontWeight: '700', color: '#94A3B8' },
     tabTextActive: { color: '#1A1A1A', fontWeight: '900' },
 
-    card: {
-        backgroundColor: '#FFF', borderRadius: 24, padding: 18, marginBottom: 16,
-        borderWidth: 1, borderColor: '#F1F5F9',
-        shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12, elevation: 3,
-    },
-    cardHead: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 14 },
-    avatar: { width: 46, height: 46, borderRadius: 23, justifyContent: 'center', alignItems: 'center', marginRight: 12 },
-    avatarText: { fontSize: 15, fontWeight: '900', color: '#FFF' },
+    // ── Lead Cards
+    card: { backgroundColor: '#FFF', borderRadius: 24, padding: 20, marginBottom: 16, borderWidth: 1, borderColor: '#F1F5F9', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12, elevation: 3 },
+    cardHead: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+    avatar: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center', marginRight: 14, borderWidth: 1.5, flexShrink: 0 },
+    avatarText: { fontSize: 16, fontWeight: '900' },
     cardInfo: { flex: 1 },
-    nameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 3 },
+    nameRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
     name: { fontSize: 15, fontWeight: '900', color: '#1A1A1A' },
-    verifiedBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F4F9EB', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, gap: 3 },
-    verifiedText: { fontSize: 9, fontWeight: '800', color: '#9CC942' },
+    propRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     property: { fontSize: 11, color: '#94A3B8', fontWeight: '600' },
-    cardMeta: { alignItems: 'flex-end', gap: 5 },
+    dot: { fontSize: 11, color: '#CBD5E1' },
+    time: { fontSize: 10, color: '#94A3B8', fontWeight: '600' },
     statusTag: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
     statusText: { fontSize: 9, fontWeight: '800' },
-    time: { fontSize: 10, color: '#CBD5E1' },
 
-    messageWrap: { backgroundColor: '#F8FAFC', borderRadius: 14, padding: 14, marginBottom: 14 },
+    // Trust Score
+    trustRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16 },
+    trustBarWrap: { flex: 1 },
+    trustBar: { height: 4, backgroundColor: '#F1F5F9', borderRadius: 2 },
+    trustFill: { height: 4, borderRadius: 2 },
+    trustBadgeText: { fontSize: 11, fontWeight: '800' },
+
+    // Message
+    messageWrap: { backgroundColor: '#F8FAFC', borderRadius: 14, padding: 14, marginBottom: 16 },
     message: { fontSize: 13, color: '#475569', lineHeight: 20, fontStyle: 'italic' },
 
+    // AI Helper
     aiBox: { backgroundColor: '#F4F9EB', borderRadius: 14, padding: 14, borderLeftWidth: 3, borderLeftColor: '#9CC942' },
-    aiBoxHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-    aiBoxLabel: { fontSize: 10, fontWeight: '800', color: '#9CC942', letterSpacing: 0.5 },
+    aiBoxHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 },
+    aiBoxLabel: { fontSize: 10, fontWeight: '900', color: '#9CC942', letterSpacing: 0.5 },
     aiBoxText: { fontSize: 12, color: '#374151', lineHeight: 18, marginBottom: 12 },
-    aiActions: { flexDirection: 'row', gap: 10 },
-    aiSend: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#1A1A1A', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-    aiSendText: { fontSize: 11, fontWeight: '800', color: '#9CC942' },
+    aiActions: { flexDirection: 'row', gap: 8 },
+    aiSend: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#1A1A1A', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
+    aiSendText: { fontSize: 11, fontWeight: '800', color: '#FFF' },
     aiEdit: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, borderWidth: 1, borderColor: '#E2E8F0' },
     aiEditText: { fontSize: 11, fontWeight: '700', color: '#64748B' },
 
-    trustRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 14 },
-    trustBar: { flex: 1, height: 4, backgroundColor: '#F1F5F9', borderRadius: 2 },
-    trustFill: { height: 4, borderRadius: 2 },
-    trustPct: { fontSize: 10, fontWeight: '800', color: '#94A3B8' },
-
-    messengerBtn: {
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10,
-        borderRadius: 20, paddingVertical: 18, overflow: 'hidden', marginTop: 8,
-    },
+    // Messenger CTA
+    messengerBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, borderRadius: 20, paddingVertical: 18, overflow: 'hidden', marginTop: 8 },
     messengerBtnText: { fontSize: 14, fontWeight: '900', color: '#FFF', flex: 1, marginLeft: 4 },
+
+    // Safety (some properties kept if needed by logic)
+    body: { padding: 20 },
+    header: { backgroundColor: '#FFF', paddingHorizontal: 20, paddingBottom: 20, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
 });
